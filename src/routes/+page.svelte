@@ -19,12 +19,31 @@
 	let sortKey: SortKey = '_createdAt';
 	let sortDir: SortDir = 'desc';
 
+	const totalMinutes = data.submissions.reduce((total, s) => {
+        const hasReviewed = s.reviews?.some((r) => r.curator?._id === curator?._id);
+        // Ensure length is treated as a number; default to 0 if missing
+        return hasReviewed ? total + (Number(s.length) || 0) : total;
+    }, 0);
+
+    // Optional: Format helper
+    const hours = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+    const timeDisplay = hours > 0 ? `${hours}h ${mins}min` : `${mins}min`;
+
 	const submissions = $state(
-		data.submissions.map((s) => ({
-			...s,
-			reviewsCount: s.reviews?.length ?? 0
-		}))
-	);
+        data.submissions.map((s) => {
+            // Find the review belonging to the current curator
+            const myReview = s.reviews?.find((r) => r.curator?._id === curator?._id);
+            
+            return {
+                ...s,
+                reviewsCount: s.reviews?.length ?? 0,
+                // Add these helper properties for easy access in the HTML
+                mySelection: myReview?.selection ?? 'Pending', 
+                hasReviewed: !!myReview
+            };
+        })
+    );
 
 	function setSort(key: SortKey) {
 		if (sortKey === key) {
@@ -67,36 +86,93 @@
 	sortSubmissions();
 </script>
 
-<style>
-	.truncate-cell {
-		max-width: 180px;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-</style>
-<div class="space-y-8 pb-4">
-	<!-- Stats -->
-	<div class="grid gap-4 md:grid-cols-3">
-		<div class="rounded-lg bg-white p-4 shadow-sm">
-			<p class="text-xs uppercase text-gray-500">Curator</p>
-			<p class="mt-1 text-lg font-semibold">{curator?.name}</p>
-		</div>
-		<div class="rounded-lg bg-white p-4 shadow-sm">
-			<p class="text-xs uppercase text-gray-500">Reviews</p>
-			<p class="mt-1 text-lg font-semibold">{total}</p>
-		</div>
-		<div class="rounded-lg bg-white p-4 shadow-sm">
-			<p class="text-xs uppercase text-gray-500">Approved · Rate</p>
-			<p class="mt-1 text-lg font-semibold">
-				{approved} <span class="text-sm text-gray-500">({approvalRate}% )</span>
-			</p>
-		</div>
+<div class="grid gap-4 md:grid-cols-4">
+	<div class="rounded-lg bg-white p-4 shadow-sm">
+		<p class="text-xs uppercase text-gray-500">Curator</p>
+		<p class="mt-1 text-lg font-semibold">{curator?.name}</p>
 	</div>
+	<div class="rounded-lg bg-white p-4 shadow-sm">
+		<p class="text-xs uppercase text-gray-500">Reviews</p>
+		<p class="mt-1 text-lg font-semibold">{total}</p>
 	</div>
+	<div class="rounded-lg bg-white p-4 shadow-sm">
+		<p class="text-xs uppercase text-gray-500">Approved · Rate</p>
+		<p class="mt-1 text-lg font-semibold">
+			{approved} <span class="text-sm text-gray-500">({approvalRate}%)</span>
+		</p>
+	</div>
+	<!-- New Card -->
+	<div class="rounded-lg bg-white p-4 shadow-sm">
+		<p class="text-xs uppercase text-gray-500">Total Watched</p>
+		<p class="mt-1 text-lg font-semibold" title="{totalMinutes} total minutes">
+			{timeDisplay}
+		</p>
+	</div>
+</div>
+<!--Your submissions table-->
+<div class="space-y-6 pb-12">
+	<header class="flex items-center justify-between">
+		<h2 class="text-2xl font-semibold">Your reviews</h2>
+		<p class="text-sm text-gray-500">Total: {submissions.filter((s) => s.hasReviewed).length}</p>
+	</header>
+	{#if submissions.filter((s) => s.hasReviewed).length === 0}
+		<div class="rounded-lg bg-gray-50 p-8 text-center">
+			<p class="text-gray-500">You haven't reviewed any submissions yet.</p>
+		</div>
+	{:else}
+		<table class="w-full text-left text-sm">
+			<thead class="border-b text-[10px] uppercase text-gray-500">
+				<tr>
+					<th class="py-2">Title</th>
+					<th class="py-2">Selection</th>
+					<th class="py-2">Review</th>
+				</tr>
+			</thead>
+			<tbody>
+				<!-- Filter using the helper property we created -->
+				{#each submissions.filter((s) => s.hasReviewed) as s}
+					<tr class="border-b last:border-0 align-top">
+						<td class="py-2 pr-4 truncate-cell" title={s.englishTitle}>
+							{s.englishTitle}
+						</td>
+
+						<!-- NOW this works because we mapped it in the script -->
+						<td class="py-2 pr-4 truncate-cell">
+							<!-- Optional: Add some styling for different states -->
+							<span
+								class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset
+                            {s.mySelection === 'selected'
+									? 'bg-green-50 text-green-700 ring-green-600/20'
+									: s.mySelection === 'rejected'
+										? 'bg-red-50 text-red-700 ring-red-600/20'
+										: 'bg-gray-50 text-gray-600 ring-gray-500/10'}"
+							>
+								{s.mySelection === 'selected'
+									? 'Selected'
+									: s.mySelection === 'rejected'
+										? 'Rejected'
+										: 'Pending'}
+							</span>
+						</td>
+
+						<td class="py-2 pr-2">
+							<a
+								href={`/review/${s._id}`}
+								class="rounded border border-gray-300 px-2 py-1 text-xs font-medium hover:bg-gray-100"
+							>
+								Edit Review
+							</a>
+						</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	{/if}
+</div>
+<!--All Submissions table -->
 <div class="space-y-6">
 	<header class="flex items-center justify-between">
-		<h1 class="text-2xl font-semibold">All submissions</h1>
+		<h2 class="text-2xl font-semibold">All submissions</h2>
 		<p class="text-sm text-gray-500">Total: {submissions.length}</p>
 	</header>
 
@@ -108,9 +184,7 @@
 				<th class="cursor-pointer py-2" on:click={() => setSort('categories')}>Categories</th>
 				<th class="cursor-pointer py-1" on:click={() => setSort('length')}>Length</th>
 				<th class="cursor-pointer py-2" on:click={() => setSort('_createdAt')}>Uploaded</th>
-				<th class="cursor-pointer py-2" on:click={() => setSort('reviewsCount')}>
-					Reviewed by
-				</th>
+				<th class="cursor-pointer py-2" on:click={() => setSort('reviewsCount')}> Reviewed by </th>
 				<th class="py-2">Review</th>
 			</tr>
 		</thead>
@@ -122,19 +196,11 @@
 					<td class="py-2 pr-4 truncate-cell" title={s.filmLanguage}>{s.filmLanguage}</td>
 					<td
 						class="py-2 pr-4 truncate-cell"
-						title={s.categories
-							?.map((c) => c)
-							.join(', ') +
-							(s.categories?.includes('other') && s.categoryOther
-								? `, ${s.categoryOther}`
-								: '')}
+						title={s.categories?.map((c) => c).join(', ') +
+							(s.categories?.includes('other') && s.categoryOther ? `, ${s.categoryOther}` : '')}
 					>
-						{s.categories
-							?.map((c) => c)
-							.join(', ') +
-							(s.categories?.includes('other') && s.categoryOther
-								? `, ${s.categoryOther}`
-								: '')}
+						{s.categories?.map((c) => c).join(', ') +
+							(s.categories?.includes('other') && s.categoryOther ? `, ${s.categoryOther}` : '')}
 					</td>
 					<td class="py-2 pr-4 truncate-cell" title={s.length}>{s.length}</td>
 					<td
@@ -167,3 +233,11 @@
 	</table>
 </div>
 
+<style>
+	.truncate-cell {
+		max-width: 180px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+</style>
