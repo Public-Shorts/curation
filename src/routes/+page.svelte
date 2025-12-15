@@ -1,6 +1,12 @@
 <script lang="ts">
 	let { data } = $props();
 
+	const stats = data.curatorStats;
+	const curator = stats.curator;
+	const total = stats.totalReviews ?? 0;
+	const approved = stats.approvedReviews ?? 0;
+	const approvalRate = total > 0 ? Math.round((approved / total) * 100) : 0;
+
 	type SortKey =
 		| 'englishTitle'
 		| 'filmLanguage'
@@ -69,7 +75,25 @@
 		text-overflow: ellipsis;
 	}
 </style>
-
+<div class="space-y-8 pb-4">
+	<!-- Stats -->
+	<div class="grid gap-4 md:grid-cols-3">
+		<div class="rounded-lg bg-white p-4 shadow-sm">
+			<p class="text-xs uppercase text-gray-500">Curator</p>
+			<p class="mt-1 text-lg font-semibold">{curator?.name}</p>
+		</div>
+		<div class="rounded-lg bg-white p-4 shadow-sm">
+			<p class="text-xs uppercase text-gray-500">Reviews</p>
+			<p class="mt-1 text-lg font-semibold">{total}</p>
+		</div>
+		<div class="rounded-lg bg-white p-4 shadow-sm">
+			<p class="text-xs uppercase text-gray-500">Approved · Rate</p>
+			<p class="mt-1 text-lg font-semibold">
+				{approved} <span class="text-sm text-gray-500">({approvalRate}% )</span>
+			</p>
+		</div>
+	</div>
+	</div>
 <div class="space-y-6">
 	<header class="flex items-center justify-between">
 		<h1 class="text-2xl font-semibold">All submissions</h1>

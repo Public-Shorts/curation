@@ -5,6 +5,17 @@ import { sanityClient } from '$lib/server/sanity';
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.curatorId) throw redirect(303, '/login');
 
+	const curatorId = locals.curatorId;
+
+	const curatorStats = await sanityClient.fetch(
+		`{
+      "curator": *[_type == "curator" && _id == $curatorId][0]{ _id, name },
+      "totalReviews": count(*[_type == "review" && curator._ref == $curatorId]),
+      "approvedReviews": count(*[_type == "review" && curator._ref == $curatorId && selection == "selected"])
+    }`,
+		{ curatorId }
+	);
+
 	const submissions = await sanityClient.fetch(
 		`*[_type == "submission"]
       | order(_createdAt desc){
@@ -28,5 +39,5 @@ export const load: PageServerLoad = async ({ locals }) => {
       }`
 	);
 
-	return { submissions };
+	return { curatorStats, submissions };
 };
