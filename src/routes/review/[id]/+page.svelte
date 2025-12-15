@@ -16,7 +16,7 @@
 			<p class="text-sm text-gray-500 italic">{submission.originalTitle}</p>
 		{/if}
 		<p class="text-sm text-gray-500">
-			Year: {submission.yearOfCompletion} · Length: {submission.length} · Language:
+			Year: {submission.yearOfCompletion} · Length: {submission.length} minute(s) · Language:
 			{submission.filmLanguage}
 		</p>
 		<p class="text-xs text-gray-500">

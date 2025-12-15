@@ -1,9 +1,11 @@
 <script lang="ts">
+	import Logo from "$lib/components/Logo.svelte";
+
 	let { form }: { form?: { error?: string } } = $props();
 </script>
 
 <div class="mx-auto mt-20 max-w-sm space-y-4">
-	<h1 class="text-2xl font-semibold">Curation login</h1>
+	<Logo/>
 
 	{#if form?.error}
 		<p class="text-sm text-red-500">{form.error}</p>

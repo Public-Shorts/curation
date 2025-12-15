@@ -1,20 +1,20 @@
 <script lang="ts">
+	import Logo from "./Logo.svelte";
+
 	let { currentPath } = $props();
 </script>
 
 <nav class="border-b bg-white">
 	<div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-		<div class="text-sm font-semibold tracking-wide uppercase text-gray-700">
-			Public Shorts · Curation
-		</div>
+		<a class="flex items-center text-sm font-semibold tracking-wide uppercase text-gray-700" href="/">
+			<div class="relative w-24 fill-gray-800">
+				<Logo />
+			</div>
+			<p> · Curation</p>
+		</a>
 
 		<div class="flex items-center gap-4 text-xs font-medium text-gray-600">
-			<a
-				href="/"
-				class={currentPath === '/' ? 'text-black' : 'hover:text-black'}
-			>
-				Submissions
-			</a>
+
 			<form method="POST" action="/api/auth/logout">
 				<button
 					type="submit"
