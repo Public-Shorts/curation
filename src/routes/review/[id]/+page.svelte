@@ -240,6 +240,9 @@
 						</a>
 					{/if}
 				</div>
+				{#if submission.linkPassword}
+					<p class="text-xs text-gray-500 mt-1">Password: {submission.linkPassword}</p>
+				{/if}
 			</dl>
 		</section>
 	</div>

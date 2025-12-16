@@ -31,6 +31,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
         previousScreenings,
         previousScreeningLocations,
         linkToWatch,
+		linkPassword,
         linkToDownload,
         screenshots,
         poster,
