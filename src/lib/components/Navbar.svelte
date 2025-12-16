@@ -6,15 +6,22 @@
 
 <nav class="border-b bg-white">
 	<div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-		<a class="flex items-center text-sm font-semibold tracking-wide uppercase text-gray-700" href="/">
-			<div class="relative w-24 fill-gray-800">
-				<Logo />
-			</div>
-			<p> · Curation</p>
-		</a>
+		<div class="flex items-center gap-6 uppercase text-sm font-medium text-gray-700">
+			<a
+				class="flex items-center text-sm font-semibold tracking-wide uppercase text-gray-700 hover:text-gray-900"
+				href="/"
+			>
+				<div class="relative w-24 fill-gray-800">
+					<Logo />
+				</div>
+				<p>· Curation</p>
+			</a>
+
+			<a class="uppercase hover:text-gray-900" href="/">Home</a>
+			<a class="uppercase hover:text-gray-900" href="/stats">Stats</a>
+		</div>
 
 		<div class="flex items-center gap-4 text-xs font-medium text-gray-600">
-
 			<form method="POST" action="/api/auth/logout">
 				<button
 					type="submit"
