@@ -1,7 +1,7 @@
 <!-- src/routes/stats/+page.svelte -->
 <script lang="ts">
 	let { data } = $props();
-	const { leaderboard, overall, categoriesStats } = data;
+	const { leaderboard, overall, categoriesStats, flaggedStats } = data;
 	const maxCount = Math.max(1, ...categoriesStats.map((c: any) => c.count));
 </script>
 
@@ -115,6 +115,67 @@
 					</div>
 				{/each}
 			</div>
+		</section>
+		<!-- NEW: Index of Flagged Content -->
+		<section class="space-y-6">
+			<header class="flex items-center justify-between">
+				<h2 class="text-2xl font-semibold">Flagged Content Index</h2>
+				<p class="text-sm text-gray-500">
+					{flaggedStats.reduce((acc: any, curr: any) => acc + curr.items.length, 0)} flags across {flaggedStats.length}
+					categories
+				</p>
+			</header>
+
+			{#if flaggedStats.length === 0}
+				<div class="rounded-lg bg-gray-50 p-8 text-center">
+					<p class="text-gray-500">No content has been flagged yet.</p>
+				</div>
+			{:else}
+				<div class="">
+					{#each flaggedStats as { reason, items }}
+						<div class="rounded-lg bg-white shadow-sm ring-1 ring-gray-900/5 overflow-hidden">
+							<!-- Header -->
+							<div
+								class="bg-gray-50/80 px-4 py-3 border-b border-gray-100 flex justify-between items-center"
+							>
+								<h3 class="text-sm font-semibold text-gray-900">{reason}</h3>
+								<span
+									class="inline-flex items-center rounded-full bg-white px-2 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10"
+								>
+									{items.length}
+								</span>
+							</div>
+
+							<!-- Table -->
+							<table class="min-w-full table-fixed divide-y divide-gray-100">
+								<tbody class="divide-y divide-gray-100 bg-white">
+									{#each items as item}
+										<tr class="hover:bg-gray-50 transition-colors group">
+											<!-- Title Column (Truncated) -->
+											<td class="w-full max-w-0 py-3 pl-4 pr-2 align-middle">
+												<a
+													href={`/review/${item.id}`}
+													class="block text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors"
+													title={item.title}
+												>
+													{item.title}
+												</a>
+											</td>
+
+											<!-- Curator Column (Fixed width, right aligned) -->
+											<td class="whitespace-nowrap py-3 pr-4 pl-2 text-right align-middle">
+												<span class="text-[10px] text-gray-400">
+													by {item.curator}
+												</span>
+											</td>
+										</tr>
+									{/each}
+								</tbody>
+							</table>
+						</div>
+					{/each}
+				</div>
+			{/if}
 		</section>
 	</div>
 </div>

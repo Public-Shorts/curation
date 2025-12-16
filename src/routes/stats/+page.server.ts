@@ -21,6 +21,13 @@ export const load: PageServerLoad = async ({ locals }) => {
       "submissions": *[_type == "submission"]{
         categories,
         categoryOther
+      },
+      "flagged": *[_type == "review" && defined(contentNotes) && count(contentNotes) > 0 && contentNotes[0] != "none"]{
+        _id,
+        contentNotes,
+        "filmTitle": film->englishTitle,
+        "filmId": film->_id,
+        "curatorName": curator->name
       }
     }`;
 
@@ -56,12 +63,42 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.map(([name, count]) => ({ name, count }))
 		.sort((a, b) => b.count - a.count);
 
+	const flaggedByReason: Record<string, any[]> = {};
+
+	data.flagged.forEach((review: any) => {
+		review.contentNotes.forEach((note: string) => {
+			if (note === 'none') return;
+
+			// Format label (e.g. "sexualContent" -> "Sexual Content")
+			const label = note
+				.replace(/([A-Z])/g, ' $1') // Add space before capitals
+				.replace(/^./, (str) => str.toUpperCase()) // Capitalize first letter
+				.replace('Horror Disturbing Images', 'Horror / Disturbing Images') // Fix specific long ones if needed
+				.trim();
+
+			if (!flaggedByReason[label]) {
+				flaggedByReason[label] = [];
+			}
+			flaggedByReason[label].push({
+				title: review.filmTitle || 'Untitled',
+				id: review.filmId,
+				curator: review.curatorName
+			});
+		});
+	});
+
+	// Sort reasons alphabetically
+	const flaggedStats = Object.entries(flaggedByReason)
+		.sort((a, b) => a[0].localeCompare(b[0]))
+		.map(([reason, items]) => ({ reason, items }));
+
 	return {
 		leaderboard,
 		overall: {
 			...data.overall,
 			approvalRate: data.overall.total > 0 ? (data.overall.selected / data.overall.total) * 100 : 0
 		},
-		categoriesStats
+		categoriesStats,
+		flaggedStats // <--- New data
 	};
 };
