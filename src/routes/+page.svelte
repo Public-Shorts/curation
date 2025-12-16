@@ -86,7 +86,7 @@
 	sortSubmissions();
 </script>
 
-<div class="grid gap-4 md:grid-cols-4">
+<section class="grid gap-4 md:grid-cols-4 pb-12">
 	<div class="rounded-lg bg-white p-4 shadow-sm">
 		<p class="text-xs uppercase text-gray-500">Curator</p>
 		<p class="mt-1 text-lg font-semibold">{curator?.name}</p>
@@ -108,9 +108,9 @@
 			{timeDisplay}
 		</p>
 	</div>
-</div>
+</section>
 <!--Your submissions table-->
-<div class="space-y-6 pb-12">
+<section class="space-y-6 pb-12">
 	<header class="flex items-center justify-between">
 		<h2 class="text-2xl font-semibold">Your reviews</h2>
 		<p class="text-sm text-gray-500">Total: {submissions.filter((s) => s.hasReviewed).length}</p>
@@ -168,9 +168,9 @@
 			</tbody>
 		</table>
 	{/if}
-</div>
+</section>
 <!--All Submissions table -->
-<div class="space-y-6">
+<section class="space-y-6 pb-12">
 	<header class="flex items-center justify-between">
 		<h2 class="text-2xl font-semibold">All submissions</h2>
 		<p class="text-sm text-gray-500">Total: {submissions.length}</p>
@@ -179,12 +179,12 @@
 	<table class="w-full text-left text-sm">
 		<thead class="border-b text-[10px] uppercase text-gray-500">
 			<tr>
-				<th class="cursor-pointer py-2" on:click={() => setSort('englishTitle')}>Title</th>
-				<th class="cursor-pointer py-1" on:click={() => setSort('filmLanguage')}>Language</th>
-				<th class="cursor-pointer py-2" on:click={() => setSort('categories')}>Categories</th>
-				<th class="cursor-pointer py-1" on:click={() => setSort('length')}>Length</th>
-				<th class="cursor-pointer py-2" on:click={() => setSort('_createdAt')}>Uploaded</th>
-				<th class="cursor-pointer py-2" on:click={() => setSort('reviewsCount')}> Reviewed by </th>
+				<th class="cursor-pointer py-2" onclick={() => setSort('englishTitle')}>Title</th>
+				<th class="cursor-pointer py-1" onclick={() => setSort('filmLanguage')}>Language</th>
+				<th class="cursor-pointer py-2" onclick={() => setSort('categories')}>Categories</th>
+				<th class="cursor-pointer py-1" onclick={() => setSort('length')}>Length</th>
+				<th class="cursor-pointer py-2" onclick={() => setSort('_createdAt')}>Uploaded</th>
+				<th class="cursor-pointer py-2" onclick={() => setSort('reviewsCount')}> Reviewed by </th>
 				<th class="py-2">Review</th>
 			</tr>
 		</thead>
@@ -231,7 +231,7 @@
 			{/each}
 		</tbody>
 	</table>
-</div>
+</section>
 
 <style>
 	.truncate-cell {

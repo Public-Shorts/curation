@@ -332,10 +332,12 @@
 					id="rating"
 					name="rating"
 					type="number"
+					step="0.5"
 					min="0"
 					max="5"
 					class="w-20 rounded border px-2 py-1"
 					value={review.rating}
+					required
 				/>
 			</div>
 
@@ -420,8 +422,8 @@
 					name="selection"
 					class="w-full rounded border px-2 py-1"
 					value={review.selection}
+					required
 				>
-					<option value="">–</option>
 					<option value="selected">Selected</option>
 					<option value="maybe">Maybe</option>
 					<option value="notSelected">Not selected</option>
