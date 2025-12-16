@@ -191,7 +191,7 @@
 
 		<tbody>
 			{#each submissions as s}
-				<tr class="border-b last:border-0 align-top">
+				<tr class="border-b last:border-0 align-center">
 					<td class="py-2 pr-4 truncate-cell" title={s.englishTitle}>{s.englishTitle}</td>
 					<td class="py-2 pr-4 truncate-cell" title={s.filmLanguage}>{s.filmLanguage}</td>
 					<td
@@ -210,16 +210,17 @@
 						{new Date(s._createdAt).toLocaleString()}
 					</td>
 					<td
-						class="py-2 pr-4 text-xs text-gray-600 truncate-cell"
+						class="py-2 pr-4 truncate-cell"
 						title={s.reviews?.map((r) => r.curator?.name).join(', ') || 'No reviews yet'}
 					>
 						{#if s.reviews?.length}
+							<span class="py-0.5 px-1.5 bg-white rounded-full">{s.reviews.length}</span>
 							{s.reviews.map((r) => r.curator?.name).join(', ')}
 						{:else}
-							<span class="italic text-gray-400">No reviews yet</span>
+							<span class=" text-gray-400">No reviews yet</span>
 						{/if}
 					</td>
-					<td class="py-2 pr-2">
+					<td class="py-2">
 						<a
 							href={`/review/${s._id}`}
 							class="rounded border border-gray-300 px-2 py-1 text-xs font-medium hover:bg-gray-100"
