@@ -1,81 +1,129 @@
+<!-- src/routes/stats/+page.svelte -->
 <script lang="ts">
-    let { data } = $props();
-    const { leaderboard, overall, categoriesStats } = data;
+	let { data } = $props();
+	const { leaderboard, overall, categoriesStats } = data;
+	const maxCount = Math.max(1, ...categoriesStats.map((c: any) => c.count));
 </script>
 
-<div class="space-y-8 p-4">
-	<h1 class="text-2xl font-bold">Statistics</h1>
-
+<div class="p-6 max-w-7xl mx-auto space-y-12">
 	<!-- Overall Stats Cards -->
-	<section class="grid gap-4 md:grid-cols-5">
-		<div class="rounded border p-4 shadow-sm bg-white">
-			<div class="text-sm text-gray-500">Total Reviews</div>
-			<div class="text-2xl font-bold">{overall.total}</div>
-		</div>
-		<div class="rounded border p-4 shadow-sm bg-white">
-			<div class="text-sm text-gray-500">Selected</div>
-			<div class="text-2xl font-bold text-green-600">{overall.selected}</div>
-		</div>
-		<div class="rounded border p-4 shadow-sm bg-white">
-			<div class="text-sm text-gray-500">Maybe</div>
-			<div class="text-2xl font-bold text-yellow-600">{overall.maybe}</div>
-		</div>
-		<div class="rounded border p-4 shadow-sm bg-white">
-			<div class="text-sm text-gray-500">Rejected</div>
-			<div class="text-2xl font-bold text-red-600">{overall.rejected}</div>
-		</div>
-		<div class="rounded border p-4 shadow-sm bg-white">
-			<div class="text-sm text-gray-500">Global Approval Rate</div>
-			<div class="text-2xl font-bold">{overall.approvalRate.toFixed(1)}%</div>
+	<section class="space-y-4">
+		<h2 class="text-2xl font-semibold">Overview</h2>
+		<div class="grid gap-4 md:grid-cols-5">
+			<!-- Total Reviews -->
+			<div class="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5">
+				<p class="text-xs uppercase text-gray-500">Total Reviews</p>
+				<p class="mt-1 text-lg font-semibold">{overall.total}</p>
+			</div>
+
+			<!-- Selected -->
+			<div class="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5">
+				<p class="text-xs uppercase text-gray-500">Selected</p>
+				<p class="mt-1 text-lg font-semibold text-green-700">{overall.selected}</p>
+			</div>
+
+			<!-- Maybe -->
+			<div class="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5">
+				<p class="text-xs uppercase text-gray-500">Maybe</p>
+				<p class="mt-1 text-lg font-semibold text-yellow-700">{overall.maybe}</p>
+			</div>
+
+			<!-- Rejected -->
+			<div class="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5">
+				<p class="text-xs uppercase text-gray-500">Not Selected</p>
+				<p class="mt-1 text-lg font-semibold text-red-700">{overall.rejected}</p>
+			</div>
+
+			<!-- Approval Rate -->
+			<div class="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5">
+				<p class="text-xs uppercase text-gray-500">Global Approval Rate</p>
+				<p class="mt-1 text-lg font-semibold">
+					{overall.approvalRate.toFixed(1)}<span class="text-sm text-gray-500">%</span>
+				</p>
+			</div>
 		</div>
 	</section>
 
-	<div class="grid gap-8 md:grid-cols-2">
-		<!-- Leaderboard -->
-		<section class="space-y-4">
-			<h2 class="text-xl font-semibold">Curator Leaderboard</h2>
-			<div class="overflow-x-auto rounded border bg-white shadow-sm">
-				<table class="w-full text-left text-sm">
-					<thead class="bg-gray-50">
-						<tr>
-							<th class="px-4 py-2 font-medium">Curator</th>
-							<th class="px-4 py-2 font-medium text-right">Reviews</th>
-							<th class="px-4 py-2 font-medium text-right">Selected</th>
-							<th class="px-4 py-2 font-medium text-right">Appr. Rate</th>
-						</tr>
-					</thead>
-					<tbody class="divide-y">
-						{#each leaderboard as curator}
-							<tr class="hover:bg-gray-50">
-								<td class="px-4 py-2 font-medium">{curator.name}</td>
-								<td class="px-4 py-2 text-right">{curator.total}</td>
-								<td class="px-4 py-2 text-right text-green-700">{curator.selected}</td>
-								<td class="px-4 py-2 text-right">{curator.approvalRate.toFixed(1)}%</td>
+	<div class="grid gap-12 lg:grid-cols-2">
+		<!-- Leaderboard Table -->
+		<section class="space-y-6">
+			<header class="flex items-center justify-between">
+				<h2 class="text-2xl font-semibold">Curator Leaderboard</h2>
+				<p class="text-sm text-gray-500">Total: {leaderboard.length}</p>
+			</header>
+
+			{#if leaderboard.length === 0}
+				<div class="rounded-lg bg-gray-50 p-8 text-center">
+					<p class="text-gray-500">No data available.</p>
+				</div>
+			{:else}
+				<div class="overflow-x-auto rounded-lg border bg-white shadow-sm">
+					<table class="w-full text-left text-sm">
+						<thead class="border-b bg-gray-50/50 text-[10px] uppercase text-gray-500">
+							<tr>
+								<th class="py-3 pl-4 pr-3 font-medium">Curator</th>
+								<th class="py-3 px-3 font-medium text-right">Reviews</th>
+								<th class="py-3 px-3 font-medium text-right">Selected</th>
+								<th class="py-3 pl-3 pr-4 font-medium text-right">Appr. Rate</th>
 							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
+						</thead>
+						<tbody class="divide-y divide-gray-100 bg-white">
+							{#each leaderboard as curator}
+								<tr class="hover:bg-gray-50/50">
+									<td class="py-3 pl-4 pr-3 font-medium text-gray-900">{curator.name}</td>
+									<td class="py-3 px-3 text-right text-gray-500">{curator.total}</td>
+									<td class="py-3 px-3 text-right">
+										<span
+											class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20"
+										>
+											{curator.selected}
+										</span>
+									</td>
+									<td class="py-3 pl-3 pr-4 text-right text-gray-500">
+										{curator.approvalRate.toFixed(1)}%
+									</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			{/if}
 		</section>
 
 		<!-- Category Stats -->
-		<section class="space-y-4">
-			<h2 class="text-xl font-semibold">Submissions per Category</h2>
-			<div class="rounded border bg-white p-4 shadow-sm space-y-3">
+		<section class="space-y-6">
+			<header class="flex items-center justify-between">
+				<h2 class="text-2xl font-semibold">Submissions per Category</h2>
+				<p class="text-sm text-gray-500">Categories: {categoriesStats.length}</p>
+			</header>
+
+			<div class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-900/5 space-y-4">
 				{#each categoriesStats as cat}
-					<div class="flex items-center gap-2">
-						<div class="w-32 text-sm font-medium truncate" title={cat.name}>{cat.name}</div>
-						<div class="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
+					<div class="group">
+						<div class="flex items-center justify-between mb-1 text-sm">
+							<span class="font-medium text-gray-700 truncate max-w-[200px]" title={cat.name}>
+								{cat.name}
+							</span>
+							<span class="text-gray-500 text-xs">{cat.count}</span>
+						</div>
+						<div class="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
 							<div
-								class="h-full bg-blue-600"
-								style:width="{(cat.count / Math.max(...categoriesStats.map((c) => c.count))) *
-									100}%"
+								class="h-full rounded-full bg-black/80 group-hover:bg-black transition-all duration-500"
+								style:width="{(cat.count / maxCount) * 100}%"
 							></div>
 						</div>
-						<div class="text-sm text-gray-500 w-8 text-right">{cat.count}</div>
 					</div>
 				{/each}
 			</div>
 		</section>
 	</div>
 </div>
+
+<style>
+	.truncate-cell {
+		max-width: 180px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+</style>
