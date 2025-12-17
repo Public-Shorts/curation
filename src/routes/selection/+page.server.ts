@@ -15,50 +15,57 @@ export const load: PageServerLoad = async ({ locals }) => {
         categoryOther,
         _createdAt,
         
-        // Fetch reviews to calculate stats
         "reviews": *[_type == "review" && film._ref == ^._id]{
             selection, 
-            rating // Assuming you have a 1-10 rating field. If not, remove this.
+            rating,
+            tags
         }
       }
     }`;
 
 	const data = await sanityClient.fetch(query);
 
-	// Process data to calculate stats per film
 	const movies = data.submissions.map((s: any) => {
 		const reviews = s.reviews || [];
 		const totalReviews = reviews.length;
 
-		// Calculate Approval Rate (Percentage of "selected")
 		const selectedCount = reviews.filter((r: any) => r.selection === 'selected').length;
 		const approvalRate = totalReviews > 0 ? (selectedCount / totalReviews) * 100 : 0;
-
-		// Calculate Average Rating (if rating field exists)
-		// If rating is missing, we default to 0.
 		const totalRating = reviews.reduce((acc: number, r: any) => acc + (Number(r.rating) || 0), 0);
 		const averageRating = totalReviews > 0 ? totalRating / totalReviews : 0;
 
-		// Flatten categories for easier filtering
-		const allCategories = [
+		const displayCategories = [
 			...(s.categories || []),
 			...(s.categories?.includes('other') && s.categoryOther ? [s.categoryOther] : [])
-		].filter((c) => c !== 'other'); // Remove generic 'other' string if specific exists
+		].filter((c) => c !== 'other');
+
+		// FIXED: Extract the 'label' from the tag objects
+		const curatorTags = Array.from(
+			new Set(
+				reviews.flatMap(
+					(r: any) => (r.tags || []).map((t: any) => t.label || t) // Handle object or string
+				)
+			)
+		)
+			.filter((t) => typeof t === 'string')
+			.sort();
 
 		return {
 			...s,
 			reviewsCount: totalReviews,
 			approvalRate,
 			averageRating,
-			displayCategories: allCategories
+			displayCategories,
+			curatorTags
 		};
 	});
 
-	// Extract all unique tags/categories for the filter UI
-	const allTags = Array.from(new Set(movies.flatMap((m: any) => m.displayCategories))).sort();
+	const allCategories = Array.from(new Set(movies.flatMap((m: any) => m.displayCategories))).sort();
+	const allCuratorTags = Array.from(new Set(movies.flatMap((m: any) => m.curatorTags))).sort();
 
 	return {
 		movies,
-		allTags
+		allCategories,
+		allCuratorTags
 	};
 };

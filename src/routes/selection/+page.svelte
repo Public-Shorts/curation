@@ -2,24 +2,35 @@
     let { data } = $props();
     
     // State
-    let activeTags = $state<string[]>([]);
-    let sortKey = $state('approvalRate'); // Default sort by approval
-    let sortDir = $state<'asc' | 'desc'>('desc'); // Highest first
+    let activeCategories = $state<string[]>([]);
+    let activeCuratorTags = $state<string[]>([]); // New state for curator tags
+    
+    let sortKey = $state('approvalRate');
+    let sortDir = $state<'asc' | 'desc'>('desc');
 
     // Derived: Filter and Sort
     let filteredMovies = $derived.by(() => {
-        // 1. Filter by Tags (AND logic: movie must have ALL selected tags)
         let result = data.movies.filter((movie: any) => {
-            if (activeTags.length === 0) return true;
-            return activeTags.every(tag => movie.displayCategories.includes(tag));
+            // 1. Filter by Submission Categories
+            if (activeCategories.length > 0) {
+                const hasAllCategories = activeCategories.every(tag => movie.displayCategories.includes(tag));
+                if (!hasAllCategories) return false;
+            }
+
+            // 2. Filter by Curator Tags (New)
+            if (activeCuratorTags.length > 0) {
+                const hasAllTags = activeCuratorTags.every(tag => movie.curatorTags.includes(tag));
+                if (!hasAllTags) return false;
+            }
+
+            return true;
         });
 
-        // 2. Sort
+        // 3. Sort
         return result.sort((a: any, b: any) => {
             let av = a[sortKey];
             let bv = b[sortKey];
 
-            // Handle strings (case insensitive)
             if (typeof av === 'string') av = av.toLowerCase();
             if (typeof bv === 'string') bv = bv.toLowerCase();
 
@@ -30,11 +41,19 @@
     });
 
     // Helpers
-    function toggleTag(tag: string) {
-        if (activeTags.includes(tag)) {
-            activeTags = activeTags.filter(t => t !== tag);
+    function toggleCategory(cat: string) {
+        if (activeCategories.includes(cat)) {
+            activeCategories = activeCategories.filter(c => c !== cat);
         } else {
-            activeTags = [...activeTags, tag];
+            activeCategories = [...activeCategories, cat];
+        }
+    }
+
+    function toggleCuratorTag(tag: string) {
+        if (activeCuratorTags.includes(tag)) {
+            activeCuratorTags = activeCuratorTags.filter(t => t !== tag);
+        } else {
+            activeCuratorTags = [...activeCuratorTags, tag];
         }
     }
 
@@ -47,7 +66,6 @@
         }
     }
 
-    // Color helpers for progress bars
     const getScoreColor = (score: number) => {
         if (score >= 75) return 'bg-green-500';
         if (score >= 50) return 'bg-yellow-500';
@@ -63,33 +81,70 @@
 				Showing {filteredMovies.length} of {data.movies.length} submissions
 			</p>
 		</div>
+		<div class="flex items-center gap-2 text-sm text-gray-600">
+			<span
+				>Sorted by <span class="font-semibold capitalize">{sortKey.replace(/([A-Z])/g, ' $1')}</span
+				></span
+			>
+		</div>
 	</header>
 
-	<!-- Tag Filter System -->
-	<section class="space-y-3">
-		<h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500">Filter by Category</h3>
-		<div class="flex flex-wrap gap-2">
-			{#each data.allTags as tag}
-				<button
-					onclick={() => toggleTag(tag)}
-					class="px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 border
-                    {activeTags.includes(tag)
-						? 'bg-black text-white border-black'
-						: 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}"
-				>
-					{tag}
-				</button>
-			{/each}
-			{#if activeTags.length > 0}
-				<button
-					onclick={() => (activeTags = [])}
-					class="px-3 py-1 text-xs text-red-600 hover:underline"
-				>
-					Clear filters
-				</button>
-			{/if}
-		</div>
-	</section>
+	<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+		<!-- Filter 1: Submission Categories -->
+		<section class="space-y-3">
+			<h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500">
+				Filter by Genre (Submission)
+			</h3>
+			<div class="flex flex-wrap gap-2">
+				{#each data.allCategories as cat}
+					<button
+						onclick={() => toggleCategory(cat)}
+						class="px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 border
+                        {activeCategories.includes(cat)
+							? 'bg-black text-white border-black'
+							: 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}"
+					>
+						{cat}
+					</button>
+				{/each}
+				{#if activeCategories.length > 0}
+					<button
+						onclick={() => (activeCategories = [])}
+						class="px-3 py-1 text-xs text-red-600 hover:underline">Clear</button
+					>
+				{/if}
+			</div>
+		</section>
+
+		<!-- Filter 2: Curator Tags -->
+		<section class="space-y-3">
+			<h3 class="text-xs font-semibold uppercase tracking-wider text-blue-600">
+				Filter by Tags (Curators)
+			</h3>
+			<div class="flex flex-wrap gap-2">
+				{#each data.allCuratorTags as tag}
+					<button
+						onclick={() => toggleCuratorTag(tag)}
+						class="px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 border
+                        {activeCuratorTags.includes(tag)
+							? 'bg-blue-600 text-white border-blue-600'
+							: 'bg-blue-50 text-blue-700 border-blue-100 hover:border-blue-300'}"
+					>
+						{tag}
+					</button>
+				{/each}
+				{#if activeCuratorTags.length === 0 && data.allCuratorTags.length === 0}
+					<span class="text-xs text-gray-400 italic">No tags assigned yet.</span>
+				{/if}
+				{#if activeCuratorTags.length > 0}
+					<button
+						onclick={() => (activeCuratorTags = [])}
+						class="px-3 py-1 text-xs text-red-600 hover:underline">Clear</button
+					>
+				{/if}
+			</div>
+		</section>
+	</div>
 
 	<!-- Main Table -->
 	<div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
@@ -116,36 +171,29 @@
 					>
 						Avg Rating {sortKey === 'averageRating' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
 					</th>
-					<th
-						class="py-3 px-2 cursor-pointer hover:text-gray-900"
-						onclick={() => setSort('reviewsCount')}
-					>
-						Reviews
-					</th>
-					<th class="py-3 px-2">Categories</th>
-					<th class="py-3 px-2 w-20 text-right">Action</th>
+					<th class="py-3 px-2">Categories & Tags</th>
 				</tr>
 			</thead>
 			<tbody class="divide-y divide-gray-100">
 				{#each filteredMovies as movie (movie._id)}
 					<tr class="hover:bg-gray-50/80 transition-colors">
 						<!-- Title -->
-						<td class="py-3 pl-4 pr-2 font-medium text-gray-900">
+						<td class="py-3 pl-4 pr-2 font-medium text-gray-900 align-top">
 							<div class="truncate max-w-[200px]" title={movie.englishTitle}>
 								{movie.englishTitle}
 							</div>
-							<div class="text-xs text-gray-400 font-normal">
+							<div class="text-xs text-gray-400 font-normal mt-0.5">
 								{movie.filmLanguage} · {movie.length}m
 							</div>
 						</td>
 
-						<!-- Approval Rate Bar -->
-						<td class="py-3 px-2 align-middle">
+						<!-- Approval -->
+						<td class="py-3 px-2 align-top pt-3.5">
 							<div class="flex items-center gap-2">
 								<span class="text-xs font-semibold w-8 text-right"
 									>{movie.approvalRate.toFixed(0)}%</span
 								>
-								<div class="h-1.5 flex-1 bg-gray-100 rounded-full overflow-hidden min-w-[60px]">
+								<div class="h-1.5 flex-1 bg-gray-100 rounded-full overflow-hidden min-w-[50px]">
 									<div
 										class="h-full rounded-full {getScoreColor(movie.approvalRate)}"
 										style:width="{movie.approvalRate}%"
@@ -154,50 +202,45 @@
 							</div>
 						</td>
 
-						<!-- Average Rating -->
-						<td class="py-3 px-2 align-middle">
+						<!-- Rating -->
+						<td class="py-3 px-2 align-top pt-3">
 							{#if movie.averageRating > 0}
-								<div
-									class="inline-flex items-center px-2 py-1 rounded bg-gray-100 text-xs font-semibold text-gray-700"
+								<span
+									class="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-100 text-[11px] font-semibold text-gray-700 border border-gray-200"
 								>
 									★ {movie.averageRating.toFixed(1)}
-								</div>
+								</span>
 							{:else}
-								<span class="text-xs text-gray-400">-</span>
+								<span class="text-xs text-gray-400 pl-1">-</span>
 							{/if}
 						</td>
 
-						<!-- Review Count -->
-						<td class="py-3 px-2 text-gray-500">
-							{movie.reviewsCount}
-						</td>
-
-						<!-- Categories -->
-						<td class="py-3 px-2">
-							<div class="flex flex-wrap gap-1 max-w-[250px]">
-								{#each movie.displayCategories.slice(0, 3) as cat}
-									<span
-										class="inline-flex items-center rounded-sm bg-gray-50 px-1.5 py-0.5 text-[10px] font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10"
-									>
-										{cat}
-									</span>
-								{/each}
-								{#if movie.displayCategories.length > 3}
-									<span class="text-[10px] text-gray-400 px-1"
-										>+{movie.displayCategories.length - 3}</span
-									>
+						<!-- Combined Categories & Tags Display -->
+						<td class="py-3 px-2 align-top">
+							<div class="flex flex-col gap-1.5">
+								<!-- Genre -->
+								<div class="flex flex-wrap gap-1 max-w-[300px]">
+									{#each movie.displayCategories as cat}
+										<span
+											class="inline-flex items-center rounded-sm bg-gray-50 px-1.5 py-0.5 text-[10px] font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10"
+										>
+											{cat}
+										</span>
+									{/each}
+								</div>
+								<!-- Curator Tags -->
+								{#if movie.curatorTags.length > 0}
+									<div class="flex flex-wrap gap-1 max-w-[300px]">
+										{#each movie.curatorTags as tag}
+											<span
+												class="inline-flex items-center rounded-sm bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 ring-1 ring-inset ring-blue-600/10"
+											>
+												#{tag}
+											</span>
+										{/each}
+									</div>
 								{/if}
 							</div>
-						</td>
-
-						<!-- Action -->
-						<td class="py-3 px-2 text-right pr-4">
-							<a
-								href="/review/{movie._id}"
-								class="text-blue-600 hover:text-blue-900 text-xs font-medium"
-							>
-								Open
-							</a>
 						</td>
 					</tr>
 				{/each}
