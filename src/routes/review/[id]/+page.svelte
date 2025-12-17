@@ -67,6 +67,18 @@
 		const i = selectedTags.findIndex((t) => t.value === tag.value);
 		if (i !== -1) selectedTags.splice(i, 1);
 	}
+
+	const socialMedia : string = $derived(() => {
+		if (submission.socialMedia?.startsWith('http')) {
+			return submission.socialMedia;
+		} else if (submission.socialMedia?.startsWith('@')) {
+			return `https://instagram.com/${submission.socialMedia.slice(1)}`;
+		} 
+		else if (submission.socialMedia) {
+			return `https://instagram.com/${submission.socialMedia}`;
+		}
+		return null;
+	});
 </script>
 
 <div class="max-w-4xl mx-auto space-y-8 p-6">
@@ -185,7 +197,7 @@
 				{#if submission.socialMedia || submission.website}
 					<div class="pt-2 flex flex-col gap-1">
 						{#if submission.socialMedia}
-							<a href={submission.socialMedia} target="_blank" class="text-blue-600 hover:underline"
+							<a href={socialMedia} target="_blank" class="text-blue-600 hover:underline"
 								>Social Media</a
 							>
 						{/if}
