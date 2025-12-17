@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ locals }) => {
         "total": count(*[_type == "review"]),
         "selected": count(*[_type == "review" && selection == "selected"]),
         "maybe": count(*[_type == "review" && selection == "maybe"]),
-        "rejected": count(*[_type == "review" && selection == "notSelected"])
+        "notSelected": count(*[_type == "review" && selection == "notSelected"])
       },
       "submissions": *[_type == "submission"]{
         categories,

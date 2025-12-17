@@ -143,15 +143,15 @@
 								class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset
                             {s.mySelection === 'selected'
 									? 'bg-green-50 text-green-700 ring-green-600/20'
-									: s.mySelection === 'rejected'
+									: s.mySelection === 'notSelected'
 										? 'bg-red-50 text-red-700 ring-red-600/20'
 										: 'bg-gray-50 text-gray-600 ring-gray-500/10'}"
 							>
 								{s.mySelection === 'selected'
 									? 'Selected'
-									: s.mySelection === 'rejected'
-										? 'Rejected'
-										: 'Pending'}
+									: s.mySelection === 'notSelected'
+										? 'Not Selected'
+										: 'Maybe'}
 							</span>
 						</td>
 

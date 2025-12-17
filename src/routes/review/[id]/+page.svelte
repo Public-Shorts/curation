@@ -136,9 +136,9 @@
 			<div class="flex items-center gap-4 text-sm mb-4">
 				<span class="font-medium text-gray-900">{otherReviews.length} Total</span>
 				<span class="h-4 w-px bg-gray-200"></span>
-				<span class="text-green-700 font-medium">{approvals.length} selected</span>
-				<span class="text-yellow-700 font-medium">{maybes.length} maybe</span>
-				<span class="text-red-700 font-medium">{rejections.length} rejected</span>
+				<span class="text-green-700 font-medium">{approvals.length} Selected</span>
+				<span class="text-yellow-700 font-medium">{maybes.length} Maybe</span>
+				<span class="text-red-700 font-medium">{rejections.length} Not Selected </span>
 			</div>
 
 			<div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -157,7 +157,7 @@
 											? 'text-red-700'
 											: 'text-gray-500'}
 							>
-								{r.selection === 'notSelected' ? 'Rejected' : r.selection || '—'}
+								{r.selection === 'notSelected' ? 'Not Selected' : r.selection || '—'}
 							</span>
 							{#if r.rating != null}
 								<span class="text-gray-400">·</span>

@@ -28,10 +28,10 @@
 				<p class="mt-1 text-lg font-semibold text-yellow-700">{overall.maybe}</p>
 			</div>
 
-			<!-- Rejected -->
+			<!-- notSelected -->
 			<div class="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5">
 				<p class="text-xs uppercase text-gray-500">Not Selected</p>
-				<p class="mt-1 text-lg font-semibold text-red-700">{overall.rejected}</p>
+				<p class="mt-1 text-lg font-semibold text-red-700">{overall.notSelected}</p>
 			</div>
 
 			<!-- Approval Rate -->
