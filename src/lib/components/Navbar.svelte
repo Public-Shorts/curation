@@ -19,6 +19,7 @@
 
 			<a class="uppercase hover:text-gray-900" href="/">Home</a>
 			<a class="uppercase hover:text-gray-900" href="/stats">Stats</a>
+			<a class="uppercase hover:text-gray-900" href="/selection">Selection</a>
 		</div>
 
 		<div class="flex items-center gap-4 text-xs font-medium text-gray-600">
