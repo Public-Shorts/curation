@@ -1,4 +1,6 @@
 <script lang="ts">
+  import SelectionTag from './SelectionTag.svelte';
+
 	let { data } = $props();
 
 	const stats = data.curatorStats;
@@ -139,20 +141,7 @@
 						<!-- NOW this works because we mapped it in the script -->
 						<td class="py-2 pr-4 truncate-cell">
 							<!-- Optional: Add some styling for different states -->
-							<span
-								class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset
-                            {s.mySelection === 'selected'
-									? 'bg-green-50 text-green-700 ring-green-600/20'
-									: s.mySelection === 'notSelected'
-										? 'bg-red-50 text-red-700 ring-red-600/20'
-										: 'bg-gray-50 text-gray-600 ring-gray-500/10'}"
-							>
-								{s.mySelection === 'selected'
-									? 'Selected'
-									: s.mySelection === 'notSelected'
-										? 'Not Selected'
-										: 'Maybe'}
-							</span>
+							<SelectionTag selection={s.mySelection} />
 						</td>
 
 						<td class="py-2 pr-2">

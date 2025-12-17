@@ -2,6 +2,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { getToastMessages } from '$lib/toast/toastMessages.svelte';
+	import SelectionTag from '../../SelectionTag.svelte';
 
 	type Tag = {
 		_type?: 'tag';
@@ -25,7 +26,7 @@
 		(r: any) => r.selection === 'notSelected'
 	);
 
-	const allTags: Tag[] = data.allTags ?? [];
+	const allTags: Tag[] = $derived((data.allTags ?? []).sort((a, b) => a.label.localeCompare(b.label)));
 	const toastMessages = getToastMessages();
 
 	let submitting = $state(false);
@@ -68,7 +69,7 @@
 		if (i !== -1) selectedTags.splice(i, 1);
 	}
 
-	const socialMedia : string = $derived(() => {
+	const socialMedia = $derived(() => {
 		if (submission.socialMedia?.startsWith('http')) {
 			return submission.socialMedia;
 		} else if (submission.socialMedia?.startsWith('@')) {
@@ -148,17 +149,7 @@
 					>
 						<span class="font-medium text-gray-900">{r.curator?.name ?? 'Curator'}</span>
 						<div class="flex items-center gap-2">
-							<span
-								class={r.selection === 'selected'
-									? 'text-green-700'
-									: r.selection === 'maybe'
-										? 'text-yellow-700'
-										: r.selection === 'notSelected'
-											? 'text-red-700'
-											: 'text-gray-500'}
-							>
-								{r.selection === 'notSelected' ? 'Not Selected' : r.selection || '—'}
-							</span>
+							<SelectionTag selection={r.selection} />
 							{#if r.rating != null}
 								<span class="text-gray-400">·</span>
 								<span class="font-medium text-gray-700">{r.rating}</span>
@@ -340,9 +331,12 @@
 				<!-- Left Column -->
 				<div class="space-y-6">
 					<div>
-						<label for="selection" class="block text-sm font-medium text-gray-700 mb-2"
-							>Selection Status</label
-						>
+						<label
+							for="selection"
+							class="flex gap-2 items-center text-sm font-medium text-gray-700 mb-2"
+							><p>Selection Status</p>
+							<!-- <SelectionTag selection={review.selection} /> -->
+						</label>
 						<select
 							id="selection"
 							name="selection"
