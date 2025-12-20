@@ -69,13 +69,14 @@
 		if (i !== -1) selectedTags.splice(i, 1);
 	}
 
-	const socialMedia = $derived(() => {
+	const socialMedia: string | null = $derived.by(() => {
+		if (submission.socialMedia == null) return null;
 		if (submission.socialMedia?.startsWith('http')) {
-			return submission.socialMedia;
+			return submission.socialMedia ? submission.socialMedia : null;
 		} else if (submission.socialMedia?.startsWith('@')) {
-			return `https://instagram.com/${submission.socialMedia.slice(1)}`;
+			return 'https://instagram.com/' + submission.socialMedia.slice(1);
 		} else if (submission.socialMedia) {
-			return `https://instagram.com/${submission.socialMedia}`;
+			return 'https://instagram.com/' + submission.socialMedia;
 		}
 		return null;
 	});
