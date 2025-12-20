@@ -4,29 +4,31 @@
 	import { getToastMessages } from '$lib/toast/toastMessages.svelte';
 	import SelectionTag from '../../SelectionTag.svelte';
 
-	type Tag = {
-		_type?: 'tag';
-		_key?: string;
-		label: string;
-		value: string;
-	};
-
 	let { data } = $props();
 	const submission = data.submission;
 	const review = data.myReview ?? {};
 	const otherReviews = data.otherReviews ?? [];
 
-	const approvals = otherReviews.filter(
-		(r: any) => r.selection === 'selected'
-	);
-	const maybes = otherReviews.filter(
-		(r: any) => r.selection === 'maybe'
-	);
-	const rejections = otherReviews.filter(
-		(r: any) => r.selection === 'notSelected'
-	);
+	const approvals = otherReviews.filter((r: any) => r.selection === 'selected');
+	const maybes = otherReviews.filter((r: any) => r.selection === 'maybe');
+	const rejections = otherReviews.filter((r: any) => r.selection === 'notSelected');
 
-	const allTags: Tag[] = $derived((data.allTags ?? []).sort((a, b) => a.label.localeCompare(b.label)));
+	// in +page.svelte
+	type Tag = { label: string; value: string };
+
+	const allTags: Tag[] = $derived.by(() => {
+		const raw = (data.allTags ?? []) as Tag[];
+
+		const map = new Map<string, Tag>();
+		for (const tag of raw) {
+			if (!map.has(tag.value)) {
+				map.set(tag.value, tag);
+			}
+		}
+
+		return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
+	});
+
 	const toastMessages = getToastMessages();
 
 	let submitting = $state(false);
@@ -39,9 +41,7 @@
 	const filteredTags = $derived(
 		allTags
 			.filter((t) => !selectedTags.some((s) => s.value === t.value))
-			.filter((t) =>
-				search ? t.label.toLowerCase().includes(search.toLowerCase()) : true
-			)
+			.filter((t) => (search ? t.label.toLowerCase().includes(search.toLowerCase()) : true))
 			.slice(0, 50)
 	);
 
@@ -74,8 +74,7 @@
 			return submission.socialMedia;
 		} else if (submission.socialMedia?.startsWith('@')) {
 			return `https://instagram.com/${submission.socialMedia.slice(1)}`;
-		} 
-		else if (submission.socialMedia) {
+		} else if (submission.socialMedia) {
 			return `https://instagram.com/${submission.socialMedia}`;
 		}
 		return null;

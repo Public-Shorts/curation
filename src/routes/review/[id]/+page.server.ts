@@ -10,57 +10,60 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	const data = await sanityClient.fetch(
 		`{
-      "submission": *[_type == "submission" && _id == $id][0]{
-        _id,
-        directorName,
-        socialMedia,
-        website,
-        originalTitle,
-        englishTitle,
-        yearOfCompletion,
-        length,
-        filmLanguage,
-        synopsis,
-        categories,
-        categoryOther,
-        explicit,
-        explicitDetails,
-        aiUsed,
-        aiExplanation,
-        additionalInfo,
-        previousScreenings,
-        previousScreeningLocations,
-        linkToWatch,
-		linkPassword,
-        linkToDownload,
-        screenshots,
-        poster,
-        castAndCrew,
-        thanks,
-        specialRequirements
-      },
-      "myReview": *[_type == "review" && film._ref == $id && curator._ref == $curatorId][0]{
-        _id,
-        selection,
-        rating,
-        tags,
-        suggestedGenre,
-        contentNotes,
-        additionalComments
-      },
-      "otherReviews": *[_type == "review" && film._ref == $id && curator._ref != $curatorId]{
-        _id,
-        selection,
-        rating,
-        curator->{
-          _id,
-          name
-        }
-      },
-      "allTags": array::unique(
-        *[_type == "review" && defined(tags)].tags[]
-      )
-    }`,
+            "submission": *[_type == "submission" && _id == $id][0]{
+                _id,
+                directorName,
+                socialMedia,
+                website,
+                originalTitle,
+                englishTitle,
+                yearOfCompletion,
+                length,
+                filmLanguage,
+                synopsis,
+                categories,
+                categoryOther,
+                explicit,
+                explicitDetails,
+                aiUsed,
+                aiExplanation,
+                additionalInfo,
+                previousScreenings,
+                previousScreeningLocations,
+                linkToWatch,
+                linkPassword,
+                linkToDownload,
+                screenshots,
+                poster,
+                castAndCrew,
+                thanks,
+                specialRequirements
+            },
+            "myReview": *[_type == "review" && film._ref == $id && curator._ref == $curatorId][0]{
+                _id,
+                selection,
+                rating,
+                tags,
+                suggestedGenre,
+                contentNotes,
+                additionalComments
+            },
+            "otherReviews": *[_type == "review" && film._ref == $id && curator._ref != $curatorId]{
+                _id,
+                selection,
+                rating,
+                curator->{
+                    _id,
+                    name
+                }
+            },
+            "allTags": array::unique(
+                *[_type == "review" && defined(tags)].tags[]{
+                    label,
+                    value
+                }
+            )
+        }`,
 		{ id, curatorId }
 	);
 
