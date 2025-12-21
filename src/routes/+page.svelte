@@ -1,5 +1,5 @@
 <script lang="ts">
-  import SelectionTag from './SelectionTag.svelte';
+	import SelectionTag from './SelectionTag.svelte';
 
 	let { data } = $props();
 
@@ -20,32 +20,33 @@
 
 	let sortKey: SortKey = '_createdAt';
 	let sortDir: SortDir = 'desc';
+	let yourReviewsExpanded = $state(false);
 
 	const totalMinutes = data.submissions.reduce((total, s) => {
-        const hasReviewed = s.reviews?.some((r) => r.curator?._id === curator?._id);
-        // Ensure length is treated as a number; default to 0 if missing
-        return hasReviewed ? total + (Number(s.length) || 0) : total;
-    }, 0);
+		const hasReviewed = s.reviews?.some((r) => r.curator?._id === curator?._id);
+		// Ensure length is treated as a number; default to 0 if missing
+		return hasReviewed ? total + (Number(s.length) || 0) : total;
+	}, 0);
 
-    // Optional: Format helper
-    const hours = Math.floor(totalMinutes / 60);
-    const mins = totalMinutes % 60;
-    const timeDisplay = hours > 0 ? `${hours}h ${mins}min` : `${mins}min`;
+	// Optional: Format helper
+	const hours = Math.floor(totalMinutes / 60);
+	const mins = totalMinutes % 60;
+	const timeDisplay = hours > 0 ? `${hours}h ${mins}min` : `${mins}min`;
 
 	const submissions = $state(
-        data.submissions.map((s) => {
-            // Find the review belonging to the current curator
-            const myReview = s.reviews?.find((r) => r.curator?._id === curator?._id);
-            
-            return {
-                ...s,
-                reviewsCount: s.reviews?.length ?? 0,
-                // Add these helper properties for easy access in the HTML
-                mySelection: myReview?.selection ?? 'Pending', 
-                hasReviewed: !!myReview
-            };
-        })
-    );
+		data.submissions.map((s) => {
+			// Find the review belonging to the current curator
+			const myReview = s.reviews?.find((r) => r.curator?._id === curator?._id);
+
+			return {
+				...s,
+				reviewsCount: s.reviews?.length ?? 0,
+				// Add these helper properties for easy access in the HTML
+				mySelection: myReview?.selection ?? 'Pending',
+				hasReviewed: !!myReview
+			};
+		})
+	);
 
 	function setSort(key: SortKey) {
 		if (sortKey === key) {
@@ -113,49 +114,63 @@
 </section>
 <!--Your submissions table-->
 <section class="space-y-6 pb-12">
-	<header class="flex items-center justify-between">
+	<header
+		class="flex items-center justify-between cursor-pointer"
+		role="button"
+		tabindex="0"
+		onclick={() => (yourReviewsExpanded = !yourReviewsExpanded)}
+		onkeydown={(e) =>
+			(e.key === 'Enter' || e.key === ' ') && (yourReviewsExpanded = !yourReviewsExpanded)}
+	>
 		<h2 class="text-2xl font-semibold">Your reviews</h2>
-		<p class="text-sm text-gray-500">Total: {submissions.filter((s) => s.hasReviewed).length}</p>
-	</header>
-	{#if submissions.filter((s) => s.hasReviewed).length === 0}
-		<div class="rounded-lg bg-gray-50 p-8 text-center">
-			<p class="text-gray-500">You haven't reviewed any submissions yet.</p>
+		<div class="flex items-center gap-2">
+			<p class="text-sm text-gray-500">
+				Total: {submissions.filter((s: any) => s.hasReviewed).length}
+			</p>
+			<span class="text-gray-400">{yourReviewsExpanded ? '▼' : '▶'}</span>
 		</div>
-	{:else}
-		<table class="w-full text-left text-sm">
-			<thead class="border-b text-[10px] uppercase text-gray-500">
-				<tr>
-					<th class="py-2">Title</th>
-					<th class="py-2">Selection</th>
-					<th class="py-2">Review</th>
-				</tr>
-			</thead>
-			<tbody>
-				<!-- Filter using the helper property we created -->
-				{#each submissions.filter((s) => s.hasReviewed) as s}
-					<tr class="border-b last:border-0 align-top">
-						<td class="py-2 pr-4 truncate-cell" title={s.englishTitle}>
-							{s.englishTitle}
-						</td>
-
-						<!-- NOW this works because we mapped it in the script -->
-						<td class="py-2 pr-4 truncate-cell">
-							<!-- Optional: Add some styling for different states -->
-							<SelectionTag selection={s.mySelection} />
-						</td>
-
-						<td class="py-2 pr-2">
-							<a
-								href={`/review/${s._id}`}
-								class="rounded border border-gray-300 px-2 py-1 text-xs font-medium hover:bg-gray-100"
-							>
-								Edit Review
-							</a>
-						</td>
+	</header>
+	{#if yourReviewsExpanded}
+		{#if submissions.filter((s: any) => s.hasReviewed).length === 0}
+			<div class="rounded-lg bg-gray-50 p-8 text-center">
+				<p class="text-gray-500">You haven't reviewed any submissions yet.</p>
+			</div>
+		{:else}
+			<table class="w-full text-left text-sm">
+				<thead class="border-b text-[10px] uppercase text-gray-500">
+					<tr>
+						<th class="py-2">Title</th>
+						<th class="py-2">Selection</th>
+						<th class="py-2">Review</th>
 					</tr>
-				{/each}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					<!-- Filter using the helper property we created -->
+					{#each submissions.filter((s: any) => s.hasReviewed) as s}
+						<tr class="border-b last:border-0 align-top">
+							<td class="py-2 pr-4 truncate-cell" title={s.englishTitle}>
+								{s.englishTitle}
+							</td>
+
+							<!-- NOW this works because we mapped it in the script -->
+							<td class="py-2 pr-4 truncate-cell">
+								<!-- Optional: Add some styling for different states -->
+								<SelectionTag selection={s.mySelection} />
+							</td>
+
+							<td class="py-2 pr-2">
+								<a
+									href={`/review/${s._id}`}
+									class="rounded border border-gray-300 px-2 py-1 text-xs font-medium hover:bg-gray-100"
+								>
+									Edit Review
+								</a>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{/if}
 	{/if}
 </section>
 <!--All Submissions table -->
@@ -180,15 +195,15 @@
 
 		<tbody>
 			{#each submissions as s}
-				<tr class="border-b last:border-0 align-center">
+				<tr class="border-b last:border-0 align-center" class:opacity-50={s.hasReviewed}>
 					<td class="py-2 pr-4 truncate-cell" title={s.englishTitle}>{s.englishTitle}</td>
 					<td class="py-2 pr-4 truncate-cell" title={s.filmLanguage}>{s.filmLanguage}</td>
 					<td
 						class="py-2 pr-4 truncate-cell"
-						title={s.categories?.map((c) => c).join(', ') +
+						title={s.categories?.map((c: string) => c).join(', ') +
 							(s.categories?.includes('other') && s.categoryOther ? `, ${s.categoryOther}` : '')}
 					>
-						{s.categories?.map((c) => c).join(', ') +
+						{s.categories?.map((c: string) => c).join(', ') +
 							(s.categories?.includes('other') && s.categoryOther ? `, ${s.categoryOther}` : '')}
 					</td>
 					<td class="py-2 pr-4 truncate-cell" title={s.length}>{s.length}</td>
@@ -200,13 +215,20 @@
 					</td>
 					<td
 						class="py-2 pr-4 truncate-cell"
-						title={s.reviews?.map((r) => r.curator?.name).join(', ') || 'No reviews yet'}
+						title={s.reviews?.map((r: any) => r.curator?.name).join(', ') || 'No reviews yet'}
 					>
 						{#if s.reviews?.length}
 							<span class="py-0.5 px-1.5 bg-white rounded-full">{s.reviews.length}</span>
-							{s.reviews.map((r) => r.curator?.name).join(', ')}
+							{s.reviews.map((r: any) => r.curator?.name).join(', ')}
 						{:else}
 							<span class=" text-gray-400">No reviews yet</span>
+						{/if}
+					</td>
+					<td class="py-2 pr-4 text-center">
+						{#if s.hasReviewed}
+							<span class="text-green-600">✓</span>
+						{:else}
+							<span class="text-gray-300">—</span>
 						{/if}
 					</td>
 					<td class="py-2">

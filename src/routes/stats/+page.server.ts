@@ -16,11 +16,15 @@ export const load: PageServerLoad = async ({ locals }) => {
         "total": count(*[_type == "review"]),
         "selected": count(*[_type == "review" && selection == "selected"]),
         "maybe": count(*[_type == "review" && selection == "maybe"]),
-        "notSelected": count(*[_type == "review" && selection == "notSelected"])
+        "notSelected": count(*[_type == "review" && selection == "notSelected"]),
+        "totalSubmissions": count(*[_type == "submission"]),
+        "reviewedSubmissions": count(*[_type == "submission" && count(*[_type == "review" && film._ref == ^._id]) > 0])
       },
-      "submissions": *[_type == "submission"]{
+      "submissions": *[_type == "submission"]|order(_createdAt asc){
+        _createdAt,
         categories,
-        categoryOther
+        categoryOther,
+        length
       },
       "flagged": *[_type == "review" && defined(contentNotes) && count(contentNotes) > 0 && contentNotes[0] != "none"]{
         _id,
@@ -33,52 +37,56 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	const data = await sanityClient.fetch(query);
 
-	// Process Leaderboard: add approval rate
+	// --- Fix: Calculate Total Duration in JS instead of GROQ ---
+	const totalMinutes = data.submissions.reduce((acc: number, curr: any) => {
+		// Ensure length is treated as a number, defaulting to 0 if missing
+		return acc + (Number(curr.length) || 0);
+	}, 0);
+
+	// Process Leaderboard
 	const leaderboard = data.leaderboard
 		.map((c: any) => ({
 			...c,
 			approvalRate: c.total > 0 ? (c.selected / c.total) * 100 : 0
 		}))
-		.sort((a: any, b: any) => b.total - a.total); // Rank by total reviews by default
+		.sort((a: any, b: any) => b.total - a.total);
 
 	// Process Categories
 	const categoryCounts: Record<string, number> = {};
 	data.submissions.forEach((s: any) => {
 		const cats = s.categories || [];
-		// If "other" is in the list, try to use the specific text, or just count "Other"
-		// Adjust logic based on preference. Here I'll count all standard categories
-		// and group specific "other" inputs if needed, or just count "Other" generically.
-		// Assuming standard behavior: count each string in the array.
 		cats.forEach((cat: string) => {
-			// clean up string if needed (e.g. lowercase)
-			const key = cat === 'other' && s.categoryOther ? 'Other (' + s.categoryOther + ')' : cat;
-			// OR simpler: just use the raw category strings and group 'other' separately if desired.
-			// Let's stick to the raw strings for consistency with the form.
 			categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
 		});
 	});
 
-	// Convert categoryCounts to sorted array
 	const categoriesStats = Object.entries(categoryCounts)
 		.map(([name, count]) => ({ name, count }))
 		.sort((a, b) => b.count - a.count);
 
-	const flaggedByReason: Record<string, any[]> = {};
+	// Process Timeline Data
+	const submissionsByDate: Record<string, number> = {};
+	data.submissions.forEach((s: any) => {
+		const date = new Date(s._createdAt).toISOString().split('T')[0];
+		submissionsByDate[date] = (submissionsByDate[date] || 0) + 1;
+	});
 
+	const timelineStats = Object.entries(submissionsByDate)
+		.map(([date, count]) => ({ date, count }))
+		.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+	// Process Flagged
+	const flaggedByReason: Record<string, any[]> = {};
 	data.flagged.forEach((review: any) => {
 		review.contentNotes.forEach((note: string) => {
 			if (note === 'none') return;
-
-			// Format label (e.g. "sexualContent" -> "Sexual Content")
 			const label = note
-				.replace(/([A-Z])/g, ' $1') // Add space before capitals
-				.replace(/^./, (str) => str.toUpperCase()) // Capitalize first letter
-				.replace('Horror Disturbing Images', 'Horror / Disturbing Images') // Fix specific long ones if needed
+				.replace(/([A-Z])/g, ' $1')
+				.replace(/^./, (str) => str.toUpperCase())
+				.replace('Horror Disturbing Images', 'Horror / Disturbing Images')
 				.trim();
 
-			if (!flaggedByReason[label]) {
-				flaggedByReason[label] = [];
-			}
+			if (!flaggedByReason[label]) flaggedByReason[label] = [];
 			flaggedByReason[label].push({
 				title: review.filmTitle || 'Untitled',
 				id: review.filmId,
@@ -87,7 +95,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 		});
 	});
 
-	// Sort reasons alphabetically
 	const flaggedStats = Object.entries(flaggedByReason)
 		.sort((a, b) => a[0].localeCompare(b[0]))
 		.map(([reason, items]) => ({ reason, items }));
@@ -96,9 +103,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 		leaderboard,
 		overall: {
 			...data.overall,
+			totalMinutes, // Inject the JS-calculated sum here
 			approvalRate: data.overall.total > 0 ? (data.overall.selected / data.overall.total) * 100 : 0
 		},
 		categoriesStats,
-		flaggedStats // <--- New data
+		flaggedStats,
+		timelineStats
 	};
 };

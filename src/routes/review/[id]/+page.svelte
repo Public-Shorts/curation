@@ -82,17 +82,19 @@
 	});
 </script>
 
-<div class="max-w-4xl mx-auto space-y-8 p-6">
+<div class="max-w-4xl mx-auto space-y-8 p-4 sm:p-6">
 	<!-- Header Section -->
 	<header class="space-y-3 pb-6 border-b border-gray-100">
 		<div>
-			<h1 class="text-3xl font-semibold tracking-tight text-gray-900">{submission.englishTitle}</h1>
+			<h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
+				{submission.englishTitle}
+			</h1>
 			{#if submission.originalTitle}
-				<p class="text-gray-500 italic mt-1">{submission.originalTitle}</p>
+				<p class="text-gray-500 italic mt-1 text-sm sm:text-base">{submission.originalTitle}</p>
 			{/if}
 		</div>
 
-		<div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600">
+		<div class="flex flex-wrap gap-x-4 sm:gap-x-6 gap-y-2 text-xs sm:text-sm text-gray-600">
 			<span class="inline-flex items-center gap-1.5">
 				<span class="text-gray-400">Year:</span>
 				{submission.yearOfCompletion}
@@ -128,13 +130,13 @@
 	</header>
 
 	<!-- Other Curators Card -->
-	<section class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-900/5">
+	<section class="rounded-lg bg-white p-4 sm:p-6 shadow-sm ring-1 ring-gray-900/5">
 		<h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">Review Status</h2>
 
 		{#if otherReviews.length === 0}
 			<p class="text-sm text-gray-500 italic">No other reviews yet.</p>
 		{:else}
-			<div class="flex items-center gap-4 text-sm mb-4">
+			<div class="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm mb-4 flex-wrap">
 				<span class="font-medium text-gray-900">{otherReviews.length} Total</span>
 				<span class="h-4 w-px bg-gray-200"></span>
 				<span class="text-green-700 font-medium">{approvals.length} Selected</span>
@@ -147,8 +149,10 @@
 					<div
 						class="flex items-center justify-between rounded border border-gray-100 bg-gray-50/50 px-3 py-2 text-xs"
 					>
-						<span class="font-medium text-gray-900">{r.curator?.name ?? 'Curator'}</span>
-						<div class="flex items-center gap-2">
+						<span class="font-medium text-gray-900 truncate mr-2"
+							>{r.curator?.name ?? 'Curator'}</span
+						>
+						<div class="flex items-center gap-2 shrink-0">
 							<SelectionTag selection={r.selection} />
 							{#if r.rating != null}
 								<span class="text-gray-400">·</span>
@@ -162,7 +166,7 @@
 	</section>
 
 	<!-- Info Grid -->
-	<div class="grid gap-8 lg:grid-cols-2">
+	<div class="grid gap-6 sm:gap-8 lg:grid-cols-2">
 		<!-- Credits -->
 		<section class="space-y-4">
 			<h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 border-b pb-2">
@@ -188,13 +192,15 @@
 				{#if submission.socialMedia || submission.website}
 					<div class="pt-2 flex flex-col gap-1">
 						{#if submission.socialMedia}
-							<a href={socialMedia} target="_blank" class="text-blue-600 hover:underline"
+							<a href={socialMedia} target="_blank" class="text-blue-600 hover:underline break-all"
 								>Social Media</a
 							>
 						{/if}
 						{#if submission.website}
-							<a href={submission.website} target="_blank" class="text-blue-600 hover:underline"
-								>Website</a
+							<a
+								href={submission.website}
+								target="_blank"
+								class="text-blue-600 hover:underline break-all">Website</a
 							>
 						{/if}
 					</div>
@@ -221,13 +227,13 @@
 					</div>
 				{/if}
 
-				<div class="flex gap-4 pt-2">
+				<div class="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
 					{#if submission.linkToWatch}
 						<a
 							href={submission.linkToWatch}
 							target="_blank"
 							rel="noreferrer"
-							class="inline-flex items-center rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 ring-1 ring-inset ring-blue-700/10 transition-colors"
+							class="inline-flex items-center justify-center rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 ring-1 ring-inset ring-blue-700/10 transition-colors"
 						>
 							Watch Film ↗
 						</a>
@@ -237,14 +243,14 @@
 							href={submission.linkToDownload}
 							target="_blank"
 							rel="noreferrer"
-							class="inline-flex items-center rounded-md bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 ring-1 ring-inset ring-gray-600/10 transition-colors"
+							class="inline-flex items-center justify-center rounded-md bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 ring-1 ring-inset ring-gray-600/10 transition-colors"
 						>
 							Download ↗
 						</a>
 					{/if}
 				</div>
 				{#if submission.linkPassword}
-					<p class="text-xs text-gray-500 mt-1">Password: {submission.linkPassword}</p>
+					<p class="text-xs text-gray-500 mt-1 break-all">Password: {submission.linkPassword}</p>
 				{/if}
 			</dl>
 		</section>
@@ -256,29 +262,31 @@
 			<h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 border-b pb-2">
 				Synopsis
 			</h2>
-			<p class="text-sm leading-relaxed text-gray-700 max-w-3xl">{submission.synopsis}</p>
+			<p class="text-sm leading-relaxed text-gray-700">{submission.synopsis}</p>
 		</section>
 	{/if}
 
 	<!-- Technical / Content -->
-	<div class="grid gap-8 lg:grid-cols-2 rounded-lg bg-gray-50 p-6 border border-gray-100">
+	<div
+		class="grid gap-6 sm:gap-8 lg:grid-cols-2 rounded-lg bg-gray-50 p-4 sm:p-6 border border-gray-100"
+	>
 		<div class="space-y-3">
 			<h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500">Content Notes</h3>
 			<dl class="space-y-2 text-sm">
 				<div class="flex gap-2">
-					<dt class="font-medium text-gray-900 min-w-24">Explicit:</dt>
+					<dt class="font-medium text-gray-900 min-w-20 sm:min-w-24">Explicit:</dt>
 					<dd class="text-gray-600">{submission.explicit ? 'Yes' : 'No'}</dd>
 				</div>
 				{#if submission.explicitDetails}
-					<dd class="text-gray-500 italic pl-26 text-xs">{submission.explicitDetails}</dd>
+					<dd class="text-gray-500 italic text-xs pl-0 sm:pl-24">{submission.explicitDetails}</dd>
 				{/if}
 
 				<div class="flex gap-2 mt-2">
-					<dt class="font-medium text-gray-900 min-w-24">AI Used:</dt>
+					<dt class="font-medium text-gray-900 min-w-20 sm:min-w-24">AI Used:</dt>
 					<dd class="text-gray-600">{submission.aiUsed ? 'Yes' : 'No'}</dd>
 				</div>
 				{#if submission.aiExplanation}
-					<dd class="text-gray-500 italic pl-26 text-xs">{submission.aiExplanation}</dd>
+					<dd class="text-gray-500 italic text-xs pl-0 sm:pl-24">{submission.aiExplanation}</dd>
 				{/if}
 			</dl>
 		</div>
@@ -303,12 +311,12 @@
 	</div>
 
 	<!-- Review Form -->
-	<section class="mt-12 border-t pt-8">
-		<h2 class="text-xl font-semibold mb-6">Your Review</h2>
+	<section class="mt-8 sm:mt-12 border-t pt-6 sm:pt-8">
+		<h2 class="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">Your Review</h2>
 
 		<form
 			method="POST"
-			class="bg-white rounded-xl shadow-sm ring-1 ring-gray-900/5 p-6 md:p-8 space-y-8"
+			class="bg-white rounded-xl shadow-sm ring-1 ring-gray-900/5 p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8"
 			use:enhance={() => {
 				submitting = true;
 				return async ({ result }) => {
@@ -327,7 +335,7 @@
 				};
 			}}
 		>
-			<div class="grid gap-8 md:grid-cols-2">
+			<div class="grid gap-6 sm:gap-8 md:grid-cols-2">
 				<!-- Left Column -->
 				<div class="space-y-6">
 					<div>
@@ -340,7 +348,7 @@
 						<select
 							id="selection"
 							name="selection"
-							class="w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm py-2.5"
+							class="w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black text-sm sm:text-base py-2.5"
 							value={review.selection}
 							required
 						>
@@ -357,7 +365,7 @@
 						<select
 							id="suggestedGenre"
 							name="suggestedGenre"
-							class="w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm py-2.5"
+							class="w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black text-sm sm:text-base py-2.5"
 							value={review.suggestedGenre}
 						>
 							<option selected value="">– Select Genre –</option>
@@ -381,7 +389,7 @@
 							step="0.5"
 							min="0"
 							max="5"
-							class="w-24 rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm py-2.5"
+							class="w-24 rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black text-sm sm:text-base py-2.5"
 							value={review.rating}
 							required
 						/>
@@ -392,16 +400,16 @@
 				<div class="space-y-6">
 					<div>
 						<span class="block text-sm font-medium text-gray-700 mb-3">Content Notes</span>
-						<div class="grid grid-cols-2 gap-3">
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
 							{#each [{ val: 'violence', label: 'Violence' }, { val: 'sexualContent', label: 'Sexual Content' }, { val: 'strongLanguage', label: 'Strong Language' }, { val: 'drugAlcoholUse', label: 'Drug/Alcohol' }, { val: 'horrorDisturbingImages', label: 'Horror/Disturbing' }, { val: 'sensitiveThemes', label: 'Sensitive Themes' }] as item}
 								<label
-									class="flex items-center gap-3 p-2 rounded border border-gray-100 bg-gray-50/50 hover:bg-gray-50 cursor-pointer"
+									class="flex items-center gap-3 p-2.5 sm:p-2 rounded border border-gray-100 bg-gray-50/50 hover:bg-gray-50 cursor-pointer"
 								>
 									<input
 										type="checkbox"
 										name="contentNotes"
 										value={item.val}
-										class="h-4 w-4 rounded border-gray-300 text-black focus:ring-black"
+										class="h-4 w-4 rounded border-gray-300 text-black focus:ring-black shrink-0"
 										checked={review.contentNotes?.includes(item.val)}
 									/>
 									<span class="text-sm text-gray-700">{item.label}</span>
@@ -488,7 +496,7 @@
 					id="additionalComments"
 					name="additionalComments"
 					rows="4"
-					class="w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-3"
+					class="w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black text-sm sm:text-base p-3"
 					placeholder="Private notes for the team...">{review.additionalComments}</textarea
 				>
 			</div>
@@ -496,7 +504,7 @@
 			<div class="pt-4 flex items-center justify-end border-t border-gray-100">
 				<button
 					type="submit"
-					class="inline-flex justify-center rounded-lg bg-black px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+					class="w-full sm:w-auto inline-flex justify-center rounded-lg bg-black px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:opacity-50 disabled:cursor-not-allowed transition-all"
 					disabled={submitting}
 				>
 					{submitting ? 'Saving Review...' : 'Save Review'}

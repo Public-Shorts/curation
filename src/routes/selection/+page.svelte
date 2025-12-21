@@ -1,76 +1,78 @@
 <script lang="ts">
-    let { data } = $props();
-    
-    // State
-    let activeCategories = $state<string[]>([]);
-    let activeCuratorTags = $state<string[]>([]); // New state for curator tags
-    
-    let sortKey = $state('approvalRate');
-    let sortDir = $state<'asc' | 'desc'>('desc');
+	let { data } = $props();
 
-    // Derived: Filter and Sort
-    let filteredMovies = $derived.by(() => {
-        let result = data.movies.filter((movie: any) => {
-            // 1. Filter by Submission Categories
-            if (activeCategories.length > 0) {
-                const hasAllCategories = activeCategories.every(tag => movie.displayCategories.includes(tag));
-                if (!hasAllCategories) return false;
-            }
+	// State
+	let activeCategories = $state<string[]>([]);
+	let activeCuratorTags = $state<string[]>([]); // New state for curator tags
 
-            // 2. Filter by Curator Tags (New)
-            if (activeCuratorTags.length > 0) {
-                const hasAllTags = activeCuratorTags.every(tag => movie.curatorTags.includes(tag));
-                if (!hasAllTags) return false;
-            }
+	let sortKey = $state('approvalRate');
+	let sortDir = $state<'asc' | 'desc'>('desc');
 
-            return true;
-        });
+	// Derived: Filter and Sort
+	let filteredMovies = $derived.by(() => {
+		let result = data.movies.filter((movie: any) => {
+			// 1. Filter by Submission Categories
+			if (activeCategories.length > 0) {
+				const hasAllCategories = activeCategories.every((tag) =>
+					movie.displayCategories.includes(tag)
+				);
+				if (!hasAllCategories) return false;
+			}
 
-        // 3. Sort
-        return result.sort((a: any, b: any) => {
-            let av = a[sortKey];
-            let bv = b[sortKey];
+			// 2. Filter by Curator Tags (New)
+			if (activeCuratorTags.length > 0) {
+				const hasAllTags = activeCuratorTags.every((tag) => movie.curatorTags.includes(tag));
+				if (!hasAllTags) return false;
+			}
 
-            if (typeof av === 'string') av = av.toLowerCase();
-            if (typeof bv === 'string') bv = bv.toLowerCase();
+			return true;
+		});
 
-            if (av < bv) return sortDir === 'asc' ? -1 : 1;
-            if (av > bv) return sortDir === 'asc' ? 1 : -1;
-            return 0;
-        });
-    });
+		// 3. Sort
+		return result.sort((a: any, b: any) => {
+			let av = a[sortKey];
+			let bv = b[sortKey];
 
-    // Helpers
-    function toggleCategory(cat: string) {
-        if (activeCategories.includes(cat)) {
-            activeCategories = activeCategories.filter(c => c !== cat);
-        } else {
-            activeCategories = [...activeCategories, cat];
-        }
-    }
+			if (typeof av === 'string') av = av.toLowerCase();
+			if (typeof bv === 'string') bv = bv.toLowerCase();
 
-    function toggleCuratorTag(tag: string) {
-        if (activeCuratorTags.includes(tag)) {
-            activeCuratorTags = activeCuratorTags.filter(t => t !== tag);
-        } else {
-            activeCuratorTags = [...activeCuratorTags, tag];
-        }
-    }
+			if (av < bv) return sortDir === 'asc' ? -1 : 1;
+			if (av > bv) return sortDir === 'asc' ? 1 : -1;
+			return 0;
+		});
+	});
 
-    function setSort(key: string) {
-        if (sortKey === key) {
-            sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-        } else {
-            sortKey = key;
-            sortDir = ['englishTitle', 'filmLanguage'].includes(key) ? 'asc' : 'desc';
-        }
-    }
+	// Helpers
+	function toggleCategory(cat: string) {
+		if (activeCategories.includes(cat)) {
+			activeCategories = activeCategories.filter((c) => c !== cat);
+		} else {
+			activeCategories = [...activeCategories, cat];
+		}
+	}
 
-    const getScoreColor = (score: number) => {
-        if (score >= 75) return 'bg-green-500';
-        if (score >= 50) return 'bg-yellow-500';
-        return 'bg-red-500';
-    };
+	function toggleCuratorTag(tag: string) {
+		if (activeCuratorTags.includes(tag)) {
+			activeCuratorTags = activeCuratorTags.filter((t) => t !== tag);
+		} else {
+			activeCuratorTags = [...activeCuratorTags, tag];
+		}
+	}
+
+	function setSort(key: string) {
+		if (sortKey === key) {
+			sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+		} else {
+			sortKey = key;
+			sortDir = ['englishTitle', 'filmLanguage'].includes(key) ? 'asc' : 'desc';
+		}
+	}
+
+	const getScoreColor = (score: number) => {
+		if (score >= 75) return 'bg-green-500';
+		if (score >= 50) return 'bg-yellow-500';
+		return 'bg-red-500';
+	};
 </script>
 
 <div class="p-6 max-w-7xl mx-auto space-y-8">
@@ -123,14 +125,16 @@
 			</h3>
 			<div class="flex flex-wrap gap-2">
 				{#each data.allCuratorTags as tag}
+					{@const count = data.movies.filter((m) => m.curatorTags.includes(tag)).length}
 					<button
 						onclick={() => toggleCuratorTag(tag)}
-						class="px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 border
-                        {activeCuratorTags.includes(tag)
+						class="pl-3 pr-1 py-1 rounded-full flex items-center gap-2 text-xs font-medium transition-all duration-200 border
+						{activeCuratorTags.includes(tag)
 							? 'bg-blue-600 text-white border-blue-600'
 							: 'bg-blue-50 text-blue-700 border-blue-100 hover:border-blue-300'}"
 					>
 						{tag}
+						<span class="p-0.5 text-xs w-2 rounded-full bg-blue-100 opacity-60">{count}</span>
 					</button>
 				{/each}
 				{#if activeCuratorTags.length === 0 && data.allCuratorTags.length === 0}
@@ -160,6 +164,12 @@
 						Title {sortKey === 'englishTitle' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
 					</th>
 					<th
+						class="py-3 px-2 w-20 cursor-pointer hover:text-gray-900"
+						onclick={() => setSort('reviewsCount')}
+					>
+						Reviews {sortKey === 'reviewsCount' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+					</th>
+					<th
 						class="py-3 px-2 w-32 cursor-pointer hover:text-gray-900"
 						onclick={() => setSort('approvalRate')}
 					>
@@ -172,6 +182,7 @@
 						Avg Rating {sortKey === 'averageRating' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
 					</th>
 					<th class="py-3 px-2">Categories & Tags</th>
+					<th class="py-3 px-2 w-24">Action</th>
 				</tr>
 			</thead>
 			<tbody class="divide-y divide-gray-100">
@@ -185,6 +196,15 @@
 							<div class="text-xs text-gray-400 font-normal mt-0.5">
 								{movie.filmLanguage} · {movie.length}m
 							</div>
+						</td>
+
+						<!-- Reviews Count -->
+						<td class="py-3 px-2 align-top pt-3.5">
+							<span
+								class="inline-flex items-center justify-center px-2 py-1 rounded-full bg-gray-100 text-xs font-semibold text-gray-700"
+							>
+								{movie.reviewsCount}
+							</span>
 						</td>
 
 						<!-- Approval -->
@@ -241,6 +261,16 @@
 									</div>
 								{/if}
 							</div>
+						</td>
+
+						<!-- Action Button -->
+						<td class="py-3 px-2 align-top pt-3">
+							<a
+								href="/review/{movie._id}"
+								class="inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors"
+							>
+								Review
+							</a>
 						</td>
 					</tr>
 				{/each}
