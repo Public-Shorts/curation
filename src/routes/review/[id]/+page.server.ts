@@ -48,10 +48,14 @@ export const load: PageServerLoad = async ({ params, locals }) => {
                 contentNotes,
                 additionalComments
             },
-            "otherReviews": *[_type == "review" && film._ref == $id && curator._ref != $curatorId]{
+             "allReviews": *[_type == "review" && film._ref == $id]{
                 _id,
                 selection,
                 rating,
+                tags[] { label, value }, // explicitly fetch tags array
+                suggestedGenre,           // fetch genre
+                contentNotes,             // fetch content notes
+                additionalComments,       // fetch comments
                 curator->{
                     _id,
                     name
