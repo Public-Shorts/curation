@@ -1,3 +1,4 @@
+// src/routes/stats/+page.server.ts
 import { redirect } from '@sveltejs/kit';
 import { sanityClient } from '$lib/server/sanity';
 import type { PageServerLoad } from './$types';
@@ -10,7 +11,11 @@ export const load: PageServerLoad = async ({ locals }) => {
         _id,
         name,
         "total": count(*[_type == "review" && curator._ref == ^._id]),
-        "selected": count(*[_type == "review" && curator._ref == ^._id && selection == "selected"])
+        "selected": count(*[_type == "review" && curator._ref == ^._id && selection == "selected"]),
+        
+        // 1. FETCH THE RAW LENGTHS INSTEAD OF SUMMING
+        // We get an array of lengths for all films this curator reviewed
+        "filmLengths": *[_type == "review" && curator._ref == ^._id].film->length
       },
       "overall": {
         "total": count(*[_type == "review"]),
@@ -18,7 +23,8 @@ export const load: PageServerLoad = async ({ locals }) => {
         "maybe": count(*[_type == "review" && selection == "maybe"]),
         "notSelected": count(*[_type == "review" && selection == "notSelected"]),
         "totalSubmissions": count(*[_type == "submission"]),
-        "reviewedSubmissions": count(*[_type == "submission" && count(*[_type == "review" && film._ref == ^._id]) > 0])
+        "reviewedSubmissions": count(*[_type == "submission" && count(*[_type == "review" && film._ref == ^._id]) > 0]),
+        "reviewedAtLeastTwice": count(*[_type == "submission" && count(*[_type == "review" && film._ref == ^._id]) >= 2])
       },
       "submissions": *[_type == "submission"]|order(_createdAt asc){
         _createdAt,
@@ -37,20 +43,30 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	const data = await sanityClient.fetch(query);
 
-	// --- Fix: Calculate Total Duration in JS instead of GROQ ---
+	// Calculate Global Total Duration in JS
 	const totalMinutes = data.submissions.reduce((acc: number, curr: any) => {
-		// Ensure length is treated as a number, defaulting to 0 if missing
 		return acc + (Number(curr.length) || 0);
 	}, 0);
 
 	// Process Leaderboard
 	const leaderboard = data.leaderboard
-		.map((c: any) => ({
-			...c,
-			approvalRate: c.total > 0 ? (c.selected / c.total) * 100 : 0
-		}))
+		.map((c: any) => {
+			// 2. CALCULATE SUM IN JS
+			// Sum up the filmLengths array we fetched
+			const curatorTotalMinutes = (c.filmLengths || []).reduce(
+				(acc: number, len: any) => acc + (Number(len) || 0),
+				0
+			);
+
+			return {
+				...c,
+				totalMinutes: curatorTotalMinutes,
+				approvalRate: c.total > 0 ? (c.selected / c.total) * 100 : 0
+			};
+		})
 		.sort((a: any, b: any) => b.total - a.total);
 
+	// ... (Rest of your processing logic for categories, timeline, flagged remains unchanged) ...
 	// Process Categories
 	const categoryCounts: Record<string, number> = {};
 	data.submissions.forEach((s: any) => {
@@ -103,7 +119,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		leaderboard,
 		overall: {
 			...data.overall,
-			totalMinutes, // Inject the JS-calculated sum here
+			totalMinutes,
 			approvalRate: data.overall.total > 0 ? (data.overall.selected / data.overall.total) * 100 : 0
 		},
 		categoriesStats,

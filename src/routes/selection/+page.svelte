@@ -1,4 +1,6 @@
 <script lang="ts">
+	import FilterDropdown from '$lib/components/FilterDropdown.svelte';
+
 	let { data } = $props();
 
 	// State
@@ -73,82 +75,48 @@
 		if (score >= 50) return 'bg-yellow-500';
 		return 'bg-red-500';
 	};
+	 
+    let hasActiveFilters = $derived(activeCategories.length > 0 || activeCuratorTags.length > 0);
 </script>
 
 <div class="p-6 max-w-7xl mx-auto space-y-8">
-	<header class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+	<header
+		class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 pb-6"
+	>
 		<div>
 			<h1 class="text-3xl font-bold tracking-tight text-gray-900">Final Selection</h1>
 			<p class="text-sm text-gray-500 mt-1">
 				Showing {filteredMovies.length} of {data.movies.length} submissions
 			</p>
 		</div>
-		<div class="flex items-center gap-2 text-sm text-gray-600">
-			<span
-				>Sorted by <span class="font-semibold capitalize">{sortKey.replace(/([A-Z])/g, ' $1')}</span
-				></span
-			>
+
+		<!-- COMPACT FILTER BAR -->
+		<div class="flex items-center gap-3">
+			<span class="text-xs font-medium text-gray-500 uppercase tracking-wider mr-1">Filters:</span>
+
+			<FilterDropdown label="Genre" options={data.allCategories} bind:selected={activeCategories} />
+
+			<FilterDropdown
+				label="Curator Tags"
+				options={data.allCuratorTags}
+				bind:selected={activeCuratorTags}
+				color="blue"
+			/>
+
+			{#if hasActiveFilters}
+				<div class="w-px h-6 bg-gray-200 mx-1"></div>
+				<button
+					onclick={() => {
+						activeCategories = [];
+						activeCuratorTags = [];
+					}}
+					class="text-sm text-red-600 hover:text-red-800 font-medium"
+				>
+					Clear All
+				</button>
+			{/if}
 		</div>
 	</header>
-
-	<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-		<!-- Filter 1: Submission Categories -->
-		<section class="space-y-3">
-			<h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500">
-				Filter by Genre (Submission)
-			</h3>
-			<div class="flex flex-wrap gap-2">
-				{#each data.allCategories as cat}
-					<button
-						onclick={() => toggleCategory(cat)}
-						class="px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 border
-                        {activeCategories.includes(cat)
-							? 'bg-black text-white border-black'
-							: 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}"
-					>
-						{cat}
-					</button>
-				{/each}
-				{#if activeCategories.length > 0}
-					<button
-						onclick={() => (activeCategories = [])}
-						class="px-3 py-1 text-xs text-red-600 hover:underline">Clear</button
-					>
-				{/if}
-			</div>
-		</section>
-
-		<!-- Filter 2: Curator Tags -->
-		<section class="space-y-3">
-			<h3 class="text-xs font-semibold uppercase tracking-wider text-blue-600">
-				Filter by Tags (Curators)
-			</h3>
-			<div class="flex flex-wrap gap-2">
-				{#each data.allCuratorTags as tag}
-					{@const count = data.movies.filter((m) => m.curatorTags.includes(tag)).length}
-					<button
-						onclick={() => toggleCuratorTag(tag)}
-						class="pl-3 pr-1 py-1 rounded-full flex items-center gap-2 text-xs font-medium transition-all duration-200 border
-						{activeCuratorTags.includes(tag)
-							? 'bg-blue-600 text-white border-blue-600'
-							: 'bg-blue-50 text-blue-700 border-blue-100 hover:border-blue-300'}"
-					>
-						{tag}
-						<span class="p-0.5 text-xs w-2 rounded-full bg-blue-100 opacity-60">{count}</span>
-					</button>
-				{/each}
-				{#if activeCuratorTags.length === 0 && data.allCuratorTags.length === 0}
-					<span class="text-xs text-gray-400 italic">No tags assigned yet.</span>
-				{/if}
-				{#if activeCuratorTags.length > 0}
-					<button
-						onclick={() => (activeCuratorTags = [])}
-						class="px-3 py-1 text-xs text-red-600 hover:underline">Clear</button
-					>
-				{/if}
-			</div>
-		</section>
-	</div>
 
 	<!-- Main Table -->
 	<div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">

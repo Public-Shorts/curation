@@ -1,17 +1,30 @@
 <!-- src/routes/stats/+page.svelte -->
 <script lang="ts">
-	import SubmissionChart from '$lib/components/SubmissionChart.svelte';
+    import SubmissionChart from '$lib/components/SubmissionChart.svelte';
 
-	let { data } = $props();
+    let { data } = $props();
 
-	// Reactive derived values
-	let leaderboard = $derived(data.leaderboard);
-	let overall = $derived(data.overall);
-	let categoriesStats = $derived(data.categoriesStats);
-	let flaggedStats = $derived(data.flaggedStats);
-	let timelineStats = $derived(data.timelineStats);
+    // Reactive derived values
+    let leaderboard = $derived(data.leaderboard ?? []);
+    let overall = $derived(data.overall);
+    let flaggedStats = $derived(data.flaggedStats);
+    let timelineStats = $derived(data.timelineStats);
+    
+    // Calculate Active vs Inactive Curators
+    let activeCurators = $derived(leaderboard.filter((c: any) => c.total > 0));
+    let inactiveCurators = $derived(leaderboard.filter((c: any) => c.total === 0));
 
-	let maxCount = $derived(Math.max(1, ...categoriesStats.map((c: any) => c.count)));
+    // Calculate "Reviewed at least 2 times" metric
+    // NOTE: This assumes `overall.reviewedAtLeastTwice` is passed from server.
+    // If not, you might need to calculate it from a raw submissions list if available,
+    // otherwise, update your server-side load function to return this number.
+    let reviewedAtLeastTwiceCount = $derived(overall.reviewedAtLeastTwice ?? 0); 
+    
+    // Formatting helper
+    const formatPercent = (num: number, total: number) => {
+        if (total === 0) return '0%';
+        return ((num / total) * 100).toFixed(0) + '%';
+    };
 </script>
 
 <div class="p-6 max-w-7xl mx-auto space-y-12 pb-20">
@@ -43,14 +56,14 @@
 				</div>
 			</div>
 
-			<!-- Submissions Reviewed -->
+			<!-- Submissions Reviewed (1x) -->
 			<div
 				class="col-span-2 md:col-span-2 rounded-lg bg-blue-50 p-4 shadow-sm ring-1 ring-blue-900/5"
 			>
-				<p class="text-xs uppercase text-blue-600 font-medium">Submissions Reviewed</p>
+				<p class="text-xs uppercase text-blue-600 font-medium">Reviewed (1+ times)</p>
 				<div class="flex items-end justify-between">
 					<p class="mt-1 text-2xl font-semibold text-blue-900">{overall.reviewedSubmissions}</p>
-					<div class="w-16 h-1.5 bg-blue-200 rounded-full mb-2">
+					<div class="w-16 h-1.5 bg-blue-200 rounded-full mb-2 overflow-hidden">
 						<div
 							class="h-full bg-blue-600 rounded-full"
 							style="width: {(overall.reviewedSubmissions / overall.totalSubmissions) * 100}%"
@@ -58,29 +71,30 @@
 					</div>
 				</div>
 				<p class="text-[10px] text-blue-400 mt-1">
-					{((overall.reviewedSubmissions / overall.totalSubmissions) * 100).toFixed(0)}% completion
+					{formatPercent(overall.reviewedSubmissions, overall.totalSubmissions)} completion
 				</p>
 			</div>
 
-			<!-- Approval Rate -->
+			<!-- Submissions Reviewed (2x) -->
 			<div
-				class="col-span-1 md:col-span-1 rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5"
+				class="col-span-2 md:col-span-2 rounded-lg bg-purple-50 p-4 shadow-sm ring-1 ring-purple-900/5"
 			>
-				<p class="text-xs uppercase text-gray-500">Approval Rate</p>
-				<p class="mt-1 text-lg font-semibold">
-					{overall.approvalRate.toFixed(1)}<span class="text-sm text-gray-500">%</span>
+				<p class="text-xs uppercase text-purple-600 font-medium">Peer Reviewed (2+ times)</p>
+				<div class="flex items-end justify-between">
+					<p class="mt-1 text-2xl font-semibold text-purple-900">{reviewedAtLeastTwiceCount}</p>
+					<div class="w-16 h-1.5 bg-purple-200 rounded-full mb-2 overflow-hidden">
+						<div
+							class="h-full bg-purple-600 rounded-full"
+							style="width: {(reviewedAtLeastTwiceCount / overall.totalSubmissions) * 100}%"
+						></div>
+					</div>
+				</div>
+				<p class="text-[10px] text-purple-400 mt-1">
+					{formatPercent(reviewedAtLeastTwiceCount, overall.totalSubmissions)} fully reviewed
 				</p>
 			</div>
 
-			<!-- Total Reviews -->
-			<div
-				class="col-span-1 md:col-span-1 rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5"
-			>
-				<p class="text-xs uppercase text-gray-500">Total Reviews</p>
-				<p class="mt-1 text-lg font-semibold">{overall.total}</p>
-			</div>
-
-			<!-- Breakdown -->
+			<!-- Breakdown Row -->
 			<div class="col-span-2 md:col-span-4 lg:col-span-8 grid grid-cols-3 gap-4">
 				<div class="rounded-lg bg-green-50 p-3 text-center shadow-sm ring-1 ring-green-900/10">
 					<p class="text-[10px] uppercase font-bold text-green-700">Selected</p>
@@ -98,52 +112,50 @@
 		</div>
 	</section>
 
-	<!-- NEW: Submissions Timeline Graph Component -->
+	<!-- Submissions Timeline -->
 	<section class="space-y-6">
 		<header>
 			<h2 class="text-2xl font-semibold">Submission Timeline</h2>
 			<p class="text-sm text-gray-500">Daily intake activity</p>
 		</header>
-
 		<SubmissionChart data={timelineStats} />
 	</section>
 
 	<div class="grid gap-12 lg:grid-cols-2">
-		<!-- Leaderboard Table -->
+		<!-- Curator Leaderboard (Active) -->
 		<section class="space-y-6">
 			<header class="flex items-center justify-between">
-				<h2 class="text-2xl font-semibold">Curator Leaderboard</h2>
+				<div>
+					<h2 class="text-2xl font-semibold">Active Curators</h2>
+					<p class="text-sm text-gray-500 mt-1">{activeCurators.length} active members</p>
+				</div>
 			</header>
 
-			{#if leaderboard.length === 0}
-				<div class="rounded-lg bg-gray-50 p-8 text-center">
-					<p class="text-gray-500">No data available.</p>
+			{#if activeCurators.length === 0}
+				<div class="rounded-lg bg-gray-50 p-8 text-center border border-dashed border-gray-200">
+					<p class="text-gray-500">No active curators yet.</p>
 				</div>
 			{:else}
-				<div class="overflow-x-auto rounded-lg border bg-white shadow-sm">
+				<div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
 					<table class="w-full text-left text-sm">
-						<thead class="border-b bg-gray-50/50 text-[10px] uppercase text-gray-500">
+						<thead
+							class="bg-gray-50 border-b border-gray-100 text-[10px] uppercase text-gray-500 tracking-wider"
+						>
 							<tr>
 								<th class="py-3 pl-4 pr-3 font-medium">Curator</th>
 								<th class="py-3 px-3 font-medium text-right">Reviews</th>
 								<th class="py-3 px-3 font-medium text-right">Selected</th>
-								<th class="py-3 pl-3 pr-4 font-medium text-right">Rate</th>
+								<th class="py-3 pl-3 pr-4 font-medium text-right">Length</th>
 							</tr>
 						</thead>
-						<tbody class="divide-y divide-gray-100 bg-white">
-							{#each leaderboard as curator}
-								<tr class="hover:bg-gray-50/50">
+						<tbody class="divide-y divide-gray-100">
+							{#each activeCurators as curator}
+								<tr class="hover:bg-gray-50/50 transition-colors">
 									<td class="py-3 pl-4 pr-3 font-medium text-gray-900">{curator.name}</td>
-									<td class="py-3 px-3 text-right text-gray-500">{curator.total}</td>
-									<td class="py-3 px-3 text-right">
-										<span
-											class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20"
-										>
-											{curator.selected}
-										</span>
-									</td>
-									<td class="py-3 pl-3 pr-4 text-right text-gray-500">
-										{curator.approvalRate.toFixed(1)}%
+									<td class="py-3 px-3 text-right text-gray-900 font-medium">{curator.total}</td>
+									<td class="py-3 px-3 text-right text-gray-500">{curator.selected}</td>
+									<td class="py-3 pl-3 pr-4 text-right text-gray-500 text-xs">
+										{Math.round(curator.totalMinutes ?? 0)} min
 									</td>
 								</tr>
 							{/each}
@@ -153,35 +165,50 @@
 			{/if}
 		</section>
 
-		<!-- Category Stats -->
+		<!-- Inactive Curators -->
 		<section class="space-y-6">
 			<header class="flex items-center justify-between">
-				<h2 class="text-2xl font-semibold">Submissions per Category</h2>
+				<div>
+					<h2 class="text-2xl font-semibold text-gray-500">Inactive Curators</h2>
+					<p class="text-sm text-gray-400 mt-1">{inactiveCurators.length} pending members</p>
+				</div>
 			</header>
 
-			<div
-				class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-900/5 space-y-4 max-h-[400px] overflow-y-auto"
-			>
-				{#each categoriesStats as cat}
-					<div class="group">
-						<div class="flex items-center justify-between mb-1 text-sm">
-							<span class="font-medium text-gray-700 truncate max-w-[200px]" title={cat.name}>
-								{cat.name}
-							</span>
-							<span class="text-gray-500 text-xs">{cat.count}</span>
-						</div>
-						<div class="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
-							<div
-								class="h-full rounded-full bg-black/80 group-hover:bg-black transition-all duration-500"
-								style:width="{(cat.count / maxCount) * 100}%"
-							></div>
-						</div>
-					</div>
-				{/each}
-			</div>
+			{#if inactiveCurators.length === 0}
+				<div class="rounded-lg bg-gray-50 p-8 text-center border border-dashed border-gray-200">
+					<p class="text-gray-500">Everyone is active!</p>
+				</div>
+			{:else}
+				<div class="overflow-hidden rounded-lg border border-gray-200 bg-gray-50/50 shadow-sm">
+					<table class="w-full text-left text-sm">
+						<thead
+							class="bg-gray-50 border-b border-gray-100 text-[10px] uppercase text-gray-400 tracking-wider"
+						>
+							<tr>
+								<th class="py-3 pl-4 pr-3 font-medium">Name</th>
+								<th class="py-3 px-3 font-medium text-right">Status</th>
+							</tr>
+						</thead>
+						<tbody class="divide-y divide-gray-100">
+							{#each inactiveCurators as curator}
+								<tr>
+									<td class="py-3 pl-4 pr-3 font-medium text-gray-500">{curator.name}</td>
+									<td class="py-3 px-3 text-right">
+										<span
+											class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500"
+										>
+											Not Started
+										</span>
+									</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			{/if}
 		</section>
 
-		<!-- Flagged Content Index -->
+		<!-- Flagged Content Index (Full Width if needed, or keeping split) -->
 		<section class="space-y-6 lg:col-span-2">
 			<header class="flex items-center justify-between">
 				<h2 class="text-2xl font-semibold text-red-700">Flagged Content Index</h2>
@@ -191,7 +218,7 @@
 			</header>
 
 			{#if flaggedStats.length === 0}
-				<div class="rounded-lg bg-gray-50 p-8 text-center">
+				<div class="rounded-lg bg-gray-50 p-8 text-center border border-dashed border-gray-200">
 					<p class="text-gray-500">No content has been flagged yet.</p>
 				</div>
 			{:else}
@@ -208,7 +235,6 @@
 									{items.length}
 								</span>
 							</div>
-
 							<table class="min-w-full table-fixed divide-y divide-gray-100">
 								<tbody class="divide-y divide-gray-100 bg-white">
 									{#each items as item}
@@ -223,9 +249,7 @@
 												</a>
 											</td>
 											<td class="whitespace-nowrap py-3 pr-4 pl-2 text-right align-middle">
-												<span class="text-[10px] text-gray-400">
-													by {item.curator}
-												</span>
+												<span class="text-[10px] text-gray-400">by {item.curator}</span>
 											</td>
 										</tr>
 									{/each}

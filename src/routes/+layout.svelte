@@ -5,7 +5,7 @@
 	import Navbar from '$lib/components/Navbar.svelte';
 
 	let { data, children } = $props();
-	import './layout.css';
+	import '../app.css';
 	setToastMessages();
 </script>
 
@@ -18,7 +18,7 @@
 	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 	<link rel="manifest" href="/site.webmanifest" />
 </svelte:head>
-<div class="min-h-screen bg-gray-50 text-gray-900">
+<div class="min-h-screen bg-gray-50 text-gray-900 font-PPMori">
 	<Navbar currentPath={data.currentPath} />
 
 	<main class="mx-auto max-w-5xl px-4 py-8">
