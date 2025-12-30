@@ -51,8 +51,9 @@
 			}
 		}
 		// Remove 'none' if other notes exist, or keep it if it's the only one
-		if (notes.size > 1 && notes.has('none')) {
+		if (notes.size > 1 && (notes.has('none') || notes.has('None'))) {
 			notes.delete('none');
+			notes.delete('None');
 		}
 		return Array.from(notes).sort();
 	});
@@ -144,7 +145,7 @@
 							Content Notes
 						</h3>
 						<div class="flex flex-wrap gap-1.5">
-							{#if allContentNotes.length > 0}
+							{#if allContentNotes && allContentNotes[0] != 'none' && allContentNotes.length > 0}
 								<!-- content here -->
 								{#each allContentNotes as note}
 									<span

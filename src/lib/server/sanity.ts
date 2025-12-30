@@ -10,3 +10,10 @@ export const sanityClient = createClient({
 	useCdn: false,
 	token: SANITY_TOKEN
 });
+
+export const publicClient = createClient({
+	projectId: 'your-project-id',
+	dataset: 'your-dataset',
+	apiVersion: '2024-01-01',
+	useCdn: true
+});

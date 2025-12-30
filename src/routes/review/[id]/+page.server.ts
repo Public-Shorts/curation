@@ -37,7 +37,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
                 poster,
                 castAndCrew,
                 thanks,
-                specialRequirements
+                specialRequirements,
+                "posterUrl": poster.asset->url,
+             
             },
             "myReview": *[_type == "review" && film._ref == $id && curator._ref == $curatorId][0]{
                 _id,
