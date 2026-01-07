@@ -121,9 +121,9 @@
 		<SubmissionChart data={timelineStats} />
 	</section>
 
-	<div class="grid gap-12 lg:grid-cols-2">
+	<div class="grid gap-12 lg:grid-cols-6">
 		<!-- Curator Leaderboard (Active) -->
-		<section class="space-y-6">
+		<section class="space-y-6 lg:col-span-4">
 			<header class="flex items-center justify-between">
 				<div>
 					<h2 class="text-2xl font-semibold">Active Curators</h2>
@@ -145,6 +145,7 @@
 								<th class="py-3 pl-4 pr-3 font-medium">Curator</th>
 								<th class="py-3 px-3 font-medium text-right">Reviews</th>
 								<th class="py-3 px-3 font-medium text-right">Selected</th>
+								<th class="py-3 px-3 font-medium text-right">Ratio</th>
 								<th class="py-3 pl-3 pr-4 font-medium text-right">Length</th>
 							</tr>
 						</thead>
@@ -154,8 +155,12 @@
 									<td class="py-3 pl-4 pr-3 font-medium text-gray-900">{curator.name}</td>
 									<td class="py-3 px-3 text-right text-gray-900 font-medium">{curator.total}</td>
 									<td class="py-3 px-3 text-right text-gray-500">{curator.selected}</td>
+									<td class="py-3 px-3 text-right text-gray-500">
+										{curator.total > 0
+											? ((curator.selected / curator.total) * 100).toFixed(0) + '%'
+											: '0%'}
 									<td class="py-3 pl-3 pr-4 text-right text-gray-500 text-xs">
-										{Math.round(curator.totalMinutes ?? 0)} min
+										{Math.floor((curator.totalMinutes ?? 0) / 60)}h {(curator.totalMinutes ?? 0) % 60}m
 									</td>
 								</tr>
 							{/each}
@@ -166,7 +171,7 @@
 		</section>
 
 		<!-- Inactive Curators -->
-		<section class="space-y-6">
+		<section class="space-y-6 lg:col-span-2">
 			<header class="flex items-center justify-between">
 				<div>
 					<h2 class="text-2xl font-semibold text-gray-500">Inactive Curators</h2>
@@ -209,7 +214,7 @@
 		</section>
 
 		<!-- Flagged Content Index (Full Width if needed, or keeping split) -->
-		<section class="space-y-6 lg:col-span-2">
+		<section class="space-y-6 lg:col-span-6">
 			<header class="flex items-center justify-between">
 				<h2 class="text-2xl font-semibold text-red-700">Flagged Content Index</h2>
 				<p class="text-sm text-gray-500">

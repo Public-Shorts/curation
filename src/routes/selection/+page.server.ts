@@ -1,3 +1,4 @@
+// src/routes/selection/+page.server.ts
 import { redirect } from '@sveltejs/kit';
 import { sanityClient } from '$lib/server/sanity';
 import type { PageServerLoad } from './$types';
@@ -6,22 +7,29 @@ export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.curatorId) throw redirect(303, '/login');
 
 	const query = `{
-      "submissions": *[_type == "submission"]|order(englishTitle asc){
-        _id,
-        englishTitle,
-        filmLanguage,
-        length,
-        categories,
-        categoryOther,
-        _createdAt,
-        
-        "reviews": *[_type == "review" && film._ref == ^._id]{
-            selection, 
-            rating,
-            tags
-        }
-      }
-    }`;
+	  "submissions": *[_type == "submission"]|order(englishTitle asc){
+		_id,
+		englishTitle,
+		filmLanguage,
+		length,
+		categories,
+		categoryOther,
+		_createdAt,
+		
+		// NEW: Fetch submission-level flags
+		explicit,
+		explicitDetails,
+		aiUsed,
+		aiExplanation,
+		
+		"reviews": *[_type == "review" && film._ref == ^._id]{
+			selection, 
+			rating,
+			tags,
+			contentNotes // NEW: Fetch curator content notes
+		}
+	  }
+	}`;
 
 	const data = await sanityClient.fetch(query);
 
@@ -40,15 +48,46 @@ export const load: PageServerLoad = async ({ locals }) => {
 		].filter((c) => c !== 'other');
 
 		// FIXED: Extract the 'label' from the tag objects
-		const curatorTags = Array.from(
-			new Set(
-				reviews.flatMap(
-					(r: any) => (r.tags || []).map((t: any) => t.label || t) // Handle object or string
-				)
-			)
-		)
+		const curatorTags = Array.from(new Set(reviews.flatMap((r: any) => (r.tags || []).map((t: any) => t.label || t))))
 			.filter((t) => typeof t === 'string')
 			.sort();
+
+		// --- NEW: Process Flags ---
+		const flags = [];
+
+		// 1. Explicit Content (Submitter declared)
+		if (s.explicit) {
+			flags.push({
+				type: 'explicit',
+				label: 'EXPLICIT',
+				details: s.explicitDetails || 'Contains explicit content',
+				color: 'text-red-700 bg-red-50 border-red-200'
+			});
+		}
+
+		// 2. AI Usage (Submitter declared)
+		if (s.aiUsed) {
+			flags.push({
+				type: 'ai',
+				label: 'AI',
+				details: s.aiExplanation || 'AI tools were used',
+				color: 'text-purple-700 bg-purple-50 border-purple-200'
+			});
+		}
+
+		// 3. Content Notes (Curator declared)
+		// Aggregate all unique notes from all reviews, excluding 'none'
+		const rawNotes = reviews.flatMap((r: any) => r.contentNotes || []);
+		const uniqueNotes = Array.from(new Set(rawNotes)).filter((n: any) => n && n !== 'none');
+		
+		if (uniqueNotes.length > 0) {
+			flags.push({
+				type: 'content',
+				label: 'WARNINGS',
+				details: uniqueNotes.join(', '), // "Violence, Strong Language"
+				color: 'text-orange-700 bg-orange-50 border-orange-200'
+			});
+		}
 
 		return {
 			...s,
@@ -56,7 +95,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			approvalRate,
 			averageRating,
 			displayCategories,
-			curatorTags
+			curatorTags,
+			flags // Add to object
 		};
 	});
 
