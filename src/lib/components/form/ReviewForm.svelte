@@ -2,14 +2,25 @@
 	import { enhance } from '$app/forms';
 	import { getToastMessages } from '$lib/toast/toastMessages.svelte';
 	import TagSelector from './TagSelector.svelte';
-	import ContentNotesCheckboxes from './ContentNotesCheckboxes.svelte';
 	import type { Tag } from '$lib/utils/types';
 
 	let { review, allTags } = $props();
 	let submitting = $state(false);
+
 	const toastMessages = getToastMessages();
 
 	let selectedTags = $state<Tag[]>(review.tags ?? []);
+
+    // 1. Create local state for the input
+    let currentSelection = $state(review.selection);
+
+    // 2. Derive status from the LOCAL state, not the prop
+    let reviewStatus = $derived.by(() => {
+        if (currentSelection === 'selected') return 'Selected';
+        if (currentSelection === 'maybe') return 'Maybe'; // Assuming 'maybe' maps to 'Maybe' in UI
+        if (currentSelection === 'notSelected') return 'Not Selected';
+        return 'No Selection Made';
+    });
 </script>
 
 <section class="mt-8 sm:mt-12 border-t pt-6 sm:pt-8">
@@ -43,19 +54,24 @@
 					<label
 						for="selection"
 						class="flex gap-2 items-center text-sm font-medium text-gray-700 mb-2"
-						><p>Selection Status</p>
-						<!-- <SelectionTag selection={review.selection} /> -->
+					>
+						<p>Selection Status</p>
 					</label>
+
 					<select
 						id="selection"
 						name="selection"
 						class="w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black text-sm sm:text-base py-2.5"
-						value={review.selection}
+						class:text-green-600={reviewStatus === 'Selected'}
+						class:text-yellow-600={reviewStatus === 'Maybe'}
+						class:text-red-600={reviewStatus === 'Not Selected'}
+						bind:value={currentSelection}
 						required
 					>
-						<option value="selected">Selected</option>
-						<option value="maybe">Maybe</option>
+						<!-- Ensure this matches your schema value -->
 						<option value="notSelected">Not selected</option>
+						<option value="maybe">Maybe</option>
+						<option value="selected">Selected</option>
 					</select>
 				</div>
 
