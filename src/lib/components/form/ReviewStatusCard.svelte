@@ -1,7 +1,7 @@
 <!-- src/lib/components/form/ReviewStatusCard.svelte -->
 <script lang="ts">
 	import { slide } from 'svelte/transition';
-	import SelectionTag from '../../../routes/SelectionTag.svelte';
+	import SelectionTag from '$lib/components/SelectionTag.svelte';
 
 	let { allReviews = [] } = $props();
 

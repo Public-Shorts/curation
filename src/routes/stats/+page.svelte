@@ -152,15 +152,18 @@
 						<tbody class="divide-y divide-gray-100">
 							{#each activeCurators as curator}
 								<tr class="hover:bg-gray-50/50 transition-colors">
-									<td class="py-3 pl-4 pr-3 font-medium text-gray-900">{curator.name}</td>
+									<td class="py-3 pl-4 pr-3 font-medium text-gray-900"
+										><a href="/curator/{curator._id}">{curator.name}</a></td
+									>
 									<td class="py-3 px-3 text-right text-gray-900 font-medium">{curator.total}</td>
 									<td class="py-3 px-3 text-right text-gray-500">{curator.selected}</td>
 									<td class="py-3 px-3 text-right text-gray-500">
 										{curator.total > 0
 											? ((curator.selected / curator.total) * 100).toFixed(0) + '%'
 											: '0%'}
-									<td class="py-3 pl-3 pr-4 text-right text-gray-500 text-xs">
-										{Math.floor((curator.totalMinutes ?? 0) / 60)}h {(curator.totalMinutes ?? 0) % 60}m
+									</td><td class="py-3 pl-3 pr-4 text-right text-gray-500 text-xs">
+										{Math.floor((curator.totalMinutes ?? 0) / 60)}h {(curator.totalMinutes ?? 0) %
+											60}m
 									</td>
 								</tr>
 							{/each}

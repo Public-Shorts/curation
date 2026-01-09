@@ -1,5 +1,5 @@
 <script lang="ts">
-	import SelectionTag from './SelectionTag.svelte';
+	import SelectionTag from '$lib/components/SelectionTag.svelte';
 
 	let { data } = $props();
 
