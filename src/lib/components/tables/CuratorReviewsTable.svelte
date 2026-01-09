@@ -44,7 +44,7 @@
 		onclick={() => (isExpanded = !isExpanded)}
 		onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && (isExpanded = !isExpanded)}
 	>
-		<h2 class="text-2xl font-semibold">Your reviews</h2>
+		<h2 class="text-2xl font-semibold">Reviews</h2>
 		<div class="flex items-center gap-2">
 			<!-- Safety check here too -->
 			<p class="text-sm text-gray-500">
