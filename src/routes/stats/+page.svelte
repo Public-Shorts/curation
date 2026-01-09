@@ -153,7 +153,9 @@
 							{#each activeCurators as curator}
 								<tr class="hover:bg-gray-50/50 transition-colors">
 									<td class="py-3 pl-4 pr-3 font-medium text-gray-900"
-										><a href="/curator/{curator._id}">{curator.name}</a></td
+										><a class="hover:text-blue-600 transition-all" href="/curator/{curator._id}"
+											>{curator.name}</a
+										></td
 									>
 									<td class="py-3 px-3 text-right text-gray-900 font-medium">{curator.total}</td>
 									<td class="py-3 px-3 text-right text-gray-500">{curator.selected}</td>
