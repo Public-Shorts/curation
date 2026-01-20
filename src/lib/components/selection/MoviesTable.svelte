@@ -1,8 +1,15 @@
 <!-- src/lib/components/selection/MoviesTable.svelte -->
 <script lang="ts">
-	let { movies, sortKey, sortDir, setSort } = $props();
-
+	import type { Movie } from '$lib/utils/types';
 	import VoteBreakdown from './VoteBreakdown.svelte';
+	import FlagBadge from '$lib/components/ui/FlagBadge.svelte';
+
+	let { movies, sortKey, sortDir, setSort } = $props<{
+		movies: Movie[];
+		sortKey: string;
+		sortDir: 'asc' | 'desc';
+		setSort: (key: string) => void;
+	}>();
 
 	// Thresholds for visual indication
 	const scoreThresholds = {
@@ -44,10 +51,11 @@
 			{#each movies as movie (movie._id)}
 				<tr
 					class="hover:bg-gray-50/80 transition-colors"
-					class:bg-green-50={movie.score >= scoreThresholds.selected}
-					class:bg-amber-50={movie.score >= scoreThresholds.maybe &&
-						movie.score < scoreThresholds.selected}
-					class:bg-red-50={movie.reviewsCount > 0 && movie.score < scoreThresholds.maybe}
+					class:bg-green-50={(movie.score || 0) >= scoreThresholds.selected}
+					class:bg-amber-50={(movie.score || 0) >= scoreThresholds.maybe &&
+						(movie.score || 0) < scoreThresholds.selected}
+					class:bg-red-50={(movie.reviewsCount || 0) > 0 &&
+						(movie.score || 0) < scoreThresholds.maybe}
 				>
 					<!-- Title -->
 					<td class="py-3 pl-4 pr-2 font-medium text-gray-900 align-top">
@@ -70,22 +78,22 @@
 
 					<!-- Votes Breakdown -->
 					<td class="py-3 px-2 align-top pt-3.5">
-						<VoteBreakdown reviews={movie.reviews} />
+						<VoteBreakdown reviews={movie.reviews || []} />
 					</td>
 
 					<!-- Score -->
 					<td class="py-3 px-2 align-top pt-3.5">
-						{#if movie.reviewsCount > 0}
+						{#if (movie.reviewsCount || 0) > 0}
 							<div class="flex items-center gap-2">
 								<span class="text-sm font-bold w-12 text-right">
-									{movie.score.toFixed(0)}%
+									{movie.score?.toFixed(0)}%
 								</span>
 								<!-- Mini visual indicator -->
 								<div class="h-2 w-16 bg-gray-200 rounded-full overflow-hidden">
 									<div
-										class="h-full {movie.score >= scoreThresholds.selected
+										class="h-full {(movie.score || 0) >= scoreThresholds.selected
 											? 'bg-green-500'
-											: movie.score >= scoreThresholds.maybe
+											: (movie.score || 0) >= scoreThresholds.maybe
 												? 'bg-amber-400'
 												: 'bg-red-400'}"
 										style="width: {movie.score}%"
@@ -99,24 +107,10 @@
 
 					<!-- Flags -->
 					<td class="py-3 px-2 align-top pt-2">
-						{#if movie.flags.length > 0}
+						{#if movie.flags && movie.flags.length > 0}
 							<div class="flex flex-col gap-1 items-start">
 								{#each movie.flags as flag}
-									<div class="group relative inline-flex">
-										<span
-											class="cursor-help px-1.5 py-0.5 rounded text-[10px] uppercase font-bold border {flag.color}"
-										>
-											{flag.label}
-										</span>
-
-										<!-- Custom Tooltip -->
-										<div
-											class="absolute bottom-full left-0 mb-2 w-48 p-2 bg-gray-900 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10"
-										>
-											<p class="font-bold mb-1">{flag.label}</p>
-											<p class="text-gray-300 leading-snug">{flag.details}</p>
-										</div>
-									</div>
+									<FlagBadge {flag} />
 								{/each}
 							</div>
 						{:else}
