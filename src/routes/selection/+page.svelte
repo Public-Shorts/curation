@@ -54,9 +54,17 @@
 				// Re-generate flags (client-side)
 				const flags = [];
 				if (movie.explicit)
-					flags.push({ label: 'EXPLICIT', color: 'text-red-700 bg-red-50 border-red-200' });
+					flags.push({
+						label: 'EXPLICIT',
+						details: movie.explicitDetails || 'Explicit content flagged by submitter.',
+						color: 'text-red-700 bg-red-50 border-red-200'
+					});
 				if (movie.aiUsed)
-					flags.push({ label: 'AI', color: 'text-purple-700 bg-purple-50 border-purple-200' });
+					flags.push({
+						label: 'AI',
+						details: movie.aiExplanation || 'AI usage declared by submitter.',
+						color: 'text-purple-700 bg-purple-50 border-purple-200'
+					});
 
 				// 3. Content Notes (Curator declared)
 				// Aggregate all unique notes from all reviews, excluding 'none'

@@ -14,6 +14,10 @@ export const load: PageServerLoad = async ({ locals }) => {
         poster,
 		length,
 		_createdAt,
+        explicit,
+        explicitDetails,
+        aiUsed,
+        aiExplanation,
 		
 		"reviews": *[_type == "review" && film._ref == ^._id]{
             _id,
