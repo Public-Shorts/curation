@@ -24,6 +24,8 @@
 
 			<!-- Desktop Navigation -->
 			<div class="hidden md:flex items-center gap-6 uppercase text-sm font-medium text-gray-700">
+				<a class="uppercase hover:text-gray-900" href="/my-reviews">My Reviews</a>
+				<a class="uppercase hover:text-gray-900" href="/highlights">Highlights</a>
 				<a class="uppercase hover:text-gray-900" href="/stats">Stats</a>
 				<a class="uppercase hover:text-gray-900" href="/selection">Selection</a>
 			</div>
@@ -69,6 +71,20 @@
 		<!-- Mobile Menu -->
 		{#if mobileMenuOpen}
 			<div class="md:hidden mt-4 pb-2 border-t pt-4 flex flex-col gap-4">
+				<a
+					class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
+					href="/my-reviews"
+					onclick={toggleMenu}
+				>
+					My Reviews
+				</a>
+				<a
+					class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
+					href="/highlights"
+					onclick={toggleMenu}
+				>
+					Highlights
+				</a>
 				<a
 					class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
 					href="/stats"

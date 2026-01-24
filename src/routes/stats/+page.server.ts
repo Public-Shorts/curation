@@ -38,7 +38,8 @@ export const load: PageServerLoad = async ({ locals }) => {
         "filmTitle": film->englishTitle,
         "filmId": film->_id,
         "curatorName": curator->name
-      }
+      },
+      "reviews": *[_type == "review"] { _createdAt }
     }`;
 
 	const data = await sanityClient.fetch(query);
@@ -47,6 +48,16 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const totalMinutes = data.submissions.reduce((acc: number, curr: any) => {
 		return acc + (Number(curr.length) || 0);
 	}, 0);
+
+	// Calculate Average and Median Length
+	const lengths = data.submissions.map((s: any) => Number(s.length) || 0).sort((a: number, b: number) => a - b);
+	const avgLength = lengths.length > 0 ? totalMinutes / lengths.length : 0;
+
+	let medianLength = 0;
+	if (lengths.length > 0) {
+		const mid = Math.floor(lengths.length / 2);
+		medianLength = lengths.length % 2 !== 0 ? lengths[mid] : (lengths[mid - 1] + lengths[mid]) / 2;
+	}
 
 	// Process Leaderboard
 	const leaderboard = data.leaderboard
@@ -80,7 +91,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.map(([name, count]) => ({ name, count }))
 		.sort((a, b) => b.count - a.count);
 
-	// Process Timeline Data
+	// Process Timeline Data (Submissions)
 	const submissionsByDate: Record<string, number> = {};
 	data.submissions.forEach((s: any) => {
 		const date = new Date(s._createdAt).toISOString().split('T')[0];
@@ -88,6 +99,17 @@ export const load: PageServerLoad = async ({ locals }) => {
 	});
 
 	const timelineStats = Object.entries(submissionsByDate)
+		.map(([date, count]) => ({ date, count }))
+		.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+	// Process Timeline Data (Reviews)
+	const reviewsByDate: Record<string, number> = {};
+	data.reviews.forEach((r: any) => {
+		const date = new Date(r._createdAt).toISOString().split('T')[0];
+		reviewsByDate[date] = (reviewsByDate[date] || 0) + 1;
+	});
+
+	const reviewTimelineStats = Object.entries(reviewsByDate)
 		.map(([date, count]) => ({ date, count }))
 		.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
@@ -120,10 +142,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 		overall: {
 			...data.overall,
 			totalMinutes,
+			avgLength,
+			medianLength,
 			approvalRate: data.overall.total > 0 ? (data.overall.selected / data.overall.total) * 100 : 0
 		},
 		categoriesStats,
 		flaggedStats,
-		timelineStats
+		timelineStats,
+		reviewTimelineStats
 	};
 };

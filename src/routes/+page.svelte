@@ -112,66 +112,15 @@
 		</p>
 	</div>
 </section>
-<!--Your submissions table-->
-<section class="space-y-6 pb-12">
-	<header
-		class="flex items-center justify-between cursor-pointer"
-		role="button"
-		tabindex="0"
-		onclick={() => (yourReviewsExpanded = !yourReviewsExpanded)}
-		onkeydown={(e) =>
-			(e.key === 'Enter' || e.key === ' ') && (yourReviewsExpanded = !yourReviewsExpanded)}
+<!--My Reviews Link-->
+<section class="pb-8">
+	<a
+		href="/my-reviews"
+		class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium"
 	>
-		<h2 class="text-2xl font-semibold">Your reviews</h2>
-		<div class="flex items-center gap-2">
-			<p class="text-sm text-gray-500">
-				Total: {submissions.filter((s: any) => s.hasReviewed).length}
-			</p>
-			<span class="text-gray-400">{yourReviewsExpanded ? '▼' : '▶'}</span>
-		</div>
-	</header>
-	{#if yourReviewsExpanded}
-		{#if submissions.filter((s: any) => s.hasReviewed).length === 0}
-			<div class="rounded-lg bg-gray-50 p-8 text-center">
-				<p class="text-gray-500">You haven't reviewed any submissions yet.</p>
-			</div>
-		{:else}
-			<table class="w-full text-left text-sm">
-				<thead class="border-b text-[10px] uppercase text-gray-500">
-					<tr>
-						<th class="py-2">Title</th>
-						<th class="py-2">Selection</th>
-						<th class="py-2">Review</th>
-					</tr>
-				</thead>
-				<tbody>
-					<!-- Filter using the helper property we created -->
-					{#each submissions.filter((s: any) => s.hasReviewed) as s}
-						<tr class="border-b last:border-0 align-top">
-							<td class="py-2 pr-4 truncate-cell" title={s.englishTitle}>
-								{s.englishTitle}
-							</td>
-
-							<!-- NOW this works because we mapped it in the script -->
-							<td class="py-2 pr-4 truncate-cell">
-								<!-- Optional: Add some styling for different states -->
-								<SelectionTag selection={s.mySelection} />
-							</td>
-
-							<td class="py-2 pr-2">
-								<a
-									href={`/review/${s._id}`}
-									class="rounded border border-gray-300 px-2 py-1 text-xs font-medium hover:bg-gray-100"
-								>
-									Edit Review
-								</a>
-							</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		{/if}
-	{/if}
+		<span>View My Reviews & Highlights</span>
+		<span>→</span>
+	</a>
 </section>
 <!--All Submissions table -->
 <section class="space-y-6 pb-12">

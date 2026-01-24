@@ -1,30 +1,29 @@
-<!-- src/routes/stats/+page.svelte -->
 <script lang="ts">
-    import SubmissionChart from '$lib/components/SubmissionChart.svelte';
+	import SubmissionChart from '$lib/components/SubmissionChart.svelte';
 
-    let { data } = $props();
+	let { data } = $props();
 
-    // Reactive derived values
-    let leaderboard = $derived(data.leaderboard ?? []);
-    let overall = $derived(data.overall);
-    let flaggedStats = $derived(data.flaggedStats);
-    let timelineStats = $derived(data.timelineStats);
-    
-    // Calculate Active vs Inactive Curators
-    let activeCurators = $derived(leaderboard.filter((c: any) => c.total > 0));
-    let inactiveCurators = $derived(leaderboard.filter((c: any) => c.total === 0));
+	// Reactive derived values
+	let leaderboard = $derived(data.leaderboard ?? []);
+	let overall = $derived(data.overall);
+	let flaggedStats = $derived(data.flaggedStats);
+	let timelineStats = $derived(data.timelineStats);
 
-    // Calculate "Reviewed at least 2 times" metric
-    // NOTE: This assumes `overall.reviewedAtLeastTwice` is passed from server.
-    // If not, you might need to calculate it from a raw submissions list if available,
-    // otherwise, update your server-side load function to return this number.
-    let reviewedAtLeastTwiceCount = $derived(overall.reviewedAtLeastTwice ?? 0); 
-    
-    // Formatting helper
-    const formatPercent = (num: number, total: number) => {
-        if (total === 0) return '0%';
-        return ((num / total) * 100).toFixed(0) + '%';
-    };
+	// Calculate Active vs Inactive Curators
+	let activeCurators = $derived(leaderboard.filter((c: any) => c.total > 0));
+	let inactiveCurators = $derived(leaderboard.filter((c: any) => c.total === 0));
+
+	// Calculate "Reviewed at least 2 times" metric
+	// NOTE: This assumes `overall.reviewedAtLeastTwice` is passed from server.
+	// If not, you might need to calculate it from a raw submissions list if available,
+	// otherwise, update your server-side load function to return this number.
+	let reviewedAtLeastTwiceCount = $derived(overall.reviewedAtLeastTwice ?? 0);
+
+	// Formatting helper
+	const formatPercent = (num: number, total: number) => {
+		if (total === 0) return '0%';
+		return ((num / total) * 100).toFixed(0) + '%';
+	};
 </script>
 
 <div class="p-6 max-w-7xl mx-auto space-y-12 pb-20">
@@ -56,42 +55,110 @@
 				</div>
 			</div>
 
-			<!-- Submissions Reviewed (1x) -->
+			<!-- Average Length -->
 			<div
-				class="col-span-2 md:col-span-2 rounded-lg bg-blue-50 p-4 shadow-sm ring-1 ring-blue-900/5"
+				class="col-span-2 md:col-span-2 rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5"
 			>
-				<p class="text-xs uppercase text-blue-600 font-medium">Reviewed (1+ times)</p>
-				<div class="flex items-end justify-between">
-					<p class="mt-1 text-2xl font-semibold text-blue-900">{overall.reviewedSubmissions}</p>
-					<div class="w-16 h-1.5 bg-blue-200 rounded-full mb-2 overflow-hidden">
-						<div
-							class="h-full bg-blue-600 rounded-full"
-							style="width: {(overall.reviewedSubmissions / overall.totalSubmissions) * 100}%"
-						></div>
-					</div>
+				<p class="text-xs uppercase text-gray-500">Average Length</p>
+				<div class="mt-1 flex items-baseline gap-1">
+					<p class="text-2xl font-semibold text-gray-900">
+						{Math.floor(overall.avgLength)}
+					</p>
+					<span class="text-sm text-gray-500">m</span>
+					<p class="text-xl font-semibold text-gray-500 ml-1">
+						{Math.round((overall.avgLength - Math.floor(overall.avgLength)) * 60)}
+					</p>
+					<span class="text-xs text-gray-400">s</span>
 				</div>
-				<p class="text-[10px] text-blue-400 mt-1">
-					{formatPercent(overall.reviewedSubmissions, overall.totalSubmissions)} completion
-				</p>
 			</div>
 
-			<!-- Submissions Reviewed (2x) -->
+			<!-- Median Length -->
 			<div
-				class="col-span-2 md:col-span-2 rounded-lg bg-purple-50 p-4 shadow-sm ring-1 ring-purple-900/5"
+				class="col-span-2 md:col-span-2 rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5"
 			>
-				<p class="text-xs uppercase text-purple-600 font-medium">Peer Reviewed (2+ times)</p>
-				<div class="flex items-end justify-between">
-					<p class="mt-1 text-2xl font-semibold text-purple-900">{reviewedAtLeastTwiceCount}</p>
-					<div class="w-16 h-1.5 bg-purple-200 rounded-full mb-2 overflow-hidden">
-						<div
-							class="h-full bg-purple-600 rounded-full"
-							style="width: {(reviewedAtLeastTwiceCount / overall.totalSubmissions) * 100}%"
-						></div>
+				<p class="text-xs uppercase text-gray-500">Median Length</p>
+				<div class="mt-1 flex items-baseline gap-1">
+					<p class="text-2xl font-semibold text-gray-900">
+						{Math.floor(overall.medianLength)}
+					</p>
+					<span class="text-sm text-gray-500">m</span>
+					<p class="text-xl font-semibold text-gray-500 ml-1">
+						{Math.round((overall.medianLength - Math.floor(overall.medianLength)) * 60)}
+					</p>
+					<span class="text-xs text-gray-400">s</span>
+				</div>
+			</div>
+
+			<!-- Review Progress Funnel -->
+			<div class="col-span-2 md:col-span-4 lg:col-span-8">
+				<h3 class="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">
+					Review Progress
+				</h3>
+				<div class="grid gap-4 md:grid-cols-3">
+					<!-- 1. Needs to be seen twice (0 reviews) -->
+					<div class="rounded-lg bg-orange-50 p-4 shadow-sm ring-1 ring-orange-900/5">
+						<div class="flex items-center justify-between mb-2">
+							<p class="text-xs uppercase text-orange-600 font-bold">Unseen</p>
+							<span class="text-[10px] text-orange-400 font-medium">Needs 2 reviews</span>
+						</div>
+						<p class="text-3xl font-bold text-orange-900">
+							{overall.totalSubmissions - overall.reviewedSubmissions}
+						</p>
+						<p class="text-[10px] text-orange-500 mt-1">
+							{formatPercent(
+								overall.totalSubmissions - overall.reviewedSubmissions,
+								overall.totalSubmissions
+							)} of total
+						</p>
+					</div>
+
+					<!-- 2. Needs one more review (1 review) -->
+					<div class="rounded-lg bg-blue-50 p-4 shadow-sm ring-1 ring-blue-900/5">
+						<div class="flex items-center justify-between mb-2">
+							<p class="text-xs uppercase text-blue-600 font-bold">In Progress</p>
+							<span class="text-[10px] text-blue-400 font-medium">Needs 1 review</span>
+						</div>
+						<p class="text-3xl font-bold text-blue-900">
+							{overall.reviewedSubmissions - reviewedAtLeastTwiceCount}
+						</p>
+						<div class="w-full bg-blue-200 rounded-full h-1.5 mt-3 overflow-hidden">
+							<div
+								class="bg-blue-600 h-1.5 rounded-full"
+								style="width: {((overall.reviewedSubmissions - reviewedAtLeastTwiceCount) /
+									overall.totalSubmissions) *
+									100}%"
+							></div>
+						</div>
+					</div>
+
+					<!-- 3. Completed (2+ reviews) -->
+					<div class="rounded-lg bg-purple-50 p-4 shadow-sm ring-1 ring-purple-900/5">
+						<div class="flex items-center justify-between mb-2">
+							<p class="text-xs uppercase text-purple-600 font-bold">Completed</p>
+							<span class="text-[10px] text-purple-400 font-medium">Fully Reviewed</span>
+						</div>
+						<p class="text-3xl font-bold text-purple-900">
+							{reviewedAtLeastTwiceCount}
+						</p>
+						<div class="w-full bg-purple-200 rounded-full h-1.5 mt-3 overflow-hidden">
+							<div
+								class="bg-purple-600 h-1.5 rounded-full"
+								style="width: {(reviewedAtLeastTwiceCount / overall.totalSubmissions) * 100}%"
+							></div>
+						</div>
 					</div>
 				</div>
-				<p class="text-[10px] text-purple-400 mt-1">
-					{formatPercent(reviewedAtLeastTwiceCount, overall.totalSubmissions)} fully reviewed
-				</p>
+
+				<!-- Summary Text -->
+				<div class="mt-3 flex items-center justify-between px-1">
+					<p class="text-xs text-gray-500">
+						<span class="font-medium text-gray-900">{overall.reviewedSubmissions}</span> videos have been
+						reviewed at least once.
+					</p>
+					<p class="text-xs text-gray-400">
+						Total Submissions: <span class="font-mono">{overall.totalSubmissions}</span>
+					</p>
+				</div>
 			</div>
 
 			<!-- Breakdown Row -->
@@ -112,14 +179,25 @@
 		</div>
 	</section>
 
-	<!-- Submissions Timeline -->
-	<section class="space-y-6">
-		<header>
-			<h2 class="text-2xl font-semibold">Submission Timeline</h2>
-			<p class="text-sm text-gray-500">Daily intake activity</p>
-		</header>
-		<SubmissionChart data={timelineStats} />
-	</section>
+	<div class="grid gap-8 grid-cols-1 md:grid-cols-2">
+		<!-- Submissions Timeline -->
+		<section class="space-y-6">
+			<header>
+				<h2 class="text-2xl font-semibold">Submission Timeline</h2>
+				<p class="text-sm text-gray-500">Daily intake activity</p>
+			</header>
+			<SubmissionChart data={timelineStats} />
+		</section>
+
+		<!-- Review Timeline -->
+		<section class="space-y-6">
+			<header>
+				<h2 class="text-2xl font-semibold">Review Timeline</h2>
+				<p class="text-sm text-gray-500">Daily review activity</p>
+			</header>
+			<SubmissionChart data={data.reviewTimelineStats ?? []} />
+		</section>
+	</div>
 
 	<div class="grid gap-12 lg:grid-cols-6">
 		<!-- Curator Leaderboard (Active) -->
