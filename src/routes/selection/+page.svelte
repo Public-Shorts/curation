@@ -99,10 +99,10 @@
 </script>
 
 <div class="p-6 mx-auto space-y-8">
-	<header class="flex flex-col gap-6 border-b border-gray-100 pb-6">
+	<header class="flex flex-col gap-6 border-b border-gallery-100 pb-6">
 		<div class="flex justify-between items-end">
 			<div>
-				<h1 class="text-3xl font-bold tracking-tight text-gray-900">Final Selection</h1>
+				<h1 class="text-3xl font-bold tracking-tight text-gallery-900">Final Selection</h1>
 				<SelectionStatsDisplay {stats} />
 			</div>
 

@@ -1,0 +1,15 @@
+<script lang="ts">
+	import type { Snippet } from 'svelte';
+
+	let {
+		children,
+		class: className = ''
+	}: {
+		children: Snippet;
+		class?: string;
+	} = $props();
+</script>
+
+<tbody class="divide-y divide-gallery-100 {className}">
+	{@render children()}
+</tbody>

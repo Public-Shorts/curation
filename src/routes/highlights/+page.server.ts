@@ -2,9 +2,9 @@ import type { PageServerLoad } from './$types';
 import { sanityClient } from '$lib/server/sanity';
 
 export const load: PageServerLoad = async () => {
-    // Fetch all curators with their highlights
-    const curators = await sanityClient.fetch(
-        `*[_type == "curator" && defined(highlights) && count(highlights) > 0] {
+  // Fetch all curators with their highlights
+  const curators = await sanityClient.fetch(
+    `*[_type == "curator" && defined(highlights) && count(highlights) > 0] {
       _id,
       name,
       highlights[]->{
@@ -30,49 +30,56 @@ export const load: PageServerLoad = async () => {
         }
       }
     }`
-    );
+  );
 
-    // Aggregate highlights: create a map of submission -> curators who highlighted it
-    const highlightMap = new Map<string, any>();
+  // Aggregate highlights: create a map of submission -> curators who highlighted it
+  const highlightMap = new Map<string, any>();
 
-    curators.forEach((curator: any) => {
-        curator.highlights?.forEach((submission: any) => {
-            if (!submission) return; // Skip if reference is broken
+  curators.forEach((curator: any) => {
+    curator.highlights?.forEach((submission: any) => {
+      if (!submission) return; // Skip if reference is broken
 
-            if (!highlightMap.has(submission._id)) {
-                highlightMap.set(submission._id, {
-                    submission,
-                    curators: []
-                });
-            }
-
-            highlightMap.get(submission._id).curators.push({
-                _id: curator._id,
-                name: curator.name
-            });
+      if (!highlightMap.has(submission._id)) {
+        highlightMap.set(submission._id, {
+          submission,
+          curators: []
         });
+      }
+
+      highlightMap.get(submission._id).curators.push({
+        _id: curator._id,
+        name: curator.name
+      });
     });
+  });
 
-    // Convert map to array and sort by number of curators (most highlighted first)
-    const highlights = Array.from(highlightMap.values()).sort(
-        (a, b) => b.curators.length - a.curators.length
-    );
+  // Convert map to array and sort by number of curators (most highlighted first)
+  const highlights = Array.from(highlightMap.values()).sort(
+    (a, b) => b.curators.length - a.curators.length
+  );
 
-    // Calculate stats
-    const stats = {
-        totalHighlights: highlights.length,
-        totalCurators: curators.length,
-        mostHighlighted: highlights[0] || null,
-        averageHighlightsPerVideo:
-            highlights.length > 0
-                ? (
-                    highlights.reduce((sum, h) => sum + h.curators.length, 0) / highlights.length
-                ).toFixed(1)
-                : 0
-    };
+  // Calculate stats
+  const totalMinutes = highlights.reduce((sum, h) => sum + (h.submission.length || 0), 0);
+  const totalVideos = highlights.reduce((sum, h) => sum + h.curators.length, 0);
 
-    return {
-        highlights,
-        stats
-    };
+  const stats = {
+    totalHighlights: highlights.length,
+    totalCurators: curators.length,
+    totalVideos,
+    totalMinutes,
+    totalHours: Math.floor(totalMinutes / 60),
+    totalMins: totalMinutes % 60,
+    mostHighlighted: highlights[0] || null,
+    averageHighlightsPerVideo:
+      highlights.length > 0
+        ? (
+          highlights.reduce((sum, h) => sum + h.curators.length, 0) / highlights.length
+        ).toFixed(1)
+        : 0
+  };
+
+  return {
+    highlights,
+    stats
+  };
 };

@@ -24,20 +24,20 @@
 		<h1 class="text-3xl font-bold mb-4">My Reviews</h1>
 
 		<div class="grid gap-4 md:grid-cols-3">
-			<div class="rounded-lg bg-white p-4 shadow-sm border border-gray-100">
-				<p class="text-xs uppercase text-gray-500">Total Reviews</p>
+			<div class="rounded-lg bg-white p-4 shadow-sm border border-gallery-100">
+				<p class="text-xs uppercase text-gallery-500">Total Reviews</p>
 				<p class="mt-1 text-2xl font-semibold">{stats.totalReviews}</p>
 			</div>
 
-			<div class="rounded-lg bg-white p-4 shadow-sm border border-gray-100">
-				<p class="text-xs uppercase text-gray-500">Highlight Quota</p>
+			<div class="rounded-lg bg-white p-4 shadow-sm border border-gallery-100">
+				<p class="text-xs uppercase text-gallery-500">Highlight Quota</p>
 				<div class="mt-1 flex items-baseline gap-2">
 					<p class="text-2xl font-semibold">
 						{highlightedIds.length}
-						<span class="text-sm font-normal text-gray-400">/ {stats.maxHighlights}</span>
+						<span class="text-sm font-normal text-gallery-400">/ {stats.maxHighlights}</span>
 					</p>
 				</div>
-				<div class="mt-2 w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+				<div class="mt-2 w-full bg-gallery-100 rounded-full h-1.5 overflow-hidden">
 					<div
 						class="bg-black h-full transition-all"
 						style="width: {Math.min(
@@ -48,14 +48,14 @@
 				</div>
 			</div>
 
-			<div class="rounded-lg bg-white p-4 shadow-sm border border-gray-100">
-				<p class="text-xs uppercase text-gray-500">Next Slot</p>
+			<div class="rounded-lg bg-white p-4 shadow-sm border border-gallery-100">
+				<p class="text-xs uppercase text-gallery-500">Next Slot</p>
 				{#if stats.remainingQuota > 0}
 					<p class="mt-1 text-sm text-green-600 font-medium">
 						You have {stats.remainingQuota} slot/s available!
 					</p>
 				{:else}
-					<p class="mt-1 text-sm text-gray-600">
+					<p class="mt-1 text-sm text-gallery-600">
 						Watch <span class="font-bold text-black">{stats.additionalReviewsNeeded}</span> more videos
 						to unlock a new highlight slot.
 					</p>
@@ -65,10 +65,10 @@
 	</header>
 
 	<!-- Reviews Table -->
-	<section class="rounded-lg bg-white shadow-sm border border-gray-100 overflow-hidden">
+	<section class="rounded-lg bg-white shadow-sm border border-gallery-100 overflow-hidden">
 		<div class="overflow-x-auto">
 			<table class="w-full text-left text-sm">
-				<thead class="bg-gray-50 border-b text-[10px] uppercase text-gray-500">
+				<thead class="bg-gallery-50 border-b text-[10px] uppercase text-gallery-500">
 					<tr>
 						<th class="py-3 px-4">Film</th>
 						<th class="py-3 px-4">My Selection</th>
@@ -79,10 +79,10 @@
 				</thead>
 				<tbody class="divide-y divide-gray-100">
 					{#each myReviews as review}
-						<tr class="hover:bg-gray-50/50 transition-colors">
+						<tr class="hover:bg-gallery-50/50 transition-colors">
 							<td class="py-3 px-4">
 								<div class="font-medium">{review.submission.englishTitle}</div>
-								<div class="text-xs text-gray-500">
+								<div class="text-xs text-gallery-500">
 									{review.submission.originalTitle !== review.submission.englishTitle
 										? review.submission.originalTitle
 										: ''}
@@ -121,7 +121,7 @@
 								>
 									<input type="hidden" name="submissionId" value={review.submission._id} />
 									<button
-										class="p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-black/5"
+										class="p-2 rounded-full hover:bg-gallery-100 transition-colors focus:outline-none focus:ring-2 focus:ring-black/5"
 										title={isHighlighted(review.submission._id)
 											? 'Remove Highlight'
 											: 'Add Highlight'}
@@ -130,7 +130,7 @@
 										{#if isHighlighted(review.submission._id)}
 											<span class="text-yellow-500 text-lg">★</span>
 										{:else}
-											<span class="text-gray-300 text-lg hover:text-gray-400">☆</span>
+											<span class="text-gallery-300 text-lg hover:text-gallery-400">☆</span>
 										{/if}
 									</button>
 								</form>
@@ -138,7 +138,7 @@
 							<td class="py-3 px-4 text-right">
 								<a
 									href={`/review/${review.submission._id}`}
-									class="inline-block rounded border border-gray-200 px-3 py-1.5 text-xs font-medium hover:bg-gray-50 hover:border-gray-300 transition-all"
+									class="inline-block rounded border border-gallery-200 px-3 py-1.5 text-xs font-medium hover:bg-gallery-50 hover:border-gallery-300 transition-all"
 								>
 									Edit Review
 								</a>
@@ -147,7 +147,7 @@
 					{/each}
 					{#if myReviews.length === 0}
 						<tr>
-							<td colspan="5" class="py-12 text-center text-gray-500">
+							<td colspan="5" class="py-12 text-center text-gallery-500">
 								You haven't made any reviews yet.
 							</td>
 						</tr>
