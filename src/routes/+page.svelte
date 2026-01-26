@@ -129,7 +129,7 @@
 		</TableHead>
 
 		<TableBody>
-			{#each submissions as s}
+			{#each submissions as s (s._id)}
 				<TableRow class={s.hasReviewed ? 'opacity-50' : ''}>
 					<td class="py-3 px-4 truncate-cell" title={s.englishTitle}>{s.englishTitle}</td>
 					<td class="py-3 px-4 truncate-cell" title={s.filmLanguage}>{s.filmLanguage}</td>
