@@ -1,10 +1,11 @@
 import type { PageServerLoad } from './$types';
 import { sanityClient } from '$lib/server/sanity';
+import { calculateCuratorWeights, scoreMovies } from '$lib/utils/scoring';
 
 export const load: PageServerLoad = async () => {
-  // Fetch all curators with their highlights
-  const curators = await sanityClient.fetch(
-    `*[_type == "curator" && defined(highlights) && count(highlights) > 0] {
+  // 1. Fetch data needed for highlights and scoring
+  const query = `{
+    "curators": *[_type == "curator" && defined(highlights) && count(highlights) > 0] {
       _id,
       name,
       highlights[]->{
@@ -16,6 +17,10 @@ export const load: PageServerLoad = async () => {
         categories,
         yearOfCompletion,
         synopsis,
+        explicit,
+        explicitDetails,
+        aiUsed,
+        aiExplanation,
         "screenshots": screenshots[]{
           asset->{
             _id,
@@ -27,22 +32,74 @@ export const load: PageServerLoad = async () => {
             _id,
             url
           }
+        },
+        "reviews": *[_type == "review" && film._ref == ^._id]{
+          _id,
+          selection,
+          rating,
+          tags,
+          contentNotes,
+          "curatorId": curator._ref,
+          "curatorName": curator->name
         }
       }
-    }`
-  );
+    },
+    "curatorStatsRaw": *[_type == "review"]{
+      "curatorId": curator._ref,
+      selection
+    }
+  }`;
 
-  // Aggregate highlights: create a map of submission -> curators who highlighted it
+  const { curators, curatorStatsRaw } = await sanityClient.fetch(query);
+
+  // 2. Calculate Global Curator Stats for Weighting
+  const curatorStatsMap: Record<string, { totalReviews: number; approvedCount: number; approvalRate: number }> = {};
+  curatorStatsRaw.forEach((r: any) => {
+    if (!r.curatorId) return;
+    if (!curatorStatsMap[r.curatorId]) {
+      curatorStatsMap[r.curatorId] = { totalReviews: 0, approvedCount: 0, approvalRate: 0 };
+    }
+    curatorStatsMap[r.curatorId].totalReviews++;
+    if (r.selection === 'selected') {
+      curatorStatsMap[r.curatorId].approvedCount++;
+    }
+  });
+
+  Object.values(curatorStatsMap).forEach((stat) => {
+    stat.approvalRate = stat.totalReviews > 0 ? stat.approvedCount / stat.totalReviews : 0;
+  });
+
+  const curatorWeights = calculateCuratorWeights(curatorStatsMap, 1, 4); // Default presets from selection page
+
+  // 3. Aggregate highlights: create a map of submission -> curators and enriched data
   const highlightMap = new Map<string, any>();
 
   curators.forEach((curator: any) => {
     curator.highlights?.forEach((submission: any) => {
-      if (!submission) return; // Skip if reference is broken
+      if (!submission) return;
 
       if (!highlightMap.has(submission._id)) {
+        // Use scoreMovies to calculate weighted score and flags
+        const [scoredMovie] = scoreMovies([submission], curatorWeights);
+
+        // Aggregate unique tags from all reviews
+        const allTags = (submission.reviews || []).flatMap((r: any) => r.tags || []);
+        const uniqueTags = Array.from(new Set(allTags.map((t: any) => t.label)))
+          .map(label => allTags.find((t: any) => t.label === label));
+
+        // Calculate average rating (unweighted as it's just for display)
+        const ratings = (submission.reviews || [])
+          .map((r: any) => r.rating)
+          .filter((r: any) => r !== null && r !== undefined);
+        const avgRating = ratings.length > 0
+          ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length
+          : null;
+
         highlightMap.set(submission._id, {
-          submission,
-          curators: []
+          submission: scoredMovie,
+          curators: [],
+          avgRating,
+          uniqueTags
         });
       }
 
@@ -53,29 +110,23 @@ export const load: PageServerLoad = async () => {
     });
   });
 
-  // Convert map to array and sort by number of curators (most highlighted first)
-  const highlights = Array.from(highlightMap.values()).sort(
-    (a, b) => b.curators.length - a.curators.length
-  );
+  // Convert map to array
+  const highlights = Array.from(highlightMap.values());
 
-  // Calculate stats
+  // 4. Calculate stats
   const totalMinutes = highlights.reduce((sum, h) => sum + (h.submission.length || 0), 0);
-  const totalVideos = highlights.reduce((sum, h) => sum + h.curators.length, 0);
+  const totalSpentByCurators = highlights.reduce((sum, h) => sum + h.curators.length, 0);
 
   const stats = {
     totalHighlights: highlights.length,
     totalCurators: curators.length,
-    totalVideos,
+    totalVideos: totalSpentByCurators,
     totalMinutes,
     totalHours: Math.floor(totalMinutes / 60),
     totalMins: totalMinutes % 60,
-    mostHighlighted: highlights[0] || null,
+    mostHighlighted: [...highlights].sort((a, b) => b.curators.length - a.curators.length)[0] || null,
     averageHighlightsPerVideo:
-      highlights.length > 0
-        ? (
-          highlights.reduce((sum, h) => sum + h.curators.length, 0) / highlights.length
-        ).toFixed(1)
-        : 0
+      highlights.length > 0 ? (totalSpentByCurators / highlights.length).toFixed(1) : 0
   };
 
   return {
