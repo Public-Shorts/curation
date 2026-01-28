@@ -1,26 +1,14 @@
 import type { PageServerLoad } from './$types';
-import fs from 'fs';
-import path from 'path';
+import data from '$lib/data/clusters.json';
 
 export const load: PageServerLoad = async () => {
-    const dataPath = path.resolve('src/lib/data/clusters.json');
-
-    if (!fs.existsSync(dataPath)) {
-        return {
-            clusters: [],
-            stats: { totalClusters: 0, totalVideosInClusters: 0, totalTimeAcrossClusters: 0 },
-            error: "Clusters not yet generated. Please run 'pnpm update-clusters'."
-        };
-    }
-
-    const fileContent = fs.readFileSync(dataPath, 'utf-8');
-    const data = JSON.parse(fileContent);
 
     // Filter clusters to have at least 1 movie (or keep as is)
+    const movies = data.movies as Record<string, any>;
     const formattedClusters = data.clusters
         .map((c: any) => {
-            const highlightedMovies = c.highlightedMovieIds.map((id: string) => data.movies[id]).filter(Boolean);
-            const relevantMovies = c.relevantMovieIds.map((id: string) => data.movies[id]).filter(Boolean);
+            const highlightedMovies = c.highlightedMovieIds.map((id: string) => movies[id]).filter(Boolean);
+            const relevantMovies = c.relevantMovieIds.map((id: string) => movies[id]).filter(Boolean);
 
             const allMovies = [...highlightedMovies, ...relevantMovies];
 

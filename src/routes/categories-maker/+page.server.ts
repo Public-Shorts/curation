@@ -1,8 +1,7 @@
 import { sanityClient } from '$lib/server/sanity';
 import type { PageServerLoad } from './$types';
-import fs from 'fs';
-import path from 'path';
 import { dev } from '$app/environment';
+import suggestions from '$lib/data/suggestions.json';
 
 export const load: PageServerLoad = async () => {
     // Fetch all submissions
@@ -45,19 +44,8 @@ export const load: PageServerLoad = async () => {
         curators.flatMap((c: any) => c.highlights?.map((h: any) => h._id) || [])
     );
 
-    // Load suggestions if they exist
-    let suggestions = {};
-    const suggestionsPath = path.resolve('src/lib/data/suggestions.json');
-    if (fs.existsSync(suggestionsPath)) {
-        try {
-            suggestions = JSON.parse(fs.readFileSync(suggestionsPath, 'utf-8'));
-        } catch (e) {
-            console.error('Error parsing suggestions.json:', e);
-        }
-    }
-
     return {
-        submissions: submissions.map((s: any) => ({
+        submissions: (submissions as any[]).map((s: any) => ({
             ...s,
             isHighlighted: highlightedIds.has(s._id)
         })),
