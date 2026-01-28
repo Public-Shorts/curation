@@ -44,7 +44,7 @@ async function getClustersFromOllama(tags: string[]) {
 
     const prompt = `
     I am organizing a short film festival. I have a list of tags from the "highlighted" videos. 
-    I want you to group these tags into 8 to 12 meaningful clusters (categories).
+    I want you to group these tags into 10+ meaningful clusters (categories).
     For each cluster, provide:
     1. A catchy "id" (kebab-case)
     2. A beautiful "name" (e.g., "Atmospheric & Abstract Expressions")
