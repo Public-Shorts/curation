@@ -27,8 +27,8 @@
 				<a class="uppercase hover:text-gallery-900" href="/my-reviews">My Reviews</a>
 				<a class="uppercase hover:text-gallery-900" href="/stats">Stats</a>
 				<a class="uppercase hover:text-gallery-900" href="/highlights">Highlights</a>
+				<a class="uppercase hover:text-gallery-900" href="/clusters">Clusters</a>
 				<a class="uppercase hover:text-gallery-900" href="/selection">Selection</a>
-				<!-- <a class="uppercase hover:text-gallery-900" href="/clusters">Clusters</a> -->
 			</div>
 
 			<!-- Desktop Logout -->
