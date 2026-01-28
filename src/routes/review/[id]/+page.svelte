@@ -42,5 +42,5 @@
 	<SubmissionTechnicalInfos {submission} />
 
 	<!-- Review Form -->
-	<ReviewForm {review} {allTags} />
+	<ReviewForm {review} {allTags} {submission} />
 </div>

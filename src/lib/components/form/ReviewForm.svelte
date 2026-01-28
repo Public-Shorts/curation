@@ -4,7 +4,7 @@
 	import TagSelector from './TagSelector.svelte';
 	import type { Tag } from '$lib/utils/types';
 
-	let { review, allTags } = $props();
+	let { review, allTags, submission } = $props();
 	let submitting = $state(false);
 
 	const toastMessages = getToastMessages();
@@ -21,6 +21,8 @@
         if (currentSelection === 'notSelected') return 'Not Selected';
         return 'No Selection Made';
     });
+
+    let isAdult = $state(!!submission?.adult);
 </script>
 
 <section class="mt-8 sm:mt-12 border-t pt-6 sm:pt-8">
@@ -47,6 +49,21 @@
 			};
 		}}
 	>
+		<div class="bg-red-50 border border-red-100 rounded-lg p-4 mb-6">
+			<label class="flex items-center gap-3 cursor-pointer">
+				<input
+					type="checkbox"
+					name="adult"
+					class="h-5 w-5 rounded border-red-300 text-red-600 focus:ring-red-600"
+					bind:checked={isAdult}
+				/>
+				<div class="flex flex-col">
+					<span class="font-semibold text-red-900">Mark as Adult Content</span>
+					<span class="text-sm text-red-700">Video will only be scheduled during night hours</span>
+				</div>
+			</label>
+		</div>
+
 		<div class="grid gap-6 sm:gap-8 md:grid-cols-2">
 			<!-- Left Column -->
 			<div class="space-y-6">

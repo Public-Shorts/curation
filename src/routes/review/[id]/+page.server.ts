@@ -24,6 +24,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
                 categories,
                 categoryOther,
                 explicit,
+                adult,
                 explicitDetails,
                 aiUsed,
                 aiExplanation,
@@ -111,6 +112,13 @@ export const actions: Actions = {
 			const filmId = params.id;
 			const curatorId = locals.curatorId;
 
+			const adultTriggerNotes = [
+				'drugAlcoholUse',
+				'horrorDisturbingImages',
+				'sexualContent',
+				'strongLanguage'
+			];
+
 			// Upsert review: check if one exists
 			const existing = await sanityClient.fetch(
 				`*[_type == "review" && film._ref == $filmId && curator._ref == $curatorId][0]{ _id }`,
@@ -142,6 +150,22 @@ export const actions: Actions = {
 					additionalComments
 				});
 			}
+
+			// After updating the review, check ALL reviews for this film to determine adult status
+			const allReviews = await sanityClient.fetch(
+				`*[_type == "review" && film._ref == $filmId]{ contentNotes }`,
+				{ filmId }
+			);
+
+			const manualAdult = form.get('adult') === 'on';
+			const anyReviewHasAdultFlag = allReviews.some((r: any) =>
+				r.contentNotes?.some((note: string) => adultTriggerNotes.includes(note))
+			);
+
+			const isAdult = manualAdult || anyReviewHasAdultFlag;
+
+			// Update submission adult status
+			await sanityClient.patch(filmId).set({ adult: isAdult }).commit();
 
 			// success payload for use:enhance
 			return {
