@@ -1,19 +1,9 @@
 import { json } from '@sveltejs/kit';
-import { createClient } from '@sanity/client';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import dotenv from 'dotenv';
+import { sanityClient } from '$lib/server/sanity';
 
 const execPromise = promisify(exec);
-dotenv.config();
-
-const client = createClient({
-    projectId: process.env.PUBLIC_SANITY_PROJECT_ID || '0ome5qpf',
-    dataset: process.env.PUBLIC_SANITY_DATASET || 'production',
-    token: process.env.SANITY_API_TOKEN, // Needs to be a token with write access
-    useCdn: false,
-    apiVersion: '2023-05-03',
-});
 
 export async function POST({ request, url }) {
     const { action, ...params } = await request.json();
@@ -27,23 +17,23 @@ export async function POST({ request, url }) {
                     slug: { _type: 'slug', current: params.name.toLowerCase().replace(/\s+/g, '-') },
                     keywords: []
                 };
-                const result = await client.create(doc);
+                const result = await sanityClient.create(doc);
                 return json({ success: true, result });
             }
 
             case 'update-category': {
-                const result = await client.patch(params.id)
+                const result = await sanityClient.patch(params.id)
                     .set({ name: params.name })
                     .commit();
                 return json({ success: true, result });
             }
 
             case 'delete-category': {
-                await client.delete(params.id);
+                await sanityClient.delete(params.id);
                 // Also unassign all videos in this category
-                const videos = await client.fetch(`*[_type == "submission" && assignedCategory._ref == $id]._id`, { id: params.id });
+                const videos = await sanityClient.fetch(`*[_type == "submission" && assignedCategory._ref == $id]._id`, { id: params.id });
                 if (videos.length > 0) {
-                    const transaction = client.transaction();
+                    const transaction = sanityClient.transaction();
                     videos.forEach((vidId: string) => {
                         transaction.patch(vidId, (p) => p.unset(['assignedCategory']));
                     });
@@ -53,14 +43,14 @@ export async function POST({ request, url }) {
             }
 
             case 'assign-video': {
-                const result = await client.patch(params.videoId)
+                const result = await sanityClient.patch(params.videoId)
                     .set({ assignedCategory: { _type: 'reference', _ref: params.clusterId } })
                     .commit();
                 return json({ success: true, result });
             }
 
             case 'unassign-video': {
-                const result = await client.patch(params.videoId)
+                const result = await sanityClient.patch(params.videoId)
                     .unset(['assignedCategory'])
                     .commit();
                 return json({ success: true, result });

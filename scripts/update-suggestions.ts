@@ -6,11 +6,11 @@ import path from "path";
 dotenv.config();
 
 const SANITY_CONFIG = {
-    projectId: process.env.PUBLIC_SANITY_PROJECT_ID || "0ome5qpf",
-    dataset: process.env.PUBLIC_SANITY_DATASET || "production",
-    token: process.env.SANITY_API_TOKEN,
-    useCdn: false,
-    apiVersion: "2023-05-03",
+	projectId: process.env.PUBLIC_SANITY_PROJECT_ID || "0ome5qpf",
+	dataset: process.env.PUBLIC_SANITY_DATASET || "production",
+	token: process.env.SANITY_TOKEN,
+	useCdn: false,
+	apiVersion: "2023-05-03",
 };
 
 const OLLAMA_URL = "http://localhost:11434/api/chat";
@@ -19,73 +19,137 @@ const MODEL = "gemma3:4b";
 const client = createClient(SANITY_CONFIG);
 
 async function getSuggestionsFromLLM(categories: any[], allTags: string[]) {
-    const prompt = `
-        You are an expert film festival curator. I have a list of categories and a list of tags from film submissions.
-        Your goal is to map these tags to the most relevant categories.
-        
-        Categories:
-        ${categories.map(c => `- ${c.name} (${c.description || ''}) - Keywords: ${c.keywords?.join(', ') || 'N/A'}`).join('\n')}
-        
-        Tags to map:
-        ${allTags.join(', ')}
-        
-        Return a JSON object where keys are category names and values are arrays of relevant tags from the list provided.
-        Example format:
-        {
-          "Category Name": ["tag1", "tag2"],
-          "Another Category": ["tag3"]
-        }
-        
-        Only use tags from the provided list. Be selective.
-    `;
+	const prompt = `You are a strict film festival curator. Map tags to categories with HIGH precision.
 
-    try {
-        const response = await fetch(OLLAMA_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model: MODEL,
-                messages: [{ role: "user", content: prompt }],
-                stream: false,
-                format: "json",
-            }),
-        });
+RULES - BE HARSH:
+- Only include tags with DIRECT, OBVIOUS relevance to the category name
+- Maximum 3-5 tags per category - quality over quantity
+- Skip generic tags that could apply to anything
+- The category NAME is the PRIMARY signal - match tags that clearly relate to it
+- Tags from already-assigned videos are only hints, don't blindly include them
 
-        const data = await response.json();
-        if (data.message && data.message.content) {
-            return JSON.parse(data.message.content);
-        }
-        throw new Error("Unexpected LLM response format");
-    } catch (error) {
-        console.error("Error communicating with LLM:", error);
-        return {};
-    }
+CATEGORIES:
+${categories.map(c => `- "${c.name}"${c.assignedTags?.length ? ` (assigned videos have: ${c.assignedTags.join(', ')})` : ''}`).join('\n')}
+
+AVAILABLE TAGS:
+${allTags.join(', ')}
+
+Return JSON: category names as keys, arrays of 3-5 highly relevant tags as values.
+Be selective. If a tag isn't clearly relevant, exclude it.
+
+Example (notice the strict selection):
+{
+  "weird tech": ["glitch", "digital", "technology"],
+  "body": ["dance", "physical", "movement"]
+}
+
+Only use tags from the list. Return valid JSON only.`;
+
+	try {
+		const response = await fetch(OLLAMA_URL, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				model: MODEL,
+				messages: [{ role: "user", content: prompt }],
+				stream: false,
+				format: "json",
+			}),
+		});
+
+		const data = await response.json();
+		if (data.message && data.message.content) {
+			return JSON.parse(data.message.content);
+		}
+		throw new Error("Unexpected LLM response format");
+	} catch (error) {
+		console.error("Error communicating with LLM:", error);
+		return {};
+	}
 }
 
 async function main() {
-    console.log("Fetching categories and tags from Sanity...");
+	console.log("Fetching data from Sanity...");
 
-    // Fetch existing categories
-    const categories = await client.fetch(`*[_type == "category"] { name, description, keywords }`);
+	// Fetch categories with their assigned videos
+	const categories = await client.fetch(`
+		*[_type == "category"] {
+			_id,
+			name
+		}
+	`);
 
-    // Fetch all tags from submissions
-    const submissions = await client.fetch(`*[_type == "submission"] { tags }`);
-    const allTags = Array.from(new Set<string>(submissions.flatMap((s: any) => (s.tags as string[]) || []))).filter(Boolean);
+	// Fetch all submissions with their assigned category
+	const submissions = await client.fetch(`
+		*[_type == "submission"] {
+			_id,
+			assignedCategory
+		}
+	`);
 
-    if (categories.length === 0) {
-        console.warn("No categories found in Sanity. Please create some first.");
-        return;
-    }
+	// Fetch all reviews with tags (curator-assigned tags)
+	const reviews = await client.fetch(`
+		*[_type == "review" && defined(tags)] {
+			film->{_id},
+			tags
+		}
+	`);
 
-    console.log(`Found ${categories.length} categories and ${allTags.length} unique tags.`);
-    console.log(`Asking LLM (${MODEL}) to map tags to categories...`);
+	// Build a map of submission ID -> curator tags
+	const submissionTags: Record<string, string[]> = {};
+	for (const review of reviews) {
+		if (!review.film?._id || !review.tags) continue;
+		const filmId = review.film._id;
+		const tags = Array.isArray(review.tags)
+			? review.tags.map((t: any) => typeof t === 'string' ? t : t.label || t.value).filter(Boolean)
+			: [];
+		if (!submissionTags[filmId]) submissionTags[filmId] = [];
+		submissionTags[filmId].push(...tags);
+	}
 
-    const suggestions = await getSuggestionsFromLLM(categories, allTags);
+	// Dedupe tags per submission
+	for (const id of Object.keys(submissionTags)) {
+		submissionTags[id] = [...new Set(submissionTags[id])];
+	}
 
-    const outputPath = path.resolve("src/lib/data/suggestions.json");
-    fs.writeFileSync(outputPath, JSON.stringify(suggestions, null, 2));
+	// Collect all unique tags
+	const allTags = [...new Set(Object.values(submissionTags).flat())].filter(Boolean);
 
-    console.log(`Saved suggestions to ${outputPath}`);
+	// For each category, find tags from already-assigned videos
+	const categoriesWithTags = categories.map((cat: any) => {
+		const assignedSubmissions = submissions.filter(
+			(s: any) => s.assignedCategory?._ref === cat._id
+		);
+		const assignedTags = [...new Set(
+			assignedSubmissions.flatMap((s: any) => submissionTags[s._id] || [])
+		)];
+		return {
+			...cat,
+			assignedTags
+		};
+	});
+
+	if (categories.length === 0) {
+		console.warn("No categories found. Please create some first.");
+		return;
+	}
+
+	if (allTags.length === 0) {
+		console.warn("No curator tags found in reviews. Curators need to tag some videos first.");
+		return;
+	}
+
+	console.log(`Found ${categories.length} categories and ${allTags.length} unique curator tags.`);
+	console.log(`Tags: ${allTags.slice(0, 20).join(', ')}${allTags.length > 20 ? '...' : ''}`);
+	console.log(`\nAsking LLM (${MODEL}) to map tags to categories...`);
+
+	const suggestions = await getSuggestionsFromLLM(categoriesWithTags, allTags);
+
+	const outputPath = path.resolve("src/lib/data/suggestions.json");
+	fs.writeFileSync(outputPath, JSON.stringify(suggestions, null, 2));
+
+	console.log(`\nSaved suggestions to ${outputPath}`);
+	console.log("Suggestions:", JSON.stringify(suggestions, null, 2));
 }
 
 main().catch(console.error);
