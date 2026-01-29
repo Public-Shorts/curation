@@ -5,14 +5,64 @@
 
 	let { data } = $props();
 
-	const { stats } = data;
+	let stats = $derived(data.stats);
 
 	let sortKey = $state('popular'); // 'popular', 'score', 'title', 'length'
 	let sortDir = $state<'asc' | 'desc'>('desc');
 	let viewMode = $state<'card' | 'inline'>('card');
+	let selectedTags = $state<string[]>([]);
+	let tagSearchQuery = $state('');
+	let tagDropdownOpen = $state(false);
+
+	// Collect all unique tags across all highlights (only 2+ occurrences)
+	let allTags = $derived.by(() => {
+		const tagMap = new Map<string, { label: string; count: number }>();
+		data.highlights.forEach((h: any) => {
+			(h.uniqueTags || []).forEach((tag: any) => {
+				if (tag?.label) {
+					const existing = tagMap.get(tag.label);
+					tagMap.set(tag.label, {
+						label: tag.label,
+						count: (existing?.count || 0) + 1
+					});
+				}
+			});
+		});
+		return Array.from(tagMap.values())
+			.filter((t) => t.count >= 2)
+			.sort((a, b) => b.count - a.count);
+	});
+
+	// Filter tags by search query
+	let searchFilteredTags = $derived.by(() => {
+		if (!tagSearchQuery.trim()) return allTags;
+		const q = tagSearchQuery.toLowerCase();
+		return allTags.filter((t) => t.label.toLowerCase().includes(q));
+	});
+
+	function toggleTag(tagLabel: string) {
+		if (selectedTags.includes(tagLabel)) {
+			selectedTags = selectedTags.filter((t) => t !== tagLabel);
+		} else {
+			selectedTags = [...selectedTags, tagLabel];
+		}
+	}
+
+	function closeDropdown() {
+		tagDropdownOpen = false;
+		tagSearchQuery = '';
+	}
+
+	let filteredHighlights = $derived.by(() => {
+		if (selectedTags.length === 0) return data.highlights;
+		return data.highlights.filter((h: any) => {
+			const tagLabels = (h.uniqueTags || []).map((t: any) => t?.label);
+			return selectedTags.some((tag) => tagLabels.includes(tag));
+		});
+	});
 
 	let sortedHighlights = $derived.by(() => {
-		return [...data.highlights].sort((a, b) => {
+		return [...filteredHighlights].sort((a, b) => {
 			let av, bv;
 
 			if (sortKey === 'popular') {
@@ -44,6 +94,8 @@
 		}
 	}
 </script>
+
+<svelte:window onclick={() => closeDropdown()} />
 
 <div class="space-y-8">
 	<!-- Stats Section (Moved to top) -->
@@ -190,12 +242,107 @@
 		</div>
 	</header>
 
+	<!-- Tag Filter -->
+	{#if allTags.length > 0}
+		<section class="flex flex-wrap items-center gap-2">
+			<!-- Selected tags as removable chips -->
+			{#each selectedTags as tag}
+				<button
+					onclick={() => toggleTag(tag)}
+					class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-full bg-gallery-900 text-white hover:bg-gallery-800 transition-colors"
+				>
+					{tag}
+					<span class="opacity-60">×</span>
+				</button>
+			{/each}
+
+			<!-- Dropdown trigger -->
+			<div class="relative">
+				<button
+					onclick={(e) => {
+						e.stopPropagation();
+						tagDropdownOpen = !tagDropdownOpen;
+					}}
+					class="px-3 py-1.5 text-[11px] font-medium rounded-lg border border-gallery-200 bg-white text-gallery-600 hover:border-gallery-300 transition-all flex items-center gap-1.5"
+				>
+					<span>+ Add tag filter</span>
+				</button>
+
+				<!-- Dropdown panel -->
+				{#if tagDropdownOpen}
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<div
+						onclick={(e) => e.stopPropagation()}
+						onkeydown={() => {}}
+						class="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-xl border border-gallery-200 z-50 overflow-hidden"
+					>
+						<!-- Search input -->
+						<div class="p-2 border-b border-gallery-100">
+							<input
+								type="text"
+								placeholder="Search tags..."
+								bind:value={tagSearchQuery}
+								class="w-full px-2.5 py-1.5 text-sm border border-gallery-200 rounded-md focus:outline-none focus:border-gallery-400"
+							/>
+						</div>
+
+						<!-- Tag list -->
+						<div class="max-h-48 overflow-y-auto p-1">
+							{#each searchFilteredTags as tag}
+								<button
+									onclick={() => toggleTag(tag.label)}
+									class="w-full flex items-center justify-between px-2.5 py-1.5 text-sm rounded-md hover:bg-gallery-50 transition-colors {selectedTags.includes(tag.label) ? 'bg-gallery-100' : ''}"
+								>
+									<span class="flex items-center gap-2">
+										<span
+											class="w-4 h-4 rounded border flex items-center justify-center text-white text-[10px] {selectedTags.includes(tag.label) ? 'bg-gallery-900 border-gallery-900' : 'border-gallery-300'}"
+										>
+											{#if selectedTags.includes(tag.label)}✓{/if}
+										</span>
+										{tag.label}
+									</span>
+									<span class="text-xs text-gallery-400">{tag.count}</span>
+								</button>
+							{/each}
+							{#if searchFilteredTags.length === 0}
+								<p class="text-xs text-gallery-400 text-center py-3">No tags found</p>
+							{/if}
+						</div>
+
+						<!-- Footer -->
+						{#if selectedTags.length > 0}
+							<div class="p-2 border-t border-gallery-100">
+								<button
+									onclick={() => (selectedTags = [])}
+									class="w-full text-xs text-gallery-500 hover:text-gallery-700"
+								>
+									Clear all
+								</button>
+							</div>
+						{/if}
+					</div>
+				{/if}
+			</div>
+
+			<!-- Results count when filtering -->
+			{#if selectedTags.length > 0}
+				<span class="text-xs text-gallery-500">
+					{filteredHighlights.length} result{filteredHighlights.length !== 1 ? 's' : ''}
+				</span>
+			{/if}
+		</section>
+	{/if}
+
 	<!-- Highlights Grid -->
 	<section class="space-y-6">
 		{#if sortedHighlights.length === 0}
 			<div class="rounded-lg bg-gallery-50 p-12 text-center">
 				<p class="text-gallery-500">
-					No highlights yet. Curators will select their favorites soon!
+					{#if selectedTags.length > 0}
+						No highlights match the selected tags.
+					{:else}
+						No highlights yet. Curators will select their favorites soon!
+					{/if}
 				</p>
 			</div>
 		{:else if viewMode === 'card'}
@@ -476,12 +623,3 @@
 	</section>
 </div>
 
-<style>
-	.line-clamp-2 {
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		-webkit-box-orient: vertical;
-		line-clamp: 2;
-		overflow: hidden;
-	}
-</style>

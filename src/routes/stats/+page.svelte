@@ -223,6 +223,7 @@
 								<th class="py-3 pl-4 pr-3 font-medium">Curator</th>
 								<th class="py-3 px-3 font-medium text-right">Reviews</th>
 								<th class="py-3 px-3 font-medium text-right">Selected</th>
+								<th class="py-3 px-3 font-medium text-right">Highlights</th>
 								<th class="py-3 px-3 font-medium text-right">Ratio</th>
 								<th class="py-3 pl-3 pr-4 font-medium text-right">Length</th>
 							</tr>
@@ -237,6 +238,7 @@
 									>
 									<td class="py-3 px-3 text-right text-gallery-900 font-medium">{curator.total}</td>
 									<td class="py-3 px-3 text-right text-gallery-500">{curator.selected}</td>
+									<td class="py-3 px-3 text-right text-gallery-500">{curator.highlights ?? 0}</td>
 									<td class="py-3 px-3 text-right text-gallery-500">
 										{curator.total > 0
 											? ((curator.selected / curator.total) * 100).toFixed(0) + '%'

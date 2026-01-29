@@ -12,7 +12,8 @@ export const load: PageServerLoad = async ({ locals }) => {
         name,
         "total": count(*[_type == "review" && curator._ref == ^._id]),
         "selected": count(*[_type == "review" && curator._ref == ^._id && selection == "selected"]),
-        
+        "highlights": count(highlights),
+
         // 1. FETCH THE RAW LENGTHS INSTEAD OF SUMMING
         // We get an array of lengths for all films this curator reviewed
         "filmLengths": *[_type == "review" && curator._ref == ^._id].film->length
