@@ -5,78 +5,132 @@
 	}>();
 </script>
 
-<div class="bg-gray-50 p-4 rounded-lg border border-gray-200 flex gap-8 items-center">
-	<!-- Volume Influence -->
-	<div class="space-y-1 relative group cursor-help">
-		<label
-			for="vol"
-			class="text-xs font-semibold text-gray-500 uppercase border-b border-dotted border-gray-400"
-			>Volume Influence</label
-		>
-		<div class="flex items-center gap-2">
-			<input
-				id="vol"
-				type="range"
-				min="0.5"
-				max="3"
-				step="0.1"
-				bind:value={volumeExponent}
-				class="w-32 accent-blue-600"
-			/>
-			<span class="text-sm font-mono w-8">{volumeExponent.toFixed(1)}</span>
-		</div>
-
-		<!-- Tooltip -->
-		<div
-			class="absolute bottom-full left-0 mb-2 w-64 p-3 bg-gray-900 text-white text-xs rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10"
-		>
-			<p class="font-bold mb-1">Impact of Experience</p>
-			<p class="mb-2 text-gray-300">
-				Controls how much a curator's total review count weights their vote.
-			</p>
-			<ul class="list-disc pl-3 space-y-0.5 text-gray-400">
-				<li><span class="text-white">1.0</span>: Standard log scaling.</li>
-				<li><span class="text-white">&gt; 1.0</span>: Active Curators dominate.</li>
-				<li>
-					<span class="text-white">&lt; 1.0</span>: Less active Curators have equal say.
-				</li>
-			</ul>
+<div class="controls">
+	<div class="control group">
+		<label for="vol">Volume</label>
+		<input
+			id="vol"
+			type="range"
+			min="0.5"
+			max="3"
+			step="0.1"
+			bind:value={volumeExponent}
+		/>
+		<span class="val">{volumeExponent.toFixed(1)}</span>
+		<div class="tooltip">
+			<p class="tooltip-title">Impact of Experience</p>
+			<p>How much a curator's review count weights their vote.</p>
+			<p>1.0 = standard, &gt;1 = active curators dominate, &lt;1 = equal say.</p>
 		</div>
 	</div>
 
-	<!-- Bias Penalty -->
-	<div class="space-y-1 relative group cursor-help">
-		<label
-			for="tend"
-			class="text-xs font-semibold text-gray-500 uppercase border-b border-dotted border-gray-400"
-			>Bias Penalty</label
-		>
-		<div class="flex items-center gap-2">
-			<input
-				id="tend"
-				type="range"
-				min="0"
-				max="8"
-				step="0.5"
-				bind:value={tendencyPenalty}
-				class="w-32 accent-rose-600"
-			/>
-			<span class="text-sm font-mono w-8">{tendencyPenalty.toFixed(1)}</span>
-		</div>
-
-		<!-- Tooltip -->
-		<div
-			class="absolute bottom-full left-0 mb-2 w-64 p-3 bg-gray-900 text-white text-xs rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10"
-		>
-			<p class="font-bold mb-1">Penalty for Extremes</p>
-			<p class="mb-2 text-gray-300">
-				Reduces influence of curators who approve 0% or 100% of films.
-			</p>
-			<ul class="list-disc pl-3 space-y-0.5 text-gray-400">
-				<li><span class="text-white">4.0</span>: Balanced penalty.</li>
-				<li><span class="text-white">&gt; 4.0</span>: Strict. Only ~50% rates count.</li>
-				<li><span class="text-white">0</span>: No penalty (pure volume).</li>
-			</ul>
+	<div class="control group">
+		<label for="tend">Bias</label>
+		<input
+			id="tend"
+			type="range"
+			min="0"
+			max="8"
+			step="0.5"
+			bind:value={tendencyPenalty}
+		/>
+		<span class="val">{tendencyPenalty.toFixed(1)}</span>
+		<div class="tooltip">
+			<p class="tooltip-title">Penalty for Extremes</p>
+			<p>Reduces influence of curators who approve 0% or 100%.</p>
+			<p>4.0 = balanced, &gt;4 = strict, 0 = no penalty.</p>
 		</div>
 	</div>
 </div>
+
+<style>
+	.controls {
+		display: flex;
+		gap: 2rem;
+		align-items: center;
+	}
+
+	.control {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		position: relative;
+		cursor: help;
+	}
+
+	label {
+		font-size: 0.6875rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--color-gallery-400);
+		border-bottom: 1px dotted var(--color-gallery-300);
+	}
+
+	input[type='range'] {
+		width: 100px;
+		height: 4px;
+		appearance: none;
+		background: var(--color-gallery-200);
+		border-radius: 2px;
+		cursor: pointer;
+	}
+
+	input[type='range']::-webkit-slider-thumb {
+		appearance: none;
+		width: 12px;
+		height: 12px;
+		border-radius: 50%;
+		background: var(--color-gallery-600);
+		cursor: pointer;
+		transition: transform 0.15s;
+	}
+
+	input[type='range']::-webkit-slider-thumb:hover {
+		transform: scale(1.2);
+	}
+
+	.val {
+		font-size: 0.75rem;
+		font-weight: 600;
+		font-family: monospace;
+		min-width: 24px;
+		color: var(--color-gallery-600);
+	}
+
+	.tooltip {
+		position: absolute;
+		bottom: 100%;
+		left: 0;
+		margin-bottom: 0.5rem;
+		width: 220px;
+		padding: 0.625rem 0.75rem;
+		background: var(--color-gallery-900);
+		color: white;
+		font-size: 0.6875rem;
+		line-height: 1.4;
+		border-radius: 6px;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.15s;
+		z-index: 10;
+	}
+
+	.group:hover .tooltip {
+		opacity: 1;
+	}
+
+	.tooltip-title {
+		font-weight: 600;
+		margin: 0 0 0.25rem;
+	}
+
+	.tooltip p {
+		margin: 0 0 0.25rem;
+		color: var(--color-gallery-300);
+	}
+
+	.tooltip p:last-child {
+		margin-bottom: 0;
+	}
+</style>

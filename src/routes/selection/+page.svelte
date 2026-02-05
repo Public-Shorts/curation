@@ -19,6 +19,8 @@
 	let sortKey = $state('score');
 	let sortDir = $state<'asc' | 'desc'>('desc');
 
+	let showWeights = $state(false);
+
 	// --- 1. Calculate Curator Weights ---
 	let curatorWeights = $derived(
 		calculateCuratorWeights(data.curatorStats, volumeExponent, tendencyPenalty)
@@ -98,17 +100,62 @@
 	}
 </script>
 
-<div class="p-6 mx-auto space-y-8">
-	<header class="flex flex-col gap-6 border-b border-gallery-100 pb-6">
-		<div class="flex justify-between items-end">
-			<div>
-				<h1 class="text-3xl font-bold tracking-tight text-gallery-900">Final Selection</h1>
-				<SelectionStatsDisplay {stats} />
-			</div>
+<header class="header">
+	<div class="header-top">
+		<h1>Selection</h1>
+		<button class="btn-ghost" onclick={() => (showWeights = !showWeights)}>
+			{showWeights ? 'Hide weights' : 'Weights'}
+		</button>
+	</div>
+	<SelectionStatsDisplay {stats} />
+</header>
 
-			<WeightingControls bind:volumeExponent bind:tendencyPenalty />
-		</div>
-	</header>
+{#if showWeights}
+	<div class="weights-wrap">
+		<WeightingControls bind:volumeExponent bind:tendencyPenalty />
+	</div>
+{/if}
 
-	<MoviesTable movies={sortedMovies} {sortKey} {sortDir} {setSort} />
-</div>
+<MoviesTable movies={sortedMovies} {sortKey} {sortDir} {setSort} />
+
+<style>
+	.header {
+		margin-bottom: 1.5rem;
+	}
+
+	.header-top {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		margin-bottom: 0.5rem;
+	}
+
+	.header-top h1 {
+		font-size: 1.25rem;
+		font-weight: 700;
+		color: var(--color-gallery-900);
+		margin: 0;
+		letter-spacing: -0.01em;
+	}
+
+	.btn-ghost {
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--color-gallery-400);
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 0.25rem 0.5rem;
+		border-radius: 4px;
+		transition: all 0.15s;
+	}
+
+	.btn-ghost:hover {
+		color: var(--color-gallery-700);
+		background: var(--color-gallery-100);
+	}
+
+	.weights-wrap {
+		margin-bottom: 1.25rem;
+	}
+</style>

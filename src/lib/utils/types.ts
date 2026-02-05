@@ -49,4 +49,5 @@ export interface SelectionStats {
     maybeTime: string;
     rejected: number;
     rejectedTime: string;
+    highlighted?: number;
 }

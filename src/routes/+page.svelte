@@ -1,11 +1,9 @@
 <script lang="ts">
 	import {
-		StatCard,
 		Table,
 		TableHead,
 		TableBody,
 		TableRow,
-		Button,
 		ColumnToggle,
 		FiltersPanel,
 		FlagBadge
@@ -50,7 +48,7 @@
 		| 'highlighted';
 	type SortDir = 'asc' | 'desc';
 
-	let sortKey = $state<SortKey>('_createdAt');
+	let sortKey = $state<SortKey>('score');
 	let sortDir = $state<SortDir>('desc');
 
 	// Column visibility - highlight is now ON by default
@@ -106,7 +104,7 @@
 
 	let hours = $derived(Math.floor(totalMinutes / 60));
 	let mins = $derived(totalMinutes % 60);
-	let timeDisplay = $derived(hours > 0 ? `${hours}h ${mins}min` : `${mins}min`);
+	let timeDisplay = $derived(hours > 0 ? `${hours}h ${mins}m` : `${mins}m`);
 
 	// Process, filter, and sort submissions
 	let submissions = $derived.by(() => {
@@ -188,6 +186,11 @@
 		});
 	});
 
+	// Count highlighted submissions
+	let highlightedCount = $derived(
+		Object.values(highlightMap).filter((curators) => curators.length > 0).length
+	);
+
 	// Selection stats with dynamic thresholds
 	let selectionStats: SelectionStats = $derived.by(() => {
 		let selected = 0;
@@ -233,7 +236,8 @@
 			rejected,
 			selectedTime: formatTime(selectedTime),
 			maybeTime: formatTime(maybeTime),
-			rejectedTime: formatTime(rejectedTime)
+			rejectedTime: formatTime(rejectedTime),
+			highlighted: highlightedCount
 		};
 	});
 
@@ -247,423 +251,569 @@
 				: 'desc';
 		}
 	}
+
+	let showSettings = $state(false);
 </script>
 
-<!-- Page Header -->
-<header class="page-header">
-	<div class="header-content">
-		<h1 class="page-title">Curation Dashboard</h1>
-		<a href="/my-reviews" class="my-reviews-link">
-			My Reviews & Highlights
-			<span class="arrow">→</span>
-		</a>
+<!-- Minimal Header -->
+<header class="header">
+	<div class="header-top">
+		<h1>Curation</h1>
+		<a href="/my-reviews" class="link-subtle">My Reviews →</a>
+	</div>
+	<div class="header-meta">
+		<span>{curator?.name}</span>
+		<span class="sep"></span>
+		<span>{total} reviews</span>
+		<span class="sep"></span>
+		<span>{approvalRate}% approved</span>
+		<span class="sep"></span>
+		<span>{timeDisplay} watched</span>
 	</div>
 </header>
 
-<!-- Curator Stats -->
-<section class="stats-grid">
-	<StatCard label="Curator" value={curator?.name} />
-	<StatCard label="Reviews" value={total} />
-	<StatCard label="Approved · Rate">
-		<p class="text-lg font-semibold">
-			{approved} <span class="text-sm text-gallery-500">({approvalRate}%)</span>
-		</p>
-	</StatCard>
-	<StatCard label="Total Watched" value={timeDisplay} />
+<!-- Selection Overview -->
+<section class="selection-bar">
+	<SelectionStatsDisplay stats={selectionStats} />
+	<div class="selection-bar-actions">
+		<button class="btn-ghost" onclick={() => (showSettings = !showSettings)}>
+			{showSettings ? 'Hide' : 'Thresholds'}
+		</button>
+	</div>
 </section>
 
-<!-- All Submissions table -->
-<section class="submissions-section">
-	<header class="section-header">
-		<div class="section-title-row">
-			<h2 class="section-title">All Submissions</h2>
-			<span class="submission-count">
-				Showing {submissions.length} of {scoredSubmissions.length}
-			</span>
-		</div>
+{#if showSettings}
+	<div class="settings-wrap">
+		<SettingsPanel bind:settings isAdmin={data.isAdmin} />
+	</div>
+{/if}
 
-		<div class="controls-row">
-			<div class="left-controls">
-				<SelectionStatsDisplay stats={selectionStats} />
-			</div>
-			<div class="right-controls">
-				<SettingsPanel bind:settings isAdmin={data.isAdmin} />
-			</div>
-		</div>
+<!-- Toolbar -->
+<div class="toolbar">
+	<div class="toolbar-left">
+		<FiltersPanel bind:filters {availableLanguages} {availableCategories} />
+	</div>
+	<div class="toolbar-right">
+		<span class="count-label">{submissions.length}/{scoredSubmissions.length}</span>
+		<ColumnToggle columns={columnDefinitions} bind:visibleColumns />
+	</div>
+</div>
 
-		<div class="filters-row">
-			<FiltersPanel bind:filters {availableLanguages} {availableCategories} />
-			<ColumnToggle columns={columnDefinitions} bind:visibleColumns />
-		</div>
-	</header>
+<!-- Table -->
+<div class="table-wrap">
+	<Table>
+		<TableHead>
+			<tr>
+				{#if visibleColumns.has('highlight')}
+					<th class="th-icon" onclick={() => setSort('highlighted')}>
+						<span class="th-star">★</span>
+						{#if sortKey === 'highlighted'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
+					</th>
+				{/if}
+				{#if visibleColumns.has('title')}
+					<th class="th-sortable" onclick={() => setSort('englishTitle')}>
+						Title {#if sortKey === 'englishTitle'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
+					</th>
+				{/if}
+				{#if visibleColumns.has('director')}
+					<th class="th-sortable" onclick={() => setSort('directorName')}>
+						Director {#if sortKey === 'directorName'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
+					</th>
+				{/if}
+				{#if visibleColumns.has('language')}
+					<th class="th-sortable" onclick={() => setSort('filmLanguage')}>
+						Lang {#if sortKey === 'filmLanguage'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
+					</th>
+				{/if}
+				{#if visibleColumns.has('categories')}
+					<th class="th-sortable" onclick={() => setSort('categories')}>
+						Cat {#if sortKey === 'categories'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
+					</th>
+				{/if}
+				{#if visibleColumns.has('length')}
+					<th class="th-sortable" onclick={() => setSort('length')}>
+						Len {#if sortKey === 'length'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
+					</th>
+				{/if}
+				{#if visibleColumns.has('uploaded')}
+					<th class="th-sortable" onclick={() => setSort('_createdAt')}>
+						Date {#if sortKey === '_createdAt'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
+					</th>
+				{/if}
+				{#if visibleColumns.has('reviewedBy')}
+					<th class="th-sortable" onclick={() => setSort('reviewsCount')}>
+						Reviews {#if sortKey === 'reviewsCount'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
+					</th>
+				{/if}
+				{#if visibleColumns.has('votes')}
+					<th class="th-plain">Votes</th>
+				{/if}
+				{#if visibleColumns.has('score')}
+					<th class="th-sortable" onclick={() => setSort('score')}>
+						Score {#if sortKey === 'score'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
+					</th>
+				{/if}
+				{#if visibleColumns.has('flags')}
+					<th class="th-plain">Flags</th>
+				{/if}
+				<th class="th-plain th-center"></th>
+			</tr>
+		</TableHead>
 
-	<div class="table-container">
-		<Table>
-			<TableHead>
-				<tr>
+		<TableBody>
+			{#each submissions as s (s._id)}
+				{@const score = s.score || 0}
+				{@const hasReviews = (s.reviewsCount || 0) > 0}
+				<TableRow
+					class="{s.hasReviewed ? 'reviewed-row' : ''} {s.isHighlighted
+						? 'highlight-row'
+						: hasReviews && score >= settings.selectedThreshold
+							? 'row-selected'
+							: hasReviews && score >= settings.maybeThreshold
+								? 'row-maybe'
+								: hasReviews
+									? 'row-rejected'
+									: ''}"
+				>
 					{#if visibleColumns.has('highlight')}
-						<th class="th-highlight" onclick={() => setSort('highlighted')}>
-							<span class="highlight-header-icon">★</span>
-							{sortKey === 'highlighted' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-						</th>
+						<td class="td-icon">
+							{#if s.isHighlighted}
+								<span
+									class="highlight-indicator"
+									title="Highlighted by: {s.highlightedBy.join(', ')}"
+								>★</span>
+							{:else}
+								<span class="td-muted">-</span>
+							{/if}
+						</td>
 					{/if}
 					{#if visibleColumns.has('title')}
-						<th class="cursor-pointer py-3 px-4" onclick={() => setSort('englishTitle')}>
-							Title {sortKey === 'englishTitle' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-						</th>
+						<td class="td-title" title={s.englishTitle}>
+							{s.englishTitle}
+						</td>
 					{/if}
 					{#if visibleColumns.has('director')}
-						<th class="cursor-pointer py-3 px-4" onclick={() => setSort('directorName')}>
-							Director {sortKey === 'directorName' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-						</th>
+						<td class="td-truncate td-secondary" title={s.directorName}>
+							{s.directorName || '-'}
+						</td>
 					{/if}
 					{#if visibleColumns.has('language')}
-						<th class="cursor-pointer py-3 px-4" onclick={() => setSort('filmLanguage')}>
-							Language {sortKey === 'filmLanguage' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-						</th>
+						<td class="td-truncate" title={s.filmLanguage}>{s.filmLanguage}</td>
 					{/if}
 					{#if visibleColumns.has('categories')}
-						<th class="cursor-pointer py-3 px-4" onclick={() => setSort('categories')}>
-							Categories {sortKey === 'categories' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-						</th>
+						<td
+							class="td-truncate"
+							title={s.categories?.join(', ') +
+								(s.categories?.includes('other') && s.categoryOther
+									? `, ${s.categoryOther}`
+									: '')}
+						>
+							{s.categories?.join(', ') +
+								(s.categories?.includes('other') && s.categoryOther
+									? `, ${s.categoryOther}`
+									: '')}
+						</td>
 					{/if}
 					{#if visibleColumns.has('length')}
-						<th class="cursor-pointer py-3 px-4" onclick={() => setSort('length')}>
-							Length {sortKey === 'length' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-						</th>
+						<td class="td-num">{s.length}′</td>
 					{/if}
 					{#if visibleColumns.has('uploaded')}
-						<th class="cursor-pointer py-3 px-4" onclick={() => setSort('_createdAt')}>
-							Uploaded {sortKey === '_createdAt' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-						</th>
+						<td class="td-date" title={new Date(s._createdAt).toLocaleString()}>
+							{new Date(s._createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+						</td>
 					{/if}
 					{#if visibleColumns.has('reviewedBy')}
-						<th class="cursor-pointer py-3 px-4" onclick={() => setSort('reviewsCount')}>
-							Reviewed by {sortKey === 'reviewsCount' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-						</th>
+						<td
+							class="td-reviews"
+							title={s.reviews?.map((r: any) => r.curatorName).join(', ') || 'None'}
+						>
+							{#if s.reviews?.length}
+								<span class="review-count">{s.reviews.length}</span>
+								<span class="review-names">{s.reviews.map((r: any) => r.curatorName).join(', ')}</span>
+							{:else}
+								<span class="td-muted">-</span>
+							{/if}
+						</td>
 					{/if}
 					{#if visibleColumns.has('votes')}
-						<th class="py-3 px-4">Votes</th>
+						<td class="td-votes">
+							<VoteBreakdown reviews={s.reviews || []} compact />
+						</td>
 					{/if}
 					{#if visibleColumns.has('score')}
-						<th class="cursor-pointer py-3 px-4" onclick={() => setSort('score')}>
-							Score {sortKey === 'score' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-						</th>
+						<td class="td-score">
+							{#if hasReviews}
+								<span class="score-value" class:score-high={score >= settings.selectedThreshold} class:score-mid={score >= settings.maybeThreshold && score < settings.selectedThreshold} class:score-low={score < settings.maybeThreshold}>{score.toFixed(0)}%</span>
+							{:else}
+								<span class="td-muted">-</span>
+							{/if}
+						</td>
 					{/if}
 					{#if visibleColumns.has('flags')}
-						<th class="py-3 px-4">Flags</th>
-					{/if}
-					<th class="py-3 px-4 text-center">Review</th>
-				</tr>
-			</TableHead>
-
-			<TableBody>
-				{#each submissions as s (s._id)}
-					{@const score = s.score || 0}
-					{@const hasReviews = (s.reviewsCount || 0) > 0}
-					<TableRow
-						class="{s.hasReviewed ? 'opacity-60' : ''} {s.isHighlighted
-							? 'highlight-row'
-							: hasReviews && score >= settings.selectedThreshold
-								? 'bg-green-50'
-								: hasReviews && score >= settings.maybeThreshold
-									? 'bg-amber-50'
-									: hasReviews
-										? 'bg-red-50'
-										: ''}"
-					>
-						{#if visibleColumns.has('highlight')}
-							<td class="py-3 px-2 text-center">
-								{#if s.isHighlighted}
-									<span
-										class="highlight-indicator"
-										title="Highlighted by: {s.highlightedBy.join(', ')}"
-									>
-										★
-									</span>
-								{:else}
-									<span class="text-gallery-200">-</span>
-								{/if}
-							</td>
-						{/if}
-						{#if visibleColumns.has('title')}
-							<td class="py-3 px-4 truncate-cell font-medium" title={s.englishTitle}>
-								{s.englishTitle}
-							</td>
-						{/if}
-						{#if visibleColumns.has('director')}
-							<td class="py-3 px-4 truncate-cell text-gray-600" title={s.directorName}>
-								{s.directorName || '-'}
-							</td>
-						{/if}
-						{#if visibleColumns.has('language')}
-							<td class="py-3 px-4 truncate-cell" title={s.filmLanguage}>{s.filmLanguage}</td>
-						{/if}
-						{#if visibleColumns.has('categories')}
-							<td
-								class="py-3 px-4 truncate-cell"
-								title={s.categories?.join(', ') +
-									(s.categories?.includes('other') && s.categoryOther
-										? `, ${s.categoryOther}`
-										: '')}
-							>
-								{s.categories?.join(', ') +
-									(s.categories?.includes('other') && s.categoryOther
-										? `, ${s.categoryOther}`
-										: '')}
-							</td>
-						{/if}
-						{#if visibleColumns.has('length')}
-							<td class="py-3 px-4" title={s.length}>{s.length} min</td>
-						{/if}
-						{#if visibleColumns.has('uploaded')}
-							<td
-								class="py-3 px-4 text-xs text-gallery-500 truncate-cell"
-								title={new Date(s._createdAt).toLocaleString()}
-							>
-								{new Date(s._createdAt).toLocaleDateString()}
-							</td>
-						{/if}
-						{#if visibleColumns.has('reviewedBy')}
-							<td
-								class="py-3 px-4 truncate-cell"
-								title={s.reviews?.map((r: any) => r.curatorName).join(', ') || 'No reviews yet'}
-							>
-								{#if s.reviews?.length}
-									<span class="inline-flex items-center gap-2">
-										<span
-											class="inline-flex items-center justify-center w-5 h-5 text-xs font-medium bg-gallery-100 text-gallery-700 rounded-full"
-										>
-											{s.reviews.length}
-										</span>
-										<span class="text-gallery-600">
-											{s.reviews.map((r: any) => r.curatorName).join(', ')}
-										</span>
-									</span>
-								{:else}
-									<span class="text-gallery-400">No reviews yet</span>
-								{/if}
-							</td>
-						{/if}
-						{#if visibleColumns.has('votes')}
-							<td class="py-3 px-4">
-								<VoteBreakdown reviews={s.reviews || []} compact />
-							</td>
-						{/if}
-						{#if visibleColumns.has('score')}
-							<td class="py-3 px-4">
-								{#if hasReviews}
-									<div class="flex items-center gap-2">
-										<span class="text-sm font-bold w-10 text-right">{score.toFixed(0)}%</span>
-										<div class="h-2 w-12 bg-gray-200 rounded-full overflow-hidden">
-											<div
-												class="h-full {score >= settings.selectedThreshold
-													? 'bg-green-500'
-													: score >= settings.maybeThreshold
-														? 'bg-amber-400'
-														: 'bg-red-400'}"
-												style="width: {score}%"
-											></div>
-										</div>
-									</div>
-								{:else}
-									<span class="text-xs text-gray-300">-</span>
-								{/if}
-							</td>
-						{/if}
-						{#if visibleColumns.has('flags')}
-							<td class="py-3 px-4">
-								{#if s.flags && s.flags.length > 0}
-									<div class="flex flex-wrap gap-1">
-										{#each s.flags as flag}
-											<FlagBadge {flag} />
-										{/each}
-									</div>
-								{:else}
-									<span class="text-xs text-gray-300">-</span>
-								{/if}
-							</td>
-						{/if}
-						<td class="py-3 px-4 text-center">
-							<Button variant="secondary" size="sm">
-								<a href={`/review/${s._id}`} class="no-underline">Review</a>
-							</Button>
+						<td class="td-flags">
+							{#if s.flags && s.flags.length > 0}
+								<div class="flags-wrap">
+									{#each s.flags as flag}
+										<FlagBadge {flag} />
+									{/each}
+								</div>
+							{:else}
+								<span class="td-muted">-</span>
+							{/if}
 						</td>
-					</TableRow>
-				{/each}
-			</TableBody>
-		</Table>
-	</div>
+					{/if}
+					<td class="td-action">
+						<a href={`/review/${s._id}`} class="review-link">Review</a>
+					</td>
+				</TableRow>
+			{/each}
+		</TableBody>
+	</Table>
+</div>
 
-	{#if submissions.length === 0}
-		<div class="empty-state">No submissions match the selected filters.</div>
-	{/if}
-</section>
+{#if submissions.length === 0}
+	<p class="empty">No submissions match the selected filters.</p>
+{/if}
 
 <style>
-	.page-header {
-		margin-bottom: 2rem;
-	}
-
-	.header-content {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-	}
-
-	.page-title {
-		font-size: 1.75rem;
-		font-weight: 700;
-		color: var(--color-gallery-900);
-		margin: 0;
-	}
-
-	.my-reviews-link {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.5rem 1rem;
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: var(--color-gallery-700);
-		background: white;
-		border: 1px solid var(--color-gallery-200);
-		border-radius: 8px;
-		text-decoration: none;
-		transition: all 0.15s ease;
-	}
-
-	.my-reviews-link:hover {
-		background: var(--color-gallery-50);
-		border-color: var(--color-gallery-300);
-	}
-
-	.my-reviews-link .arrow {
-		transition: transform 0.15s ease;
-	}
-
-	.my-reviews-link:hover .arrow {
-		transform: translateX(3px);
-	}
-
-	.stats-grid {
-		display: grid;
-		gap: 1rem;
-		grid-template-columns: repeat(4, 1fr);
-		margin-bottom: 2rem;
-	}
-
-	.submissions-section {
-		background: white;
-		border: 1px solid var(--color-gallery-200);
-		border-radius: 12px;
-		padding: 1.5rem;
-		margin-bottom: 2rem;
-	}
-
-	.section-header {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
+	/* ---- Header ---- */
+	.header {
 		margin-bottom: 1.5rem;
 	}
 
-	.section-title-row {
+	.header-top {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		margin-bottom: 0.375rem;
+	}
+
+	.header-top h1 {
+		font-size: 1.25rem;
+		font-weight: 700;
+		color: var(--color-gallery-900);
+		margin: 0;
+		letter-spacing: -0.01em;
+	}
+
+	.link-subtle {
+		font-size: 0.8125rem;
+		color: var(--color-gallery-400);
+		text-decoration: none;
+		transition: color 0.15s;
+	}
+
+	.link-subtle:hover {
+		color: var(--color-gallery-700);
+	}
+
+	.header-meta {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-	}
-
-	.section-title {
-		font-size: 1.25rem;
-		font-weight: 600;
-		color: var(--color-gallery-800);
-		margin: 0;
-	}
-
-	.submission-count {
-		font-size: 0.875rem;
+		gap: 0.5rem;
+		font-size: 0.8125rem;
 		color: var(--color-gallery-500);
 	}
 
-	.controls-row {
+	.header-meta .sep {
+		width: 3px;
+		height: 3px;
+		border-radius: 50%;
+		background: var(--color-gallery-300);
+		flex-shrink: 0;
+	}
+
+	/* ---- Selection Bar ---- */
+	.selection-bar {
 		display: flex;
-		flex-wrap: wrap;
+		align-items: center;
 		justify-content: space-between;
-		align-items: flex-start;
 		gap: 1rem;
+		padding: 0.75rem 0;
+		border-top: 1px solid var(--color-gallery-200);
+		border-bottom: 1px solid var(--color-gallery-200);
+		margin-bottom: 0.75rem;
 	}
 
-	.left-controls, .right-controls {
-		flex: 1;
-		min-width: 280px;
+	.selection-bar-actions {
+		flex-shrink: 0;
 	}
 
-	.filters-row {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: space-between;
-		align-items: flex-start;
-		gap: 1rem;
-	}
-
-	.table-container {
-		overflow-x: auto;
-		margin: 0 -1.5rem;
-		padding: 0 1.5rem;
-	}
-
-	.th-highlight {
-		width: 48px;
+	.btn-ghost {
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--color-gallery-400);
+		background: none;
+		border: none;
 		cursor: pointer;
-		padding: 0.75rem 0.5rem;
+		padding: 0.25rem 0.5rem;
+		border-radius: 4px;
+		transition: all 0.15s;
+	}
+
+	.btn-ghost:hover {
+		color: var(--color-gallery-700);
+		background: var(--color-gallery-100);
+	}
+
+	.settings-wrap {
+		padding: 1rem 0;
+		margin-bottom: 0.5rem;
+	}
+
+	/* ---- Toolbar ---- */
+	.toolbar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.toolbar-left {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.toolbar-right {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		flex-shrink: 0;
+	}
+
+	.count-label {
+		font-size: 0.75rem;
+		color: var(--color-gallery-400);
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* ---- Table ---- */
+	.table-wrap {
+		overflow-x: auto;
+		margin: 0 -1rem;
+		padding: 0 1rem;
+	}
+
+	.th-sortable,
+	.th-plain,
+	.th-icon {
+		padding: 0.5rem 0.75rem;
+		font-size: 0.6875rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--color-gallery-400);
+		white-space: nowrap;
+	}
+
+	.th-sortable {
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.th-sortable:hover {
+		color: var(--color-gallery-700);
+	}
+
+	.th-icon {
+		width: 36px;
+		text-align: center;
+		cursor: pointer;
+	}
+
+	.th-center {
 		text-align: center;
 	}
 
-	.highlight-header-icon {
+	.th-star {
 		color: var(--color-highlight-500);
-		font-size: 0.875rem;
+		font-size: 0.75rem;
 	}
 
-	.truncate-cell {
-		max-width: 180px;
+	.sort-arrow {
+		font-size: 0.625rem;
+		opacity: 0.6;
+		margin-left: 2px;
+	}
+
+	/* ---- Table Cells ---- */
+	td {
+		padding: 0.5rem 0.75rem;
+		font-size: 0.8125rem;
+		color: var(--color-gallery-700);
+		vertical-align: middle;
+	}
+
+	.td-icon {
+		width: 36px;
+		text-align: center;
+		padding: 0.5rem 0.25rem;
+	}
+
+	.td-title {
+		font-weight: 500;
+		max-width: 220px;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 
-	.empty-state {
-		padding: 3rem;
-		text-align: center;
-		color: var(--color-gallery-500);
-		background: var(--color-gallery-50);
-		border-radius: 8px;
-		margin-top: 1rem;
+	.td-truncate {
+		max-width: 140px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
-	@media (max-width: 1024px) {
-		.stats-grid {
-			grid-template-columns: repeat(2, 1fr);
-		}
+	.td-secondary {
+		color: var(--color-gallery-500);
+	}
 
-		.controls-row {
-			flex-direction: column;
-		}
+	.td-num {
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+	}
 
-		.left-controls, .right-controls {
-			width: 100%;
-		}
+	.td-date {
+		font-size: 0.75rem;
+		color: var(--color-gallery-400);
+		white-space: nowrap;
+	}
+
+	.td-reviews {
+		white-space: nowrap;
+		max-width: 160px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.review-count {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 18px;
+		height: 18px;
+		font-size: 0.6875rem;
+		font-weight: 600;
+		background: var(--color-gallery-100);
+		color: var(--color-gallery-600);
+		border-radius: 50%;
+		margin-right: 0.375rem;
+	}
+
+	.review-names {
+		font-size: 0.75rem;
+		color: var(--color-gallery-400);
+	}
+
+	.td-votes {
+		padding: 0.5rem 0.75rem;
+	}
+
+	.td-score {
+		white-space: nowrap;
+	}
+
+	.score-value {
+		font-size: 0.8125rem;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.score-high {
+		color: #16a34a;
+	}
+
+	.score-mid {
+		color: #d97706;
+	}
+
+	.score-low {
+		color: #dc2626;
+	}
+
+	.td-flags {
+		padding: 0.5rem 0.75rem;
+	}
+
+	.flags-wrap {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+	}
+
+	.td-action {
+		text-align: center;
+		padding: 0.5rem 0.75rem;
+	}
+
+	.review-link {
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--color-gallery-400);
+		text-decoration: none;
+		padding: 0.25rem 0.625rem;
+		border: 1px solid var(--color-gallery-200);
+		border-radius: 4px;
+		transition: all 0.15s;
+	}
+
+	.review-link:hover {
+		color: var(--color-gallery-800);
+		border-color: var(--color-gallery-400);
+	}
+
+	.td-muted {
+		color: var(--color-gallery-200);
+	}
+
+	/* ---- Row States ---- */
+	:global(.reviewed-row) {
+		opacity: 0.55;
+	}
+
+	:global(.reviewed-row:hover) {
+		opacity: 0.85;
+	}
+
+	:global(.row-selected) {
+		background: color-mix(in srgb, #16a34a 4%, transparent);
+	}
+
+	:global(.row-maybe) {
+		background: color-mix(in srgb, #d97706 4%, transparent);
+	}
+
+	:global(.row-rejected) {
+		background: color-mix(in srgb, #dc2626 3%, transparent);
+	}
+
+	/* ---- Empty State ---- */
+	.empty {
+		padding: 3rem 1rem;
+		text-align: center;
+		color: var(--color-gallery-400);
+		font-size: 0.875rem;
 	}
 
 	@media (max-width: 640px) {
-		.header-content {
+		.header-meta {
+			flex-wrap: wrap;
+		}
+
+		.selection-bar {
 			flex-direction: column;
 			align-items: flex-start;
 		}
 
-		.stats-grid {
-			grid-template-columns: 1fr;
+		.toolbar {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.toolbar-right {
+			justify-content: flex-end;
 		}
 	}
 </style>

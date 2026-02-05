@@ -11,121 +11,68 @@
 		setSort: (key: string) => void;
 	}>();
 
-	// Thresholds for visual indication
-	const scoreThresholds = {
-		selected: 65,
-		maybe: 35
-	};
+	const thresholds = { selected: 65, maybe: 35 };
 </script>
 
-<div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-	<table class="w-full text-left text-sm">
-		<thead
-			class="bg-gray-50 border-b border-gray-200 text-[10px] uppercase text-gray-500 font-medium"
-		>
+<div class="table-wrap">
+	<table class="table">
+		<thead>
 			<tr>
-				<th
-					class="py-3 pl-4 cursor-pointer hover:text-gray-900"
-					onclick={() => setSort('englishTitle')}
-				>
-					Title {sortKey === 'englishTitle' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+				<th class="th-sortable" onclick={() => setSort('englishTitle')}>
+					Title {#if sortKey === 'englishTitle'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
 				</th>
-				<th
-					class="py-3 px-2 w-20 cursor-pointer hover:text-gray-900"
-					onclick={() => setSort('reviewsCount')}
-				>
-					Reviews {sortKey === 'reviewsCount' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+				<th class="th-sortable th-narrow" onclick={() => setSort('reviewsCount')}>
+					Reviews {#if sortKey === 'reviewsCount'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
 				</th>
-				<th class="py-3 px-2 w-24">Votes</th>
-				<th
-					class="py-3 px-2 w-32 cursor-pointer hover:text-gray-900"
-					onclick={() => setSort('score')}
-				>
-					Weighted Vote {sortKey === 'score' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+				<th class="th-plain th-narrow">Votes</th>
+				<th class="th-sortable th-narrow" onclick={() => setSort('score')}>
+					Weighted {#if sortKey === 'score'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
 				</th>
-				<th class="py-3 px-2 w-24">Flags</th>
-				<th class="py-3 px-2 w-24">Action</th>
+				<th class="th-plain th-narrow">Flags</th>
+				<th class="th-plain th-narrow"></th>
 			</tr>
 		</thead>
-		<tbody class="divide-y divide-gray-100">
+		<tbody>
 			{#each movies as movie (movie._id)}
+				{@const score = movie.score || 0}
+				{@const hasReviews = (movie.reviewsCount || 0) > 0}
 				<tr
-					class="hover:bg-gray-50/80 transition-colors"
-					class:bg-green-50={(movie.score || 0) >= scoreThresholds.selected}
-					class:bg-amber-50={(movie.score || 0) >= scoreThresholds.maybe &&
-						(movie.score || 0) < scoreThresholds.selected}
-					class:bg-red-50={(movie.reviewsCount || 0) > 0 &&
-						(movie.score || 0) < scoreThresholds.maybe}
+					class:row-selected={score >= thresholds.selected}
+					class:row-maybe={score >= thresholds.maybe && score < thresholds.selected}
+					class:row-rejected={hasReviews && score < thresholds.maybe}
 				>
-					<!-- Title -->
-					<td class="py-3 pl-4 pr-2 font-medium text-gray-900 align-top">
-						<div class="truncate" title={movie.englishTitle}>
-							{movie.englishTitle}
-						</div>
-						<div class="text-xs text-gray-400 font-normal mt-0.5">
-							{movie.directorName} · {movie.length}m
-						</div>
+					<td class="td-title">
+						<span class="title-text" title={movie.englishTitle}>{movie.englishTitle}</span>
+						<span class="title-sub">{movie.directorName} · {movie.length}′</span>
 					</td>
-
-					<!-- Reviews Count -->
-					<td class="py-3 px-2 align-top pt-3.5">
-						<span
-							class="inline-flex items-center justify-center px-2 py-1 rounded-full bg-white border border-gray-200 text-xs font-semibold text-gray-700"
-						>
-							{movie.reviewsCount}
-						</span>
+					<td class="td-center">
+						<span class="review-badge">{movie.reviewsCount}</span>
 					</td>
-
-					<!-- Votes Breakdown -->
-					<td class="py-3 px-2 align-top pt-3.5">
+					<td>
 						<VoteBreakdown reviews={movie.reviews || []} />
 					</td>
-
-					<!-- Score -->
-					<td class="py-3 px-2 align-top pt-3.5">
-						{#if (movie.reviewsCount || 0) > 0}
-							<div class="flex items-center gap-2">
-								<span class="text-sm font-bold w-12 text-right">
-									{movie.score?.toFixed(0)}%
-								</span>
-								<!-- Mini visual indicator -->
-								<div class="h-2 w-16 bg-gray-200 rounded-full overflow-hidden">
-									<div
-										class="h-full {(movie.score || 0) >= scoreThresholds.selected
-											? 'bg-green-500'
-											: (movie.score || 0) >= scoreThresholds.maybe
-												? 'bg-amber-400'
-												: 'bg-red-400'}"
-										style="width: {movie.score}%"
-									></div>
-								</div>
-							</div>
+					<td class="td-score">
+						{#if hasReviews}
+							<span class="score-value" class:score-high={score >= thresholds.selected} class:score-mid={score >= thresholds.maybe && score < thresholds.selected} class:score-low={score < thresholds.maybe}>
+								{score.toFixed(0)}%
+							</span>
 						{:else}
-							<span class="text-xs text-gray-300 ml-2">-</span>
+							<span class="td-muted">-</span>
 						{/if}
 					</td>
-
-					<!-- Flags -->
-					<td class="py-3 px-2 align-top pt-2">
+					<td>
 						{#if movie.flags && movie.flags.length > 0}
-							<div class="flex flex-col gap-1 items-start">
+							<div class="flags-wrap">
 								{#each movie.flags as flag}
 									<FlagBadge {flag} />
 								{/each}
 							</div>
 						{:else}
-							<span class="text-xs text-gray-300">-</span>
+							<span class="td-muted">-</span>
 						{/if}
 					</td>
-
-					<!-- Action Button -->
-					<td class="py-3 px-2 align-top pt-3">
-						<a
-							href="/review/{movie._id}"
-							class="inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium text-white bg-gray-900 hover:bg-black rounded transition-colors shadow-sm"
-						>
-							Review
-						</a>
+					<td class="td-action">
+						<a href="/review/{movie._id}" class="review-link">Review</a>
 					</td>
 				</tr>
 			{/each}
@@ -133,6 +80,167 @@
 	</table>
 
 	{#if movies.length === 0}
-		<div class="p-12 text-center text-gray-500">No movies match the selected filters.</div>
+		<p class="empty">No movies match the selected filters.</p>
 	{/if}
 </div>
+
+<style>
+	.table-wrap {
+		overflow-x: auto;
+	}
+
+	.table {
+		width: 100%;
+		text-align: left;
+		border-collapse: collapse;
+	}
+
+	thead {
+		border-bottom: 1px solid var(--color-gallery-200);
+	}
+
+	th {
+		padding: 0.5rem 0.75rem;
+		font-size: 0.6875rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--color-gallery-400);
+		white-space: nowrap;
+	}
+
+	.th-sortable {
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.th-sortable:hover {
+		color: var(--color-gallery-700);
+	}
+
+	.th-narrow {
+		width: 100px;
+	}
+
+	.sort-arrow {
+		font-size: 0.625rem;
+		opacity: 0.6;
+		margin-left: 2px;
+	}
+
+	tbody tr {
+		border-bottom: 1px solid var(--color-gallery-100);
+		transition: background 0.1s;
+	}
+
+	tbody tr:hover {
+		background: var(--color-gallery-50);
+	}
+
+	td {
+		padding: 0.5rem 0.75rem;
+		font-size: 0.8125rem;
+		color: var(--color-gallery-700);
+		vertical-align: middle;
+	}
+
+	.td-title {
+		max-width: 260px;
+	}
+
+	.title-text {
+		display: block;
+		font-weight: 500;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.title-sub {
+		display: block;
+		font-size: 0.75rem;
+		color: var(--color-gallery-400);
+		margin-top: 1px;
+	}
+
+	.td-center {
+		text-align: center;
+	}
+
+	.review-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 20px;
+		height: 20px;
+		padding: 0 0.375rem;
+		font-size: 0.6875rem;
+		font-weight: 600;
+		background: var(--color-gallery-100);
+		color: var(--color-gallery-600);
+		border-radius: 10px;
+	}
+
+	.td-score {
+		white-space: nowrap;
+	}
+
+	.score-value {
+		font-size: 0.8125rem;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.score-high { color: #16a34a; }
+	.score-mid { color: #d97706; }
+	.score-low { color: #dc2626; }
+
+	.td-muted {
+		color: var(--color-gallery-200);
+	}
+
+	.flags-wrap {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+	}
+
+	.td-action {
+		text-align: center;
+	}
+
+	.review-link {
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--color-gallery-400);
+		text-decoration: none;
+		padding: 0.25rem 0.625rem;
+		border: 1px solid var(--color-gallery-200);
+		border-radius: 4px;
+		transition: all 0.15s;
+	}
+
+	.review-link:hover {
+		color: var(--color-gallery-800);
+		border-color: var(--color-gallery-400);
+	}
+
+	.row-selected {
+		background: color-mix(in srgb, #16a34a 4%, transparent);
+	}
+
+	.row-maybe {
+		background: color-mix(in srgb, #d97706 4%, transparent);
+	}
+
+	.row-rejected {
+		background: color-mix(in srgb, #dc2626 3%, transparent);
+	}
+
+	.empty {
+		padding: 3rem 1rem;
+		text-align: center;
+		color: var(--color-gallery-400);
+		font-size: 0.875rem;
+	}
+</style>
