@@ -9,20 +9,19 @@
 
 	const toastMessages = getToastMessages();
 
-	let selectedTags = $state<Tag[]>(review.tags ?? []);
+	// Capture initial values from props for form state
+	const initialTags = review.tags;
+	const initialSelection = review.selection;
 
-    // 1. Create local state for the input
-    let currentSelection = $state(review.selection);
+	let selectedTags = $state<Tag[]>(initialTags ?? []);
+	let currentSelection = $state(initialSelection);
 
-    // 2. Derive status from the LOCAL state, not the prop
-    let reviewStatus = $derived.by(() => {
-        if (currentSelection === 'selected') return 'Selected';
-        if (currentSelection === 'maybe') return 'Maybe'; // Assuming 'maybe' maps to 'Maybe' in UI
-        if (currentSelection === 'notSelected') return 'Not Selected';
-        return 'No Selection Made';
-    });
-
-    let isAdult = $state(!!submission?.adult);
+	let reviewStatus = $derived.by(() => {
+		if (currentSelection === 'selected') return 'Selected';
+		if (currentSelection === 'maybe') return 'Maybe';
+		if (currentSelection === 'notSelected') return 'Not Selected';
+		return 'No Selection Made';
+	});
 </script>
 
 <section class="mt-8 sm:mt-12 border-t pt-6 sm:pt-8">
@@ -55,7 +54,7 @@
 					type="checkbox"
 					name="adult"
 					class="h-5 w-5 rounded border-red-300 text-red-600 focus:ring-red-600"
-					bind:checked={isAdult}
+					checked={!!submission?.adult}
 				/>
 				<div class="flex flex-col">
 					<span class="font-semibold text-red-900">Mark as Adult Content</span>

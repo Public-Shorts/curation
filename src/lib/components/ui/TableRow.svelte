@@ -9,7 +9,7 @@
 		class?: string;
 	} = $props();
 
-	const classes = `hover:bg-gallery-50/50 transition-colors ${className}`;
+	let classes = $derived(`hover:bg-gallery-50/50 transition-colors ${className}`);
 </script>
 
 <tr class={classes}>

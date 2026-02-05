@@ -10,11 +10,10 @@
 	<!-- Stats Section -->
 	<section class="grid gap-4 md:grid-cols-3">
 		<StatCard label="Total Categories" value={data.stats.totalClusters} />
-		<StatCard label="Videos Clustered" value={data.stats.totalVideosInClusters} />
-		<StatCard label="Collective Length">
+		<StatCard label="Avg Category Size" value={data.stats.avgCategorySize} />
+		<StatCard label="Highlight Coverage">
 			<p class="text-lg font-semibold text-gallery-700">
-				{Math.floor(data.stats.totalTimeAcrossClusters / 60)}h {data.stats.totalTimeAcrossClusters %
-					60}m
+				{data.stats.highlightCoverage}%
 			</p>
 		</StatCard>
 	</section>

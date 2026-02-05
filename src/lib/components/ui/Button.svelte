@@ -39,7 +39,7 @@
 
 	const disabledClasses = 'opacity-50 cursor-not-allowed';
 
-	const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${disabled ? disabledClasses : ''} ${className}`;
+	let classes = $derived(`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${disabled ? disabledClasses : ''} ${className}`);
 </script>
 
 <button {type} {disabled} {onclick} class={classes}>

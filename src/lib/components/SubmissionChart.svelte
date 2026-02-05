@@ -29,7 +29,7 @@
 
 	let { data } = $props<{ data: { date: string; count: number }[] }>();
 
-	let canvas: HTMLCanvasElement;
+	let canvas = $state<HTMLCanvasElement>();
 	let chartInstance: Chart | null = null;
 
 	$effect(() => {

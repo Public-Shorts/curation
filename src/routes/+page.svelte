@@ -4,11 +4,11 @@
 
 	let { data } = $props();
 
-	const stats = data.curatorStats;
-	const curator = stats.curator;
-	const total = stats.totalReviews ?? 0;
-	const approved = stats.approvedReviews ?? 0;
-	const approvalRate = total > 0 ? Math.round((approved / total) * 100) : 0;
+	let stats = $derived(data.curatorStats);
+	let curator = $derived(stats.curator);
+	let total = $derived(stats.totalReviews ?? 0);
+	let approved = $derived(stats.approvedReviews ?? 0);
+	let approvalRate = $derived(total > 0 ? Math.round((approved / total) * 100) : 0);
 
 	type SortKey =
 		| 'englishTitle'
@@ -19,43 +19,32 @@
 		| 'reviewsCount';
 	type SortDir = 'asc' | 'desc';
 
-	let sortKey: SortKey = '_createdAt';
-	let sortDir: SortDir = 'desc';
+	let sortKey = $state<SortKey>('_createdAt');
+	let sortDir = $state<SortDir>('desc');
 
-	const totalMinutes = data.submissions.reduce((total: number, s: any) => {
-		const hasReviewed = s.reviews?.some((r: any) => r.curator?._id === curator?._id);
-		return hasReviewed ? total + (Number(s.length) || 0) : total;
-	}, 0);
+	let totalMinutes = $derived(
+		data.submissions.reduce((sum: number, s: any) => {
+			const hasReviewed = s.reviews?.some((r: any) => r.curator?._id === curator?._id);
+			return hasReviewed ? sum + (Number(s.length) || 0) : sum;
+		}, 0)
+	);
 
-	const hours = Math.floor(totalMinutes / 60);
-	const mins = totalMinutes % 60;
-	const timeDisplay = hours > 0 ? `${hours}h ${mins}min` : `${mins}min`;
+	let hours = $derived(Math.floor(totalMinutes / 60));
+	let mins = $derived(totalMinutes % 60);
+	let timeDisplay = $derived(hours > 0 ? `${hours}h ${mins}min` : `${mins}min`);
 
-	const submissions = $state(
-		data.submissions.map((s: any) => {
+	let submissions = $derived.by(() => {
+		const mapped = data.submissions.map((s: any) => {
 			const myReview = s.reviews?.find((r: any) => r.curator?._id === curator?._id);
-
 			return {
 				...s,
 				reviewsCount: s.reviews?.length ?? 0,
 				mySelection: myReview?.selection ?? 'Pending',
 				hasReviewed: !!myReview
 			};
-		})
-	);
+		});
 
-	function setSort(key: SortKey) {
-		if (sortKey === key) {
-			sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-		} else {
-			sortKey = key;
-			sortDir = key === '_createdAt' ? 'desc' : 'asc';
-		}
-		sortSubmissions();
-	}
-
-	function sortSubmissions() {
-		submissions.sort((a: any, b: any) => {
+		return [...mapped].sort((a: any, b: any) => {
 			let av: any;
 			let bv: any;
 
@@ -80,9 +69,16 @@
 			if (av > bv) return sortDir === 'asc' ? 1 : -1;
 			return 0;
 		});
-	}
+	});
 
-	sortSubmissions();
+	function setSort(key: SortKey) {
+		if (sortKey === key) {
+			sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+		} else {
+			sortKey = key;
+			sortDir = key === '_createdAt' ? 'desc' : 'asc';
+		}
+	}
 </script>
 
 <section class="grid gap-4 md:grid-cols-4 pb-12">

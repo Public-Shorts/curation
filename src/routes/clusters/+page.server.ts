@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 import data from '$lib/data/clusters.json';
+import { sanityClient } from '$lib/server/sanity';
 
 export const load: PageServerLoad = async () => {
 
@@ -31,13 +32,30 @@ export const load: PageServerLoad = async () => {
         .filter((c: any) => c.highlightedMovies.length > 0) // Only show clusters with at least one highlight
         .sort((a: any, b: any) => b.count - a.count);
 
+    // Calculate total videos in clusters
+    const totalVideosInClusters = new Set(formattedClusters.flatMap((c: any) => [
+        ...c.highlightedMovies.map((m: any) => m._id),
+        ...c.relevantMovies.map((m: any) => m._id)
+    ])).size;
+
+    // Get unique highlighted films in clusters
+    const uniqueHighlightedInClusters = new Set(
+        formattedClusters.flatMap((c: any) => c.highlightedMovies.map((m: any) => m._id))
+    ).size;
+
+    // Query Sanity for total highlights count
+    const totalHighlights = await sanityClient.fetch<number>(
+        `count(*[_type == "curator" && defined(highlights)].highlights[])`
+    );
+
     const stats = {
         totalClusters: formattedClusters.length,
-        totalVideosInClusters: new Set(formattedClusters.flatMap((c: any) => [
-            ...c.highlightedMovies.map((m: any) => m._id),
-            ...c.relevantMovies.map((m: any) => m._id)
-        ])).size,
-        totalTimeAcrossClusters: formattedClusters.reduce((sum: number, c: any) => sum + c.totalMinutes, 0)
+        avgCategorySize: formattedClusters.length > 0
+            ? Math.round(totalVideosInClusters / formattedClusters.length)
+            : 0,
+        highlightCoverage: totalHighlights > 0
+            ? Math.round((uniqueHighlightedInClusters / totalHighlights) * 100)
+            : 0
     };
 
     return {
