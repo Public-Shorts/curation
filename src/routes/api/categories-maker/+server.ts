@@ -29,8 +29,7 @@ export async function POST({ request, url }) {
             }
 
             case 'delete-category': {
-                await sanityClient.delete(params.id);
-                // Also unassign all videos in this category
+                // First unassign all videos referencing this category
                 const videos = await sanityClient.fetch(`*[_type == "submission" && assignedCategory._ref == $id]._id`, { id: params.id });
                 if (videos.length > 0) {
                     const transaction = sanityClient.transaction();
@@ -39,6 +38,8 @@ export async function POST({ request, url }) {
                     });
                     await transaction.commit();
                 }
+                // Then delete the category
+                await sanityClient.delete(params.id);
                 return json({ success: true });
             }
 

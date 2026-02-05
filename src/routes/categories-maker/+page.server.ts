@@ -67,15 +67,21 @@ export const load: PageServerLoad = async () => {
 		submissionTags[id] = [...new Set(submissionTags[id])];
 	}
 
-	// Identify highlighted movie IDs
-	const highlightedIds = new Set(
-		(curators as any[]).flatMap((c: any) => c.highlights?.map((h: any) => h._id) || [])
-	);
+	// Count how many curators highlighted each movie
+	const highlightCounts: Record<string, number> = {};
+	for (const curator of curators as any[]) {
+		for (const h of curator.highlights || []) {
+			if (h?._id) {
+				highlightCounts[h._id] = (highlightCounts[h._id] || 0) + 1;
+			}
+		}
+	}
 
 	return {
 		submissions: (submissions as any[]).map((s: any) => ({
 			...s,
-			isHighlighted: highlightedIds.has(s._id),
+			isHighlighted: (highlightCounts[s._id] || 0) > 0,
+			highlightCount: highlightCounts[s._id] || 0,
 			curatorTags: submissionTags[s._id] || []
 		})),
 		clusters,

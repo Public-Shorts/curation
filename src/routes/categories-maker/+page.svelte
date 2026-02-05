@@ -35,6 +35,7 @@
 	// Stats
 	let totalAssigned = $derived(submissions.filter((s) => s.assignedCategory).length);
 	let totalHighlighted = $derived(submissions.filter((s) => s.isHighlighted).length);
+	let highlightsAssigned = $derived(submissions.filter((s) => s.isHighlighted && s.assignedCategory).length);
 
 	// Derived lists
 	let availableVideos = $derived(
@@ -186,12 +187,19 @@
 		}, 0);
 	}
 
+	// Case-insensitive lookup for suggestions
+	function getSuggestionsForCategory(categoryName: string): string[] {
+		const lowerName = categoryName.toLowerCase();
+		const key = Object.keys(suggestions).find((k) => k.toLowerCase() === lowerName);
+		return key ? suggestions[key] : [];
+	}
+
 	function getSuggestedVideosForCluster(clusterId: string) {
 		const cluster = clusters.find((c) => c._id === clusterId);
 		if (!cluster) return { highlighted: [], regular: [] };
 
 		const categoryName = cluster.name;
-		const suggestedTags = suggestions[categoryName] || [];
+		const suggestedTags = getSuggestionsForCategory(categoryName);
 		if (suggestedTags.length === 0) return { highlighted: [], regular: [] };
 
 		// Score each video by number of matching tags and sort by relevance
@@ -227,7 +235,7 @@
 						{totalAssigned}/{submissions.length} Assigned
 					</span>
 					<span class="px-3 py-1.5 bg-amber-50 rounded-full text-[10px] font-bold text-amber-600 uppercase tracking-wide">
-						{totalHighlighted} Highlights
+						{highlightsAssigned}/{totalHighlighted} ★ Assigned
 					</span>
 				</div>
 
@@ -331,7 +339,7 @@
 									<span class="text-[10px] font-medium text-gallery-500">{video.length} min</span>
 									{#if video.isHighlighted}
 										<span class="text-[9px] font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-md uppercase tracking-wide">
-											★ Highlight
+											{video.highlightCount}★
 										</span>
 									{/if}
 								</div>
@@ -376,7 +384,7 @@
 					{@const totalDuration = clusterVideos.reduce((sum, v) => sum + (v.length || 0), 0)}
 					{@const highlightCount = clusterVideos.filter(v => v.isHighlighted).length}
 					{@const suggestedVideos = getSuggestedVideosForCluster(cluster._id)}
-					{@const categoryTags = suggestions[cluster.name] || []}
+					{@const categoryTags = getSuggestionsForCategory(cluster.name)}
 					<div
 						in:scale={{ delay: i * 50, duration: 300, start: 0.95, easing: quintOut }}
 						class="bg-white rounded-2xl border-2 transition-all duration-300 p-5 flex flex-col min-h-[320px] group/cluster {dragOverClusterId === cluster._id
@@ -393,9 +401,7 @@
 									<h2 class="text-xl font-black text-gallery-900 tracking-tight">
 										{cluster.name}
 									</h2>
-									{#if highlightCount > 0}
-										<span class="text-amber-500">★</span>
-									{/if}
+									<span class="text-amber-500 text-sm font-bold">{highlightCount}★</span>
 								</div>
 								<div class="flex items-center gap-3 mt-1.5">
 									<span class="text-[11px] font-semibold text-gallery-500 bg-gallery-100 px-2 py-0.5 rounded-md">
@@ -440,7 +446,7 @@
 										{/if}
 										<div class="flex items-center gap-2 min-w-0 flex-1">
 											{#if video.isHighlighted}
-												<span class="text-amber-500 text-xs flex-shrink-0">★</span>
+												<span class="text-amber-500 text-[10px] font-bold flex-shrink-0">{video.highlightCount}★</span>
 											{/if}
 											<span class="text-xs font-medium text-gallery-800 truncate">{video.englishTitle}</span>
 											<span class="text-[9px] font-medium text-gallery-400 flex-shrink-0">{video.length}m</span>
