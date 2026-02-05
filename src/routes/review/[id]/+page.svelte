@@ -11,8 +11,8 @@
 	let { data } = $props();
 	const submission = data.submission;
 	const review = data.myReview ?? {};
-	// const otherReviews = data.otherReviews ?? [];
 	const allReviews = data.allReviews ?? [];
+	const highlightedBy = data.highlightedBy ?? [];
 
 	const allTags: Tag[] = $derived.by(() => {
 		const raw = (data.allTags ?? []) as Tag[];
@@ -28,9 +28,9 @@
 	});
 </script>
 
-<div class="max-w-4xl mx-auto space-y-8 p-4 sm:p-6">
+<div class="max-w-4xl mx-auto space-y-10 p-4 sm:p-6 lg:p-8">
 	<!-- Header Section -->
-	<SubmissionHeader {submission} />
+	<SubmissionHeader {submission} {highlightedBy} />
 
 	<!-- Other Curators Card -->
 	<ReviewStatusCard {allReviews} />
@@ -38,7 +38,7 @@
 	<!-- Info Grid -->
 	<SumbissionCredits {submission} />
 
-	<!-- Synopsis -->
+	<!-- Synopsis & Technical -->
 	<SubmissionTechnicalInfos {submission} />
 
 	<!-- Review Form -->

@@ -69,7 +69,11 @@ export const load: PageServerLoad = async ({ params, locals }) => {
                     label,
                     value
                 }
-            )
+            ),
+            "highlightedBy": *[_type == "curator" && $id in highlights[]._ref]{
+                _id,
+                name
+            }
         }`,
 		{ id, curatorId }
 	);

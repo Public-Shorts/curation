@@ -66,168 +66,200 @@
 	let commentsOpen = $state(false);
 </script>
 
-<section class="rounded-lg bg-white p-4 sm:p-6 shadow-sm ring-1 ring-gray-900/5 space-y-6">
-	<!-- HEADER: Status & Average -->
-	<div>
-		<div class="flex items-center justify-between mb-4">
-			<h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500">Review Status</h2>
+<section class="rounded-2xl bg-white shadow-sm ring-1 ring-gallery-200/60 overflow-hidden">
+	<!-- Header with gradient -->
+	<div class="bg-linear-to-r from-gallery-50 to-white px-5 py-4 sm:px-6 border-b border-gallery-100">
+		<div class="flex items-center justify-between">
+			<h2 class="text-sm font-semibold uppercase tracking-wider text-gallery-600">
+				Curator Reviews
+			</h2>
 			{#if averageRating}
 				<div
-					class="flex items-center gap-1.5 bg-yellow-50 px-2 py-1 rounded text-xs font-medium text-yellow-800 border border-yellow-200"
+					class="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-full text-sm font-semibold text-amber-700 ring-1 ring-inset ring-amber-200"
 				>
-					<span>★</span>
-					<span>{averageRating} Avg</span>
+					<svg class="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+						<path
+							d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+						/>
+					</svg>
+					<span>{averageRating}</span>
 				</div>
 			{/if}
 		</div>
+	</div>
 
+	<div class="p-5 sm:p-6 space-y-6">
 		{#if allReviews.length === 0}
-			<p class="text-sm text-gray-500 italic">No reviews yet.</p>
+			<div class="text-center py-8">
+				<div class="w-12 h-12 rounded-full bg-gallery-100 flex items-center justify-center mx-auto mb-3">
+					<svg class="w-6 h-6 text-gallery-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+					</svg>
+				</div>
+				<p class="text-sm text-gallery-500">No reviews yet</p>
+				<p class="text-xs text-gallery-400 mt-1">Be the first to review this film</p>
+			</div>
 		{:else}
-			<div class="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm mb-4 flex-wrap">
-				<span class="font-medium text-gray-900">{allReviews.length} Total</span>
-				<span class="h-4 w-px bg-gray-200"></span>
-				<span class="text-green-700 font-medium">{approvals.length} Selected</span>
-				<span class="text-yellow-700 font-medium">{maybes.length} Maybe</span>
-				<span class="text-red-700 font-medium">{rejections.length} Not Selected</span>
+			<!-- Stats Row -->
+			<div class="flex flex-wrap items-center gap-3 sm:gap-4">
+				<div class="flex items-center gap-2 bg-gallery-50 px-3 py-2 rounded-lg">
+					<span class="text-lg font-bold text-gallery-900">{allReviews.length}</span>
+					<span class="text-xs text-gallery-500 uppercase tracking-wide">Total</span>
+				</div>
+				<div class="h-6 w-px bg-gallery-200"></div>
+				<div class="flex flex-wrap items-center gap-2 text-sm">
+					<span class="inline-flex items-center gap-1.5 text-green-700 font-medium">
+						<span class="w-2 h-2 rounded-full bg-green-500"></span>
+						{approvals.length} Selected
+					</span>
+					<span class="inline-flex items-center gap-1.5 text-amber-700 font-medium">
+						<span class="w-2 h-2 rounded-full bg-amber-500"></span>
+						{maybes.length} Maybe
+					</span>
+					<span class="inline-flex items-center gap-1.5 text-red-700 font-medium">
+						<span class="w-2 h-2 rounded-full bg-red-500"></span>
+						{rejections.length} Not Selected
+					</span>
+				</div>
 			</div>
 
 			<!-- Reviewer Cards -->
 			<div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
 				{#each allReviews as r}
 					<div
-						class="flex items-center justify-between rounded border border-gray-100 bg-gray-50/50 px-3 py-2 text-xs"
+						class="flex items-center justify-between rounded-xl border border-gallery-100 bg-gallery-50/50 px-4 py-3 text-sm transition-colors hover:bg-gallery-50 hover:border-gallery-200"
 					>
-						<span class="font-medium text-gray-900 truncate mr-2">
+						<span class="font-medium text-gallery-800 truncate mr-3">
 							{r.curator?.name ?? 'Curator'}
 						</span>
-						<div class="flex items-center gap-2 shrink-0">
+						<div class="flex items-center gap-2.5 shrink-0">
 							<SelectionTag selection={r.selection} />
 							{#if r.rating != null}
-								<span class="text-gray-400">·</span>
-								<span class="font-medium text-gray-700">{r.rating}</span>
+								<span class="text-gallery-300">·</span>
+								<span class="font-semibold text-gallery-700 tabular-nums">{r.rating}</span>
 							{/if}
 						</div>
 					</div>
 				{/each}
 			</div>
-		{/if}
-	</div>
 
-	{#if allReviews.length > 0}
-		<div class="border-t border-gray-100 my-4"></div>
+			<div class="border-t border-gallery-100"></div>
 
-		<!-- TAGS & GENRES GRID -->
-		<div class="grid gap-6 sm:grid-cols-2">
-			<!-- Left: Genres & Content Notes -->
-			<div class="space-y-4">
-				{#if genreCounts.length > 0}
-					<div>
-						<h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-							Suggested Genres
+			<!-- TAGS & GENRES GRID -->
+			<div class="grid gap-6 sm:grid-cols-2">
+				<!-- Left: Genres & Content Notes -->
+				<div class="space-y-5">
+					{#if genreCounts.length > 0}
+						<div>
+							<h3 class="text-xs font-semibold text-gallery-500 uppercase tracking-wider mb-3">
+								Suggested Genres
+							</h3>
+							<div class="flex flex-wrap gap-2">
+								{#each genreCounts as [genre, count]}
+									<span
+										class="inline-flex items-center rounded-lg bg-gallery-100 px-3 py-1.5 text-sm text-gallery-700 font-medium"
+									>
+										{genre}
+										{#if count > 1}
+											<span class="ml-1.5 text-xs text-gallery-400 bg-white px-1.5 py-0.5 rounded">
+												{count}
+											</span>
+										{/if}
+									</span>
+								{/each}
+							</div>
+						</div>
+					{/if}
+
+					{#if allContentNotes.length > 0}
+						<div>
+							<h3 class="text-xs font-semibold text-gallery-500 uppercase tracking-wider mb-3">
+								Content Notes
+							</h3>
+							<div class="flex flex-wrap gap-2">
+								{#if allContentNotes && allContentNotes[0] != 'none' && allContentNotes.length > 0}
+									{#each allContentNotes as note}
+										<span
+											class="inline-flex items-center rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-sm text-red-700 font-medium capitalize"
+										>
+											{note.replace(/([A-Z])/g, ' $1').trim()}
+										</span>
+									{/each}
+								{:else}
+									<span class="text-sm text-gallery-400 italic">No content notes assigned yet.</span>
+								{/if}
+							</div>
+						</div>
+					{/if}
+				</div>
+
+				<!-- Right: All Tags -->
+				<div>
+					{#if uniqueTags.length > 0}
+						<h3 class="text-xs font-semibold text-gallery-500 uppercase tracking-wider mb-3">
+							All Tags
 						</h3>
-						<div class="flex flex-wrap gap-1.5">
-							{#each genreCounts as [genre, count]}
+						<div class="flex flex-wrap gap-2">
+							{#each uniqueTags as tag}
 								<span
-									class="inline-flex items-center rounded bg-gray-100 px-2 py-1 text-xs text-gray-700"
+									class="inline-flex items-center rounded-full border border-gallery-200 bg-white px-3 py-1 text-sm text-gallery-600 transition-colors hover:border-gallery-300 hover:bg-gallery-50"
 								>
-									{genre}
-									{#if count > 1}<span class="ml-1 text-gray-400">({count})</span>{/if}
+									<span class="text-gallery-400 mr-1">#</span>{tag}
 								</span>
 							{/each}
 						</div>
-					</div>
-				{/if}
-
-				{#if allContentNotes.length > 0}
-					<div>
-						<h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-							Content Notes
+					{:else}
+						<h3 class="text-xs font-semibold text-gallery-500 uppercase tracking-wider mb-3">
+							All Tags
 						</h3>
-						<div class="flex flex-wrap gap-1.5">
-							{#if allContentNotes && allContentNotes[0] != 'none' && allContentNotes.length > 0}
-								<!-- content here -->
-								{#each allContentNotes as note}
-									<span
-										class="inline-flex items-center rounded border border-red-100 bg-red-50 px-2 py-1 text-xs text-red-700 capitalize"
-									>
-										{note.replace(/([A-Z])/g, ' $1').trim()}
-									</span>
-								{/each}
-							{:else}
-								<span class="text-xs text-gray-400 italic">No content notes assigned yet.</span>
-							{/if}
-						</div>
-					</div>
-				{/if}
+						<p class="text-sm text-gallery-400 italic">No tags assigned yet.</p>
+					{/if}
+				</div>
 			</div>
 
-			<!-- Right: All Tags -->
-			<div>
-				{#if uniqueTags.length > 0}
-					<h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-						All Tags
-					</h3>
-					<div class="flex flex-wrap gap-1.5">
-						{#each uniqueTags as tag}
-							<span
-								class="inline-flex items-center rounded-full border border-gray-200 bg-white px-2 py-0.5 text-xs text-gray-600"
-							>
-								#{tag}
-							</span>
-						{/each}
-					</div>
-				{:else}
-					<p class="text-xs text-gray-400 italic">No tags assigned yet.</p>
-				{/if}
-			</div>
-		</div>
-
-		<!-- COLLAPSIBLE COMMENTS -->
-		{#if reviewsWithComments.length > 0}
-			<div class="border-t border-gray-100 pt-4 mt-2">
-				<button
-					onclick={() => (commentsOpen = !commentsOpen)}
-					class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-800 transition-colors w-full text-left"
-				>
-					<span
-						>{commentsOpen ? 'Hide' : 'Show'} Additional Comments ({reviewsWithComments.length})</span
+			<!-- COLLAPSIBLE COMMENTS -->
+			{#if reviewsWithComments.length > 0}
+				<div class="border-t border-gallery-100 pt-5">
+					<button
+						onclick={() => (commentsOpen = !commentsOpen)}
+						class="flex items-center gap-2 text-sm font-semibold text-gallery-600 uppercase tracking-wider hover:text-gallery-800 transition-colors w-full text-left group"
 					>
-					<svg
-						class="w-4 h-4 transition-transform duration-200 {commentsOpen ? 'rotate-180' : ''}"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M19 9l-7 7-7-7"
-						/>
-					</svg>
-				</button>
+						<span>{commentsOpen ? 'Hide' : 'Show'} Comments</span>
+						<span class="text-gallery-400 font-normal normal-case">({reviewsWithComments.length})</span>
+						<svg
+							class="w-4 h-4 transition-transform duration-200 {commentsOpen ? 'rotate-180' : ''} ml-auto"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M19 9l-7 7-7-7"
+							/>
+						</svg>
+					</button>
 
-				{#if commentsOpen}
-					<div transition:slide={{ duration: 200 }} class="mt-3 space-y-3">
-						{#each reviewsWithComments as r}
-							<div class="bg-gray-50 rounded p-3 text-sm text-gray-700">
-								<div class="flex justify-between items-baseline mb-1">
-									<span class="font-medium text-xs text-gray-900"
-										>{r.curator?.name ?? 'Curator'}</span
-									>
-									<span class="text-[10px] text-gray-400 uppercase tracking-wide"
-										>{r.selection}</span
-									>
+					{#if commentsOpen}
+						<div transition:slide={{ duration: 200 }} class="mt-4 space-y-3">
+							{#each reviewsWithComments as r}
+								<div class="bg-gallery-50 rounded-xl p-4 border border-gallery-100">
+									<div class="flex justify-between items-center mb-2">
+										<span class="font-semibold text-sm text-gallery-800">
+											{r.curator?.name ?? 'Curator'}
+										</span>
+										<SelectionTag selection={r.selection} />
+									</div>
+									<p class="whitespace-pre-wrap text-sm leading-relaxed text-gallery-600">
+										{r.additionalComments}
+									</p>
 								</div>
-								<p class="whitespace-pre-wrap text-xs sm:text-sm leading-relaxed">
-									{r.additionalComments}
-								</p>
-							</div>
-						{/each}
-					</div>
-				{/if}
-			</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
+			{/if}
 		{/if}
-	{/if}
+	</div>
 </section>
