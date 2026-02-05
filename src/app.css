@@ -7,25 +7,104 @@
 	--font-PPMori: 'PP Mori', sans-serif;
 	--font-sans: 'PP Mori', sans-serif;
 	--font-w95fa: 'W95FA', sans-serif;
-	--color-gallery-50: #f9f7f5; /* // Main Background (Airy) */
-	--color-gallery-100: #f2efec; /*  // Hover states */
-	--color-gallery-200: #e6e0db; /*  // Borders / Dividers */
-	--color-gallery-300: #d6d0ca; /*  // Deep Borders */
-	--color-gallery-400: #a8a29d; /*  // Icons / Disabled text */
-	--color-gallery-500: #857f7a; /*  // Muted Text (Subtitles) */
-	--color-gallery-600: #635e59; /*  // Body Text (Secondary) */
-	--color-gallery-700: #45413d; /*  // Body Text (Primary) */
-	--color-gallery-800: #2e2b29; /*  // Headings */
-	--color-gallery-900: #1c1917; /* // "Black" / Strongest contrast */
+	--color-gallery-50: #f9f7f5;
+	/* // Main Background (Airy) */
+	--color-gallery-100: #f2efec;
+	/*  // Hover states */
+	--color-gallery-200: #e6e0db;
+	/*  // Borders / Dividers */
+	--color-gallery-300: #d6d0ca;
+	/*  // Deep Borders */
+	--color-gallery-400: #a8a29d;
+	/*  // Icons / Disabled text */
+	--color-gallery-500: #857f7a;
+	/*  // Muted Text (Subtitles) */
+	--color-gallery-600: #635e59;
+	/*  // Body Text (Secondary) */
+	--color-gallery-700: #45413d;
+	/*  // Body Text (Primary) */
+	--color-gallery-800: #2e2b29;
+	/*  // Headings */
+	--color-gallery-900: #1c1917;
+	/* // "Black" / Strongest contrast */
 
 	--color-accent-50: #fff5eb;
 	--color-accent-100: #ffe8d6;
 	--color-accent-200: #ffd1ad;
 	--color-accent-300: #ffb785;
 	--color-accent-400: #ff9652;
-	--color-accent-500: #ff7411; /* MAIN BRAND ACCENT */
+	--color-accent-500: #ff7411;
+	/* MAIN BRAND ACCENT */
 	--color-accent-600: #e65c00;
 	--color-accent-700: #cc4600;
 	--color-accent-800: #993300;
 	--color-accent-900: #662200;
+
+	/* Highlight Colors - Shiny Purple */
+	--color-highlight-50: #faf5ff;
+	--color-highlight-100: #f3e8ff;
+	--color-highlight-200: #e9d5ff;
+	--color-highlight-300: #d8b4fe;
+	--color-highlight-400: #c084fc;
+	--color-highlight-500: #a855f7;
+	--color-highlight-600: #9333ea;
+	--color-highlight-700: #7c3aed;
+	--color-highlight-800: #6b21a8;
+	--color-highlight-900: #581c87;
+}
+
+/* Unified Highlight Styling */
+.highlight-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 0.125rem 0.5rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: white;
+	background: linear-gradient(135deg, var(--color-highlight-500) 0%, var(--color-highlight-700) 100%);
+	border-radius: 9999px;
+	box-shadow: 0 0 8px rgba(168, 85, 247, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.highlight-badge::before {
+	content: '★';
+	font-size: 0.625rem;
+	opacity: 0.9;
+}
+
+.highlight-row {
+	background: linear-gradient(90deg, rgba(168, 85, 247, 0.08) 0%, rgba(168, 85, 247, 0.02) 100%) !important;
+	border-left: 3px solid var(--color-highlight-500);
+}
+
+.highlight-cell {
+	position: relative;
+}
+
+.highlight-indicator {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	background: linear-gradient(135deg, var(--color-highlight-400) 0%, var(--color-highlight-600) 100%);
+	border-radius: 50%;
+	box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+	color: white;
+	font-size: 0.625rem;
+	animation: highlight-pulse 2s ease-in-out infinite;
+}
+
+@keyframes highlight-pulse {
+
+	0%,
+	100% {
+		box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+	}
+
+	50% {
+		box-shadow: 0 0 18px rgba(168, 85, 247, 0.7);
+	}
 }

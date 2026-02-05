@@ -291,11 +291,19 @@
 							{#each searchFilteredTags as tag}
 								<button
 									onclick={() => toggleTag(tag.label)}
-									class="w-full flex items-center justify-between px-2.5 py-1.5 text-sm rounded-md hover:bg-gallery-50 transition-colors {selectedTags.includes(tag.label) ? 'bg-gallery-100' : ''}"
+									class="w-full flex items-center justify-between px-2.5 py-1.5 text-sm rounded-md hover:bg-gallery-50 transition-colors {selectedTags.includes(
+										tag.label
+									)
+										? 'bg-gallery-100'
+										: ''}"
 								>
 									<span class="flex items-center gap-2">
 										<span
-											class="w-4 h-4 rounded border flex items-center justify-center text-white text-[10px] {selectedTags.includes(tag.label) ? 'bg-gallery-900 border-gallery-900' : 'border-gallery-300'}"
+											class="w-4 h-4 rounded border flex items-center justify-center text-white text-[10px] {selectedTags.includes(
+												tag.label
+											)
+												? 'bg-gallery-900 border-gallery-900'
+												: 'border-gallery-300'}"
 										>
 											{#if selectedTags.includes(tag.label)}✓{/if}
 										</span>
@@ -431,7 +439,7 @@
 									<div
 										class="flex items-center gap-1.5 cursor-help bg-gallery-50 px-2 py-1 rounded-full border border-gallery-100 hover:bg-gallery-100 transition-colors"
 									>
-										<span class="text-amber-500 text-xs">★</span>
+										<span class="text-xs" style="color: var(--color-highlight-500)">★</span>
 										<span class="text-[10px] font-black text-gallery-600 uppercase tracking-widest"
 											>{curators.length}</span
 										>
@@ -486,7 +494,8 @@
 												<div class="flex flex-wrap gap-1">
 													{#each curators as curator}
 														<span
-															class="text-[9px] font-bold text-gallery-700 bg-yellow-400/10 px-2 py-0.5 rounded-full border border-yellow-200/50"
+															class="text-[9px] font-bold text-gallery-700 px-2 py-0.5 rounded-full border"
+															style="background-color: var(--color-highlight-100); border-color: var(--color-highlight-200); color: var(--color-highlight-900)"
 														>
 															{curator.name}
 														</span>
@@ -556,7 +565,7 @@
 								<div
 									class="flex items-center gap-1 cursor-help px-2 py-1 rounded-md hover:bg-gallery-50 transition-colors"
 								>
-									<span class="text-lg text-amber-500">★</span>
+									<span class="text-lg" style="color: var(--color-highlight-500)">★</span>
 									<span class="text-xs font-bold text-gallery-500">{curators.length}</span>
 								</div>
 
@@ -605,7 +614,8 @@
 											<div class="flex flex-wrap gap-1">
 												{#each curators as curator}
 													<span
-														class="text-[9px] font-bold text-gallery-700 bg-yellow-400/10 px-2 py-0.5 rounded-full border border-yellow-200/50"
+														class="text-[9px] font-bold text-gallery-700 px-2 py-0.5 rounded-full border"
+														style="background-color: var(--color-highlight-100); border-color: var(--color-highlight-200); color: var(--color-highlight-900)"
 													>
 														{curator.name}
 													</span>
@@ -622,4 +632,3 @@
 		{/if}
 	</section>
 </div>
-

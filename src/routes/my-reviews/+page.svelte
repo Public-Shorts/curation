@@ -102,13 +102,13 @@
 										return async ({ result }) => {
 											if (result.type === 'failure') {
 												toastMessages.add({
-													message: result.data?.error || 'Failed to update highlight',
+													message: (result as any).data?.error || 'Failed to update highlight',
 													type: 'error'
 												});
 											} else if (result.type === 'success') {
 												toastMessages.add({
 													message:
-														result.data?.status === 'added'
+														(result as any).data?.status === 'added'
 															? 'Added to highlights'
 															: 'Removed from highlights',
 													type: 'success'
@@ -128,7 +128,7 @@
 										type="submit"
 									>
 										{#if isHighlighted(review.submission._id)}
-											<span class="text-yellow-500 text-lg">★</span>
+											<span class="text-lg" style="color: var(--color-highlight-500)">★</span>
 										{:else}
 											<span class="text-gallery-300 text-lg hover:text-gallery-400">☆</span>
 										{/if}
