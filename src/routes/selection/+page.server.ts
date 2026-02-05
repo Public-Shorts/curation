@@ -1,73 +1,66 @@
-// src/routes/selection/+page.server.ts
-import { redirect } from '@sveltejs/kit';
-import { sanityClient } from '$lib/server/sanity';
 import type { PageServerLoad } from './$types';
+import data from '$lib/data/clusters.json';
+import { sanityClient } from '$lib/server/sanity';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.curatorId) throw redirect(303, '/login');
+export const load: PageServerLoad = async () => {
 
-	const query = `{
-	  "submissions": *[_type == "submission"]|order(englishTitle asc){
-		_id,
-		englishTitle,
-        directorName,
-        poster,
-		length,
-		_createdAt,
-        explicit,
-        explicitDetails,
-        aiUsed,
-        aiExplanation,
-		
-		"reviews": *[_type == "review" && film._ref == ^._id]{
-            _id,
-			selection, 
-			rating,
-            "curatorId": curator._ref,
-            "curatorName": curator->name,
-			contentNotes
-		}
-	  },
-      "allReviews": *[_type == "review"]{
-        "curatorId": curator._ref,
-        selection
-      }
-	}`;
+    // Filter clusters to have at least 1 movie (or keep as is)
+    const movies = data.movies as Record<string, any>;
+    const formattedClusters = data.clusters
+        .map((c: any) => {
+            const highlightedMovies = c.highlightedMovieIds.map((id: string) => movies[id]).filter(Boolean);
+            const relevantMovies = c.relevantMovieIds.map((id: string) => movies[id]).filter(Boolean);
 
-	const data = await sanityClient.fetch(query);
+            const allMovies = [...highlightedMovies, ...relevantMovies];
 
-	// 1. Calculate Global Curator Stats
-	const curatorStats: Record<string, { totalReviews: number; approvedCount: number; approvalRate: number }> = {};
+            const highlightedMinutes = highlightedMovies.reduce((sum: number, m: any) => sum + (m.length || 0), 0);
+            const relevantMinutes = relevantMovies.reduce((sum: number, m: any) => sum + (m.length || 0), 0);
+            const totalMinutes = allMovies.reduce((sum: number, m: any) => sum + (m.length || 0), 0);
 
-	data.allReviews.forEach((r: any) => {
-		if (!r.curatorId) return;
-		if (!curatorStats[r.curatorId]) {
-			curatorStats[r.curatorId] = { totalReviews: 0, approvedCount: 0, approvalRate: 0 };
-		}
+            return {
+                ...c,
+                highlightedMovies,
+                relevantMovies,
+                count: allMovies.length,
+                highlightedMinutes,
+                relevantMinutes,
+                totalMinutes,
+                totalHours: Math.floor(totalMinutes / 60),
+                totalMins: totalMinutes % 60
+            };
+        })
+        .filter((c: any) => c.highlightedMovies.length > 0) // Only show clusters with at least one highlight
+        .sort((a: any, b: any) => b.count - a.count);
 
-		curatorStats[r.curatorId].totalReviews++;
-		if (r.selection === 'selected') {
-			curatorStats[r.curatorId].approvedCount++;
-		}
-	});
+    // Calculate total videos in clusters
+    const totalVideosInClusters = new Set(formattedClusters.flatMap((c: any) => [
+        ...c.highlightedMovies.map((m: any) => m._id),
+        ...c.relevantMovies.map((m: any) => m._id)
+    ])).size;
 
-	// Compute rates
-	Object.values(curatorStats).forEach(stat => {
-		stat.approvalRate = stat.totalReviews > 0 ? stat.approvedCount / stat.totalReviews : 0;
-	});
+    // Get unique highlighted films in clusters
+    const uniqueHighlightedInClusters = new Set(
+        formattedClusters.flatMap((c: any) => c.highlightedMovies.map((m: any) => m._id))
+    ).size;
 
-	// 2. Prepare Movies Data
-	const movies = data.submissions.map((s: any) => {
-		const reviews = s.reviews || [];
+    // Query Sanity for total highlights count
+    const totalHighlights = await sanityClient.fetch<number>(
+        `count(*[_type == "curator" && defined(highlights)].highlights[])`
+    );
 
-		return {
-			...s,
-			reviews, // Pass raw reviews to client for reactive calculation
-		};
-	});
+    const stats = {
+        totalClusters: formattedClusters.length,
+        avgCategorySize: formattedClusters.length > 0
+            ? Math.round(totalVideosInClusters / formattedClusters.length)
+            : 0,
+        highlightCoverage: totalHighlights > 0
+            ? Math.round((uniqueHighlightedInClusters / totalHighlights) * 100)
+            : 0
+    };
 
-	return {
-		movies,
-		curatorStats
-	};
+    return {
+        clusters: formattedClusters,
+        stats,
+        lastUpdated: data.lastUpdated
+    };
 };

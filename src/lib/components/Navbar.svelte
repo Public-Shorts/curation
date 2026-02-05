@@ -27,7 +27,6 @@
 				<a class="uppercase hover:text-gallery-900" href="/my-reviews">My Reviews</a>
 				<a class="uppercase hover:text-gallery-900" href="/stats">Stats</a>
 				<a class="uppercase hover:text-gallery-900" href="/highlights">Highlights</a>
-				<a class="uppercase hover:text-gallery-900" href="/clusters">Clusters</a>
 				<a class="uppercase hover:text-gallery-900" href="/selection">Selection</a>
 			</div>
 
@@ -85,13 +84,6 @@
 					onclick={toggleMenu}
 				>
 					Highlights
-				</a>
-				<a
-					class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
-					href="/clusters"
-					onclick={toggleMenu}
-				>
-					Clusters
 				</a>
 				<a
 					class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
