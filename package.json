@@ -13,7 +13,8 @@
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"update-clusters": "npx tsx scripts/update-clusters.ts",
-		"update-suggestions": "npx tsx scripts/update-suggestions.ts"
+		"update-suggestions": "npx tsx scripts/update-suggestions.ts",
+		"update-selection": "npx tsx scripts/update-selection.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.4.0",
@@ -42,6 +43,7 @@
 	"dependencies": {
 		"@sanity/client": "^7.13.2",
 		"@sanity/image-url": "^2.0.2",
-		"chart.js": "^4.5.1"
+		"chart.js": "^4.5.1",
+		"lucide-svelte": "^0.563.0"
 	}
 }

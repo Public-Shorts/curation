@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { Search, Info, GripVertical, Trash2, X, ChevronRight, Plus, Play, LayoutGrid } from 'lucide-svelte';
 	import { formatTime } from '$lib/utils/formatting';
 	import { fade, fly, scale } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
@@ -276,9 +277,7 @@
 
 				<!-- Search -->
 				<div class="relative">
-					<svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gallery-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-					</svg>
+					<Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gallery-400" />
 					<input
 						type="text"
 						bind:value={searchQuery}
@@ -347,16 +346,12 @@
 							<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
 								<button
 									onclick={(e) => { e.stopPropagation(); showDetails(video); }}
-									class="p-1.5 text-gallery-400 hover:text-gallery-600 hover:bg-gallery-100 rounded-lg transition-all"
+									class="p-1.5 rounded-lg transition-all text-gallery-400 hover:text-gallery-600 hover:bg-gallery-100"
 									title="View details"
 								>
-									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-									</svg>
+									<Info class="w-4 h-4" />
 								</button>
-								<svg class="w-4 h-4 text-gallery-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
-								</svg>
+								<GripVertical class="w-4 h-4 text-gallery-300" />
 							</div>
 						</div>
 					</div>
@@ -365,9 +360,7 @@
 				{#if availableVideos.length === 0}
 					<div class="py-16 text-center">
 						<div class="w-16 h-16 mx-auto mb-4 bg-gallery-100 rounded-2xl flex items-center justify-center">
-							<svg class="w-8 h-8 text-gallery-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
-							</svg>
+							<Search class="w-8 h-8 text-gallery-400" />
 						</div>
 						<p class="text-gallery-400 text-sm font-medium">No films found</p>
 						<p class="text-gallery-300 text-xs mt-1">Try adjusting your filters</p>
@@ -416,12 +409,10 @@
 							</div>
 							<button
 								onclick={() => deleteCategory(cluster._id)}
-								class="p-2 text-gallery-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover/cluster:opacity-100"
+								class="p-2 rounded-lg transition-all opacity-0 group-hover/cluster:opacity-100 text-gallery-300 hover:text-red-500 hover:bg-red-50"
 								title="Delete category"
 							>
-								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-								</svg>
+								<Trash2 class="w-4 h-4" />
 							</button>
 						</div>
 
@@ -454,21 +445,17 @@
 										<div class="flex items-center gap-1 opacity-0 group-hover/video:opacity-100 transition-opacity flex-shrink-0">
 											<button
 												onclick={() => showDetails(video)}
-												class="p-1 text-gallery-400 hover:text-gallery-600 hover:bg-gallery-200 rounded-md transition-all"
+												class="p-1 rounded-md transition-all text-gallery-400 hover:text-gallery-600 hover:bg-gallery-200"
 												title="View details"
 											>
-												<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-												</svg>
+												<Info class="w-3.5 h-3.5" />
 											</button>
 											<button
 												onclick={() => assignVideo(video._id, null)}
-												class="p-1 text-gallery-300 hover:text-red-500 hover:bg-red-50 rounded-md transition-all"
+												class="p-1 rounded-md transition-all text-gallery-300 hover:text-red-500 hover:bg-red-50"
 												title="Remove from category"
 											>
-												<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-												</svg>
+												<X class="w-3.5 h-3.5" />
 											</button>
 										</div>
 									</div>
@@ -486,9 +473,7 @@
 							{#if suggestedVideos.highlighted.length > 0 || suggestedVideos.regular.length > 0}
 								<details class="group/suggestions">
 									<summary class="cursor-pointer list-none flex items-center gap-2 py-2 px-3 bg-gallery-50 hover:bg-gallery-100 rounded-lg border border-gallery-200 transition-colors">
-										<svg class="w-3 h-3 text-gallery-400 transition-transform group-open/suggestions:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-										</svg>
+										<ChevronRight class="w-3 h-3 text-gallery-400 transition-transform group-open/suggestions:rotate-90" />
 										<span class="text-[10px] font-bold uppercase tracking-wider text-gallery-500">
 											Suggestions ({suggestedVideos.highlighted.length + suggestedVideos.regular.length})
 										</span>
@@ -530,18 +515,14 @@
 																class="p-0.5 text-amber-400 hover:text-amber-600 rounded opacity-0 group-hover/sug:opacity-100 transition-opacity"
 																title="View details"
 															>
-																<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																	<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-																</svg>
+																<Info class="w-3 h-3" />
 															</button>
 															<button
 																onclick={() => assignVideo(sugVideo._id, cluster._id)}
 																class="p-0.5 text-amber-500 hover:text-amber-700 rounded"
 																title="Add to category"
 															>
-																<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																	<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-																</svg>
+																<Plus class="w-3 h-3" />
 															</button>
 														</div>
 													{/each}
@@ -573,18 +554,14 @@
 																class="p-0.5 text-gallery-400 hover:text-gallery-600 rounded opacity-0 group-hover/sug:opacity-100 transition-opacity"
 																title="View details"
 															>
-																<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																	<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-																</svg>
+																<Info class="w-3 h-3" />
 															</button>
 															<button
 																onclick={() => assignVideo(sugVideo._id, cluster._id)}
 																class="p-0.5 text-gallery-500 hover:text-gallery-700 rounded"
 																title="Add to category"
 															>
-																<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																	<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-																</svg>
+																<Plus class="w-3 h-3" />
 															</button>
 														</div>
 													{/each}
@@ -609,9 +586,7 @@
 						class="col-span-full py-24 bg-white rounded-3xl border-2 border-dashed border-gallery-200 flex flex-col items-center justify-center"
 					>
 						<div class="w-20 h-20 mb-6 bg-gradient-to-br from-gallery-100 to-gallery-200 rounded-2xl flex items-center justify-center">
-							<svg class="w-10 h-10 text-gallery-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-							</svg>
+							<LayoutGrid class="w-10 h-10 text-gallery-400" />
 						</div>
 						<h3 class="text-xl font-bold text-gallery-700 mb-2">No categories yet</h3>
 						<p class="text-gallery-400 text-sm mb-6">Create your first category to start organizing films</p>
@@ -660,9 +635,7 @@
 					onclick={closeDetails}
 					class="absolute top-4 right-4 p-2 bg-black/30 hover:bg-black/50 text-white rounded-full transition-colors"
 				>
-					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-5 h-5" />
 				</button>
 				<div class="absolute bottom-4 left-6 right-6">
 					<div class="flex items-center gap-2 mb-1">
@@ -724,10 +697,7 @@
 							rel="noopener noreferrer"
 							class="px-4 py-2 bg-accent-500 text-white rounded-lg text-sm font-semibold hover:bg-accent-600 transition-colors flex items-center gap-2"
 						>
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-							</svg>
+							<Play class="w-4 h-4" />
 							Watch Film
 						</a>
 					{/if}

@@ -7,6 +7,15 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	const curatorId = locals.curatorId;
 
+	// Check if curator is jury and redirect to selection page
+	const curator = await sanityClient.fetch(
+		`*[_type == "curator" && _id == $curatorId][0]{ jury }`,
+		{ curatorId }
+	);
+	if (curator?.jury) {
+		throw redirect(303, '/selection');
+	}
+
 	const query = `{
 		"curatorStats": {
 			"curator": *[_type == "curator" && _id == $curatorId][0]{ _id, name, admin },

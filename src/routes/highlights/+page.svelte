@@ -1,11 +1,24 @@
 <script lang="ts">
 	import { StatCard } from '$lib/components/ui';
+	import { LayoutGrid, List, BanIcon } from 'lucide-svelte';
 	import VoteBreakdown from '$lib/components/selection/VoteBreakdown.svelte';
 	import FlagBadge from '$lib/components/ui/FlagBadge.svelte';
+	import { invalidateAll } from '$app/navigation';
 
 	let { data } = $props();
 
 	let stats = $derived(data.stats);
+	let isAdmin = $derived(data.isAdmin || false);
+
+	// Veto dialog state
+	let vetoDialogOpen = $state(false);
+	let vetoSubmissionId = $state('');
+	let vetoSubmissionTitle = $state('');
+	let vetoFromCinema = $state(true);
+	let vetoFromTV = $state(true);
+	let vetoReason = $state('');
+	let vetoLoading = $state(false);
+	let vetoError = $state('');
 
 	let sortKey = $state('popular'); // 'popular', 'score', 'title', 'length'
 	let sortDir = $state<'asc' | 'desc'>('desc');
@@ -93,6 +106,68 @@
 			sortDir = key === 'title' ? 'asc' : 'desc';
 		}
 	}
+
+	function openVetoDialog(submissionId: string, submissionTitle: string, event: MouseEvent) {
+		event.preventDefault();
+		event.stopPropagation();
+		vetoSubmissionId = submissionId;
+		vetoSubmissionTitle = submissionTitle;
+		vetoFromCinema = true;
+		vetoFromTV = true;
+		vetoReason = '';
+		vetoError = '';
+		vetoDialogOpen = true;
+	}
+
+	function closeVetoDialog() {
+		vetoDialogOpen = false;
+		vetoSubmissionId = '';
+		vetoSubmissionTitle = '';
+		vetoReason = '';
+		vetoError = '';
+	}
+
+	async function submitVeto() {
+		if (!vetoFromCinema && !vetoFromTV) {
+			vetoError = 'Must veto from at least cinema or TV';
+			return;
+		}
+
+		if (!vetoReason || vetoReason.trim().length < 5) {
+			vetoError = 'Reason must be at least 5 characters';
+			return;
+		}
+
+		vetoLoading = true;
+		vetoError = '';
+
+		try {
+			const response = await fetch('/api/veto', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					submissionId: vetoSubmissionId,
+					reason: vetoReason,
+					vetoedFromCinema: vetoFromCinema,
+					vetoedFromTV: vetoFromTV
+				})
+			});
+
+			if (!response.ok) {
+				const data = await response.json();
+				vetoError = data.error || 'Failed to veto submission';
+				vetoLoading = false;
+				return;
+			}
+
+			// Success - close dialog and refresh data
+			closeVetoDialog();
+			await invalidateAll();
+		} catch (error) {
+			vetoError = 'Failed to veto submission';
+			vetoLoading = false;
+		}
+	}
 </script>
 
 <svelte:window onclick={() => closeDropdown()} />
@@ -155,24 +230,7 @@
 						: 'text-gallery-500 hover:text-gallery-700'}"
 					aria-label="Grid View"
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="16"
-						height="16"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"
-						></rect><rect x="14" y="14" width="7" height="7"></rect><rect
-							x="3"
-							y="14"
-							width="7"
-							height="7"
-						></rect></svg
-					>
+					<LayoutGrid size={16} />
 				</button>
 				<button
 					onclick={() => (viewMode = 'inline')}
@@ -181,25 +239,7 @@
 						: 'text-gallery-500 hover:text-gallery-700'}"
 					aria-label="List View"
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="16"
-						height="16"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"
-						></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"
-						></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line
-							x1="3"
-							y1="18"
-							x2="3.01"
-							y2="18"
-						></line></svg
-					>
+					<List size={16} />
 				</button>
 			</div>
 
@@ -357,22 +397,34 @@
 			<!-- Card Mode -->
 			<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 				{#each sortedHighlights as { submission, curators, avgRating, uniqueTags }}
-					<a
-						href={`/review/${submission._id}`}
-						class="flex flex-col rounded-xl bg-white shadow-sm border border-gallery-100 overflow-hidden hover:shadow-xl transition-all duration-300 group"
-					>
-						<!-- Poster/Screenshot -->
-						{#if submission.poster?.asset}
-							<div class="relative aspect-video bg-gallery-100 overflow-hidden">
-								<img
-									src={`${submission.poster.asset.url}?w=600&h=400&fit=crop`}
-									alt={submission.englishTitle}
-									class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-								/>
-								<div
-									class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors"
-								></div>
-							</div>
+					<div class="relative flex flex-col rounded-xl bg-white shadow-sm border border-gallery-100 overflow-hidden hover:shadow-xl transition-all duration-300 group">
+						<!-- Veto Button (Admin Only) -->
+						{#if isAdmin}
+							<button
+								onclick={(e) => openVetoDialog(submission._id, submission.englishTitle, e)}
+								class="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-red-50 border border-red-200 hover:bg-red-100 transition-colors shadow-sm"
+								title="Veto this submission"
+							>
+								<BanIcon size={16} class="text-red-600" />
+							</button>
+						{/if}
+
+						<a
+							href={`/review/${submission._id}`}
+							class="flex flex-col flex-1"
+						>
+							<!-- Poster/Screenshot -->
+							{#if submission.poster?.asset}
+								<div class="relative aspect-video bg-gallery-100 overflow-hidden">
+									<img
+										src={`${submission.poster.asset.url}?w=600&h=400&fit=crop`}
+										alt={submission.englishTitle}
+										class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+									/>
+									<div
+										class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors"
+									></div>
+								</div>
 						{:else if submission.screenshots?.[0]?.asset}
 							<div class="relative aspect-video bg-gallery-100 overflow-hidden">
 								<img
@@ -514,16 +566,29 @@
 							</div>
 						</div>
 					</a>
+					</div>
 				{/each}
 			</div>
 		{:else}
 			<!-- Inline Mode (List) -->
 			<div class="space-y-2">
 				{#each sortedHighlights as { submission, curators, avgRating, uniqueTags }}
-					<a
-						href={`/review/${submission._id}`}
-						class="flex items-center gap-4 bg-white p-3 rounded-lg border border-gallery-100 hover:border-gallery-300 hover:shadow-md transition-all group"
-					>
+					<div class="relative">
+						<!-- Veto Button (Admin Only) -->
+						{#if isAdmin}
+							<button
+								onclick={(e) => openVetoDialog(submission._id, submission.englishTitle, e)}
+								class="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-red-50 border border-red-200 hover:bg-red-100 transition-colors shadow-sm"
+								title="Veto this submission"
+							>
+								<BanIcon size={16} class="text-red-600" />
+							</button>
+						{/if}
+
+						<a
+							href={`/review/${submission._id}`}
+							class="flex items-center gap-4 bg-white p-3 rounded-lg border border-gallery-100 hover:border-gallery-300 hover:shadow-md transition-all group"
+						>
 						<!-- Thumbnail -->
 						<div class="h-12 w-20 rounded bg-gallery-100 flex-shrink-0 overflow-hidden">
 							{#if submission.poster?.asset}
@@ -627,8 +692,82 @@
 							</div>
 						</div>
 					</a>
+					</div>
 				{/each}
 			</div>
 		{/if}
 	</section>
 </div>
+
+<!-- Veto Dialog -->
+{#if vetoDialogOpen}
+	<div class="fixed inset-0 z-50 flex items-center justify-center">
+		<!-- Backdrop -->
+		<div class="absolute inset-0 bg-black/50" onclick={closeVetoDialog}></div>
+
+		<!-- Dialog -->
+		<div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
+			<h2 class="text-xl font-bold mb-1">Veto Submission</h2>
+			<p class="text-sm text-gallery-600 mb-4">{vetoSubmissionTitle}</p>
+
+			<!-- Veto Contexts -->
+			<div class="mb-4">
+				<p class="text-sm font-medium mb-2">Select contexts to veto from:</p>
+				<div class="space-y-2">
+					<label class="flex items-center gap-2 cursor-pointer">
+						<input
+							type="checkbox"
+							bind:checked={vetoFromCinema}
+							class="w-4 h-4 rounded border-gallery-300"
+						/>
+						<span class="text-sm">Cinema Screenings</span>
+					</label>
+					<label class="flex items-center gap-2 cursor-pointer">
+						<input
+							type="checkbox"
+							bind:checked={vetoFromTV}
+							class="w-4 h-4 rounded border-gallery-300"
+						/>
+						<span class="text-sm">TV Display</span>
+					</label>
+				</div>
+			</div>
+
+			<!-- Reason -->
+			<div class="mb-4">
+				<label class="block text-sm font-medium mb-2">Reason (required)</label>
+				<textarea
+					bind:value={vetoReason}
+					class="w-full px-3 py-2 border border-gallery-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gallery-900 resize-none"
+					rows="3"
+					placeholder="Why is this submission being vetoed?"
+				></textarea>
+			</div>
+
+			<!-- Error Message -->
+			{#if vetoError}
+				<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+					<p class="text-sm text-red-600">{vetoError}</p>
+				</div>
+			{/if}
+
+			<!-- Actions -->
+			<div class="flex gap-3 justify-end">
+				<button
+					onclick={closeVetoDialog}
+					class="px-4 py-2 text-sm font-medium text-gallery-700 hover:text-gallery-900 transition-colors"
+					disabled={vetoLoading}
+				>
+					Cancel
+				</button>
+				<button
+					onclick={submitVeto}
+					class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+					disabled={vetoLoading}
+				>
+					{vetoLoading ? 'Vetoing...' : 'Confirm Veto'}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}

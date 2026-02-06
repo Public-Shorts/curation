@@ -1,6 +1,7 @@
 <!-- src/lib/components/FilterDropdown.svelte -->
 <script lang="ts">
     import { fade, fly } from 'svelte/transition';
+	import { ChevronDown, Check } from 'lucide-svelte';
 
     let { 
         label, 
@@ -55,14 +56,7 @@
 				{selected.length}
 			</span>
 		{/if}
-		<svg
-			class="h-4 w-4 text-gray-500 transition-transform {isOpen ? 'rotate-180' : ''}"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor"
-		>
-			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-		</svg>
+		<ChevronDown class="h-4 w-4 text-gray-500 transition-transform {isOpen ? 'rotate-180' : ''}" />
 	</button>
 
 	<!-- Dropdown Panel -->
@@ -86,19 +80,7 @@
 					>
 						<span class="truncate">{option}</span>
 						{#if selected.includes(option)}
-							<svg
-								class="h-4 w-4 {color === 'blue' ? 'text-blue-600' : 'text-black'}"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M5 13l4 4L19 7"
-								/>
-							</svg>
+							<Check class="h-4 w-4 {color === 'blue' ? 'text-blue-600' : 'text-black'}" />
 						{/if}
 					</button>
 				{/each}

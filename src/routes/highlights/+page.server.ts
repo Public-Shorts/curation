@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 import { sanityClient } from '$lib/server/sanity';
 import { calculateCuratorWeights, scoreMovies } from '$lib/utils/scoring';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
   // 1. Fetch data needed for highlights and scoring
   const query = `{
     "curators": *[_type == "curator" && defined(highlights) && count(highlights) > 0] {
@@ -47,12 +47,28 @@ export const load: PageServerLoad = async () => {
     "curatorStatsRaw": *[_type == "review"]{
       "curatorId": curator._ref,
       selection
-    }
+    },
+    "vetoedIds": *[_type == "festivalSettings"][0].vetoedSubmissions[
+      vetoedFromCinema == true || vetoedFromTV == true
+    ].submission->_id,
+    "isAdmin": *[_type == "curator" && _id == $curatorId][0].admin
   }`;
 
-  const { curators, curatorStatsRaw } = await sanityClient.fetch(query);
+  const { curators, curatorStatsRaw, vetoedIds, isAdmin } = await sanityClient.fetch(query, {
+    curatorId: locals.curatorId || ''
+  });
 
-  // 2. Calculate Global Curator Stats for Weighting
+  // 2. Filter out vetoed submissions from curators' highlights
+  const vetoedSet = new Set(vetoedIds || []);
+  curators.forEach((curator: any) => {
+    if (curator.highlights) {
+      curator.highlights = curator.highlights.filter(
+        (submission: any) => submission && !vetoedSet.has(submission._id)
+      );
+    }
+  });
+
+  // 3. Calculate Global Curator Stats for Weighting
   const curatorStatsMap: Record<string, { totalReviews: number; approvedCount: number; approvalRate: number }> = {};
   curatorStatsRaw.forEach((r: any) => {
     if (!r.curatorId) return;
@@ -71,7 +87,7 @@ export const load: PageServerLoad = async () => {
 
   const curatorWeights = calculateCuratorWeights(curatorStatsMap, 1, 4); // Default presets from selection page
 
-  // 3. Aggregate highlights: create a map of submission -> curators and enriched data
+  // 4. Aggregate highlights: create a map of submission -> curators and enriched data
   const highlightMap = new Map<string, any>();
 
   curators.forEach((curator: any) => {
@@ -113,7 +129,7 @@ export const load: PageServerLoad = async () => {
   // Convert map to array
   const highlights = Array.from(highlightMap.values());
 
-  // 4. Calculate stats
+  // 5. Calculate stats
   const totalMinutes = highlights.reduce((sum, h) => sum + (h.submission.length || 0), 0);
   const totalSpentByCurators = highlights.reduce((sum, h) => sum + h.curators.length, 0);
 
@@ -131,6 +147,7 @@ export const load: PageServerLoad = async () => {
 
   return {
     highlights,
-    stats
+    stats,
+    isAdmin: isAdmin || false
   };
 };

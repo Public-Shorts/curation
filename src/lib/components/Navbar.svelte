@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { Menu, X } from 'lucide-svelte';
 	import Logo from './Logo.svelte';
 
-	let { currentPath } = $props();
+	let { currentPath, isAdmin = false, isJury = false } = $props();
 	let mobileMenuOpen = $state(false);
 
 	function toggleMenu() {
@@ -14,12 +15,17 @@
 		<div class="flex items-center justify-between">
 			<!-- Logo -->
 			<a
-				class="flex items-center text-sm font-semibold tracking-wide uppercase text-gallery-700 hover:text-gallery-900"
+				class="flex items-center gap-2 text-sm font-semibold tracking-wide uppercase text-gallery-700 hover:text-gallery-900"
 				href="/"
 			>
 				<div class="relative w-20 sm:w-24 fill-gallery-800">
 					<Logo />
 				</div>
+				{#if isJury}
+					<span class="px-2 py-1 text-[10px] font-black uppercase tracking-wider bg-accent-500 text-white rounded shadow-sm">
+						Jury
+					</span>
+				{/if}
 			</a>
 
 			<!-- Desktop Navigation -->
@@ -27,6 +33,9 @@
 				<a class="uppercase hover:text-gallery-900" href="/my-reviews">My Reviews</a>
 				<a class="uppercase hover:text-gallery-900" href="/stats">Stats</a>
 				<a class="uppercase hover:text-gallery-900" href="/highlights">Highlights</a>
+				{#if isAdmin}
+					<a class="uppercase hover:text-gallery-900" href="/vetoed">Vetoed</a>
+				{/if}
 				<a class="uppercase hover:text-gallery-900" href="/selection">Selection</a>
 			</div>
 
@@ -48,23 +57,11 @@
 				onclick={toggleMenu}
 				aria-label="Toggle menu"
 			>
-				<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					{#if mobileMenuOpen}
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M6 18L18 6M6 6l12 12"
-						/>
-					{:else}
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M4 6h16M4 12h16M4 18h16"
-						/>
-					{/if}
-				</svg>
+				{#if mobileMenuOpen}
+					<X class="w-6 h-6" />
+				{:else}
+					<Menu class="w-6 h-6" />
+				{/if}
 			</button>
 		</div>
 
@@ -85,6 +82,15 @@
 				>
 					Highlights
 				</a>
+				{#if isAdmin}
+					<a
+						class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
+						href="/vetoed"
+						onclick={toggleMenu}
+					>
+						Vetoed
+					</a>
+				{/if}
 				<a
 					class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
 					href="/stats"

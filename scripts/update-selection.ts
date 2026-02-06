@@ -12,7 +12,8 @@ const SANITY_CONFIG = {
 	dataset: 'production',
 	apiVersion: '2025-12-10',
 	useCdn: false,
-	token: 'skZobMkCaSnrhX51E7cD40Gs7qBiHR8XTK1x2E0XsEgtW0isaJhMBMjP4znGUlDcGYcdePw203XZqowwsrfDSWGVpb0SnqXcOZ90Un7RJGmfQRThv4clIbgrV7LN846mZKuUWVYtMLTJasCgcbFta6u8NhNH5e2Vi6QGrm9Exofap3mmhxNY'
+	token:
+		'skZobMkCaSnrhX51E7cD40Gs7qBiHR8XTK1x2E0XsEgtW0isaJhMBMjP4znGUlDcGYcdePw203XZqowwsrfDSWGVpb0SnqXcOZ90Un7RJGmfQRThv4clIbgrV7LN846mZKuUWVYtMLTJasCgcbFta6u8NhNH5e2Vi6QGrm9Exofap3mmhxNY'
 };
 
 const OLLAMA_URL = 'http://localhost:11434/api/chat';
@@ -22,7 +23,9 @@ const client = createClient(SANITY_CONFIG);
 
 // --- Scoring logic (mirrors src/lib/utils/scoring.ts) ---
 
-function getAverageApprovalRate(statsMap: Record<string, { totalReviews: number; approvedCount: number; approvalRate: number }>): number {
+function getAverageApprovalRate(
+	statsMap: Record<string, { totalReviews: number; approvedCount: number; approvalRate: number }>
+): number {
 	const curators = Object.values(statsMap);
 	if (curators.length === 0) return 0.5;
 	const totalApproved = curators.reduce((sum, s) => sum + s.approvedCount, 0);
@@ -53,7 +56,10 @@ function calculateCuratorWeights(
 	return weights;
 }
 
-function scoreMovie(movie: any, curatorWeights: Record<string, { selected: number; maybe: number; rejected: number }>) {
+function scoreMovie(
+	movie: any,
+	curatorWeights: Record<string, { selected: number; maybe: number; rejected: number }>
+) {
 	const reviews = movie.reviews || [];
 	let weightedSum = 0;
 	let totalWeight = 0;
@@ -141,10 +147,16 @@ async function generateSummary(data: {
 		.map(([tag, count]) => `${tag} (${count})`)
 		.join(', ');
 
-	const highlightTitles = data.highlights.slice(0, 15).map((h: any) => `"${h.title}" by ${h.director} (${h.length}min, score ${h.score}%)`).join('; ');
-	const selectedTitles = data.selected.slice(0, 10).map((s: any) => `"${s.title}" by ${s.director} (${s.length}min, score ${s.score}%)`).join('; ');
+	const highlightTitles = data.highlights
+		.slice(0, 15)
+		.map((h: any) => `"${h.title}" by ${h.director} (${h.length}min, score ${h.score}%)`)
+		.join('; ');
+	const selectedTitles = data.selected
+		.slice(0, 10)
+		.map((s: any) => `"${s.title}" by ${s.director} (${s.length}min, score ${s.score}%)`)
+		.join('; ');
 
-	const prompt = `You are writing an internal editorial brief for a short film festival jury. Based on the data below, write a 2-3 paragraph summary that describes what has been submitted and what the curators have selected. Be factual, analytical, and concise — not promotional. Describe thematic patterns, formal tendencies, and notable characteristics. Mention specific films only if they exemplify a broader trend.
+	const prompt = `You are writing an internal editorial brief for a short film festival jury. Based on the data below, write a 2-3 paragraph summary that describes what has been submitted and what the curators have selected. Be factual, analytical, and concise — not promotional. Describe thematic patterns, formal tendencies, and notable characteristics. Don't be over empahtic or use flowery. Stay close to the facts. Mention specific films only if they exemplify a broader trend.
 
 DATA:
 - Total submissions: ${data.totalSubmissions}
@@ -190,10 +202,15 @@ Return ONLY a JSON object: { "summary": "your 2-3 paragraph text here" }`;
 
 async function main() {
 	const { submissions, curators, allReviews } = await fetchAllData();
-	console.log(`Fetched ${submissions.length} submissions, ${curators.length} curators with highlights`);
+	console.log(
+		`Fetched ${submissions.length} submissions, ${curators.length} curators with highlights`
+	);
 
 	// 1. Build curator stats
-	const curatorStats: Record<string, { totalReviews: number; approvedCount: number; approvalRate: number }> = {};
+	const curatorStats: Record<
+		string,
+		{ totalReviews: number; approvedCount: number; approvalRate: number }
+	> = {};
 	allReviews.forEach((r: any) => {
 		if (!r.curatorId) return;
 		if (!curatorStats[r.curatorId]) {
@@ -202,7 +219,7 @@ async function main() {
 		curatorStats[r.curatorId].totalReviews++;
 		if (r.selection === 'selected') curatorStats[r.curatorId].approvedCount++;
 	});
-	Object.values(curatorStats).forEach(stat => {
+	Object.values(curatorStats).forEach((stat) => {
 		stat.approvalRate = stat.totalReviews > 0 ? stat.approvedCount / stat.totalReviews : 0;
 	});
 
@@ -224,6 +241,7 @@ async function main() {
 	// 3. Score and categorize all submissions
 	const tagDistribution: Record<string, number> = {};
 	const highlights: any[] = [];
+	const unanimous: any[] = [];
 	const selected: any[] = [];
 	const maybe: any[] = [];
 
@@ -233,21 +251,43 @@ async function main() {
 
 		// Collect tags
 		const tags = reviews.flatMap((r: any) => r.tags || []);
-		const uniqueTagLabels = [...new Set(tags.map((t: any) => t.label?.toLowerCase()).filter(Boolean))];
-		uniqueTagLabels.forEach(tag => {
+		const uniqueTagLabels = [
+			...new Set(tags.map((t: any) => t.label?.toLowerCase()).filter(Boolean))
+		];
+		uniqueTagLabels.forEach((tag) => {
 			tagDistribution[tag] = (tagDistribution[tag] || 0) + 1;
 		});
 
 		// Compute flags
 		const flags: any[] = [];
-		if (sub.explicit) flags.push({ label: 'EXPLICIT', details: sub.explicitDetails || 'Explicit content', color: 'text-red-700 bg-red-50 border-red-200' });
-		if (sub.aiUsed) flags.push({ label: 'AI', details: sub.aiExplanation || 'AI usage declared', color: 'text-purple-700 bg-purple-50 border-purple-200' });
-		const contentNotes = [...new Set(reviews.flatMap((r: any) => r.contentNotes || []))].filter((n: string) => n.toLowerCase() !== 'none');
-		if (contentNotes.length > 0) flags.push({ label: 'WARNINGS', details: contentNotes.join(', '), color: 'text-orange-700 bg-orange-50 border-orange-200' });
+		if (sub.explicit)
+			flags.push({
+				label: 'EXPLICIT',
+				details: sub.explicitDetails || 'Explicit content',
+				color: 'text-red-700 bg-red-50 border-red-200'
+			});
+		if (sub.aiUsed)
+			flags.push({
+				label: 'AI',
+				details: sub.aiExplanation || 'AI usage declared',
+				color: 'text-purple-700 bg-purple-50 border-purple-200'
+			});
+		const contentNotes = [...new Set(reviews.flatMap((r: any) => r.contentNotes || []))].filter(
+			(n: string) => n.toLowerCase() !== 'none'
+		);
+		if (contentNotes.length > 0)
+			flags.push({
+				label: 'WARNINGS',
+				details: contentNotes.join(', '),
+				color: 'text-orange-700 bg-orange-50 border-orange-200'
+			});
 
 		// Compute average rating
 		const ratings = reviews.map((r: any) => r.rating).filter((r: any) => r != null);
-		const avgRating = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : null;
+		const avgRating =
+			ratings.length > 0
+				? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length
+				: null;
 
 		const filmData = {
 			_id: sub._id,
@@ -269,6 +309,13 @@ async function main() {
 			highlights.push(filmData);
 		}
 
+		// Check for 100% approval (unanimous selection)
+		const hasReviews = reviews.length > 0;
+		const allSelected = hasReviews && reviews.every((r: any) => r.selection === 'selected');
+		if (allSelected && hasReviews) {
+			unanimous.push(filmData);
+		}
+
 		if (score >= 65) {
 			selected.push(filmData);
 		} else if (score >= 35) {
@@ -278,15 +325,23 @@ async function main() {
 
 	// Sort
 	highlights.sort((a, b) => b.curatorCount - a.curatorCount || b.score - a.score);
+	unanimous.sort((a, b) => b.reviewCount - a.reviewCount || b.score - a.score);
 	selected.sort((a, b) => b.score - a.score);
 	maybe.sort((a, b) => b.score - a.score);
 
-	console.log(`Highlights: ${highlights.length}, Selected: ${selected.length}, Maybe: ${maybe.length}`);
+	console.log(
+		`Highlights: ${highlights.length}, Unanimous: ${unanimous.length}, Selected: ${selected.length}, Maybe: ${maybe.length}`
+	);
 
 	// 4. Generate summary
 	const totalRuntime = [...highlights, ...selected].reduce((sum, f) => sum + (f.length || 0), 0);
-	const allScores = submissions.map((s: any) => scoreMovie(s, curatorWeights)).filter((s: number) => s > 0);
-	const avgScore = allScores.length > 0 ? allScores.reduce((a: number, b: number) => a + b, 0) / allScores.length : 0;
+	const allScores = submissions
+		.map((s: any) => scoreMovie(s, curatorWeights))
+		.filter((s: number) => s > 0);
+	const avgScore =
+		allScores.length > 0
+			? allScores.reduce((a: number, b: number) => a + b, 0) / allScores.length
+			: 0;
 
 	const summary = await generateSummary({
 		totalSubmissions: submissions.length,
@@ -306,6 +361,7 @@ async function main() {
 		lastUpdated: new Date().toISOString(),
 		summary,
 		highlights,
+		unanimous,
 		selected,
 		maybe
 	};
