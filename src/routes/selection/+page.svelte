@@ -190,7 +190,7 @@
 										>
 											<div class="flex flex-wrap gap-1">
 												{#each film.tags.slice(0, 5) as tag}
-													<span class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full"
+													<span class="text-xs px-2 py-0.5 bg-white/20 text-white rounded-full"
 														>{tag}</span
 													>
 												{/each}
@@ -214,7 +214,7 @@
 										>
 											<div class="flex flex-wrap gap-1">
 												{#each film.tags.slice(0, 5) as tag}
-													<span class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full"
+													<span class="text-xs px-2 py-0.5 bg-white/20 text-white rounded-full"
 														>{tag}</span
 													>
 												{/each}
@@ -325,7 +325,7 @@
 										>
 											<div class="flex flex-wrap gap-1">
 												{#each film.tags.slice(0, 5) as tag}<span
-														class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full"
+														class="text-xs px-2 py-0.5 bg-white/20 text-white rounded-full"
 														>{tag}</span
 													>{/each}
 											</div>
@@ -348,7 +348,7 @@
 										>
 											<div class="flex flex-wrap gap-1">
 												{#each film.tags.slice(0, 5) as tag}<span
-														class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full"
+														class="text-xs px-2 py-0.5 bg-white/20 text-white rounded-full"
 														>{tag}</span
 													>{/each}
 											</div>
