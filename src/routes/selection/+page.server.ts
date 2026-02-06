@@ -30,45 +30,44 @@ export const load: PageServerLoad = async ({ locals }) => {
 		console.warn('selection.json not found - run npm run update-selection');
 	}
 
-	// Fetch full submission data with reviews for dialog (if jury)
+	// Fetch full submission data with reviews for dialog (for all users)
 	let submissionsWithReviews: Record<string, any> = {};
-	if (isJury) {
-		const allIds = [
-			...selectionData.highlights.map((f: any) => f._id),
-			...(selectionData.unanimous || []).map((f: any) => f._id),
-			...selectionData.selected.map((f: any) => f._id),
-			...selectionData.maybe.map((f: any) => f._id)
-		];
-		if (allIds.length > 0) {
-			const submissions = await sanityClient.fetch(
-				`*[_type == "submission" && _id in $ids]{
+	const allIds = [
+		...selectionData.highlights.map((f: any) => f._id),
+		...(selectionData.unanimous || []).map((f: any) => f._id),
+		...selectionData.selected.map((f: any) => f._id),
+		...selectionData.maybe.map((f: any) => f._id)
+	];
+	if (allIds.length > 0) {
+		const submissions = await sanityClient.fetch(
+			`*[_type == "submission" && _id in $ids]{
+				_id,
+				englishTitle,
+				directorName,
+				length,
+				synopsis,
+				filmLanguage,
+				categories,
+				country,
+				"poster": poster{ asset->{ _id, url } },
+				"screenshots": screenshots[]{ asset->{ _id, url } },
+				linkToWatch,
+				linkToDownload,
+				"reviews": *[_type == "review" && film._ref == ^._id]{
 					_id,
-					englishTitle,
-					directorName,
-					length,
-					synopsis,
-					filmLanguage,
-					categories,
-					"poster": poster{ asset->{ _id, url } },
-					"screenshots": screenshots[]{ asset->{ _id, url } },
-					linkToWatch,
-					linkToDownload,
-					"reviews": *[_type == "review" && film._ref == ^._id]{
-						_id,
-						selection,
-						rating,
-						tags,
-						comment,
-						contentNotes,
-						"curatorName": curator->name
-					}
-				}`,
-				{ ids: allIds }
-			);
-			submissions.forEach((sub: any) => {
-				submissionsWithReviews[sub._id] = sub;
-			});
-		}
+					selection,
+					rating,
+					tags,
+					additionalComments,
+					contentNotes,
+					"curatorName": curator->name
+				}
+			}`,
+			{ ids: allIds }
+		);
+		submissions.forEach((sub: any) => {
+			submissionsWithReviews[sub._id] = sub;
+		});
 	}
 
 	// Filter clusters to have at least 1 movie (or keep as is)

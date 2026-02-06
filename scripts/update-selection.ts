@@ -156,7 +156,7 @@ async function generateSummary(data: {
 		.map((s: any) => `"${s.title}" by ${s.director} (${s.length}min, score ${s.score}%)`)
 		.join('; ');
 
-	const prompt = `You are writing an internal editorial brief for a short film festival jury. Based on the data below, write a 2-3 paragraph summary that describes what has been submitted and what the curators have selected. Be factual, analytical, and concise — not promotional. Describe thematic patterns, formal tendencies, and notable characteristics. Don't be over empahtic or use flowery. Stay close to the facts. Mention specific films only if they exemplify a broader trend.
+	const prompt = `You are writing an internal editorial brief for a short film festival jury. Use 'we' as you are writing on behalf of the curation team. Based on the data below, write a 2-3 paragraph summary that describes what has been submitted and what the curators have selected. Be factual, analytical, and concise — not promotional. Describe thematic patterns, formal tendencies, and notable characteristics. Don't be over empahtic or use flowery. Stay close to the facts. Mention specific films only if they exemplify a broader trend. 
 
 DATA:
 - Total submissions: ${data.totalSubmissions}
