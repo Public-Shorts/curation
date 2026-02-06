@@ -37,6 +37,38 @@
 		[...data.highlights, ...data.selected].reduce((sum, f) => sum + (f.length || 0), 0)
 	);
 
+	// Detail video derived state
+	let detailReviews = $derived(detailVideo?.reviews || []);
+	let detailSelectedCount = $derived(
+		detailReviews.filter((r: any) => r.selection === 'selected').length
+	);
+	let detailMaybeCount = $derived(detailReviews.filter((r: any) => r.selection === 'maybe').length);
+	let detailRejectedCount = $derived(
+		detailReviews.filter((r: any) => r.selection === 'rejected').length
+	);
+
+	let detailRatingsWithValue = $derived(detailReviews.filter((r: any) => r.rating != null));
+	let detailAvgRating = $derived(
+		detailRatingsWithValue.length > 0
+			? detailRatingsWithValue.reduce((sum: number, r: any) => sum + r.rating, 0) /
+					detailRatingsWithValue.length
+			: null
+	);
+
+	let detailAllTags = $derived(
+		[
+			...new Set(detailReviews.flatMap((r: any) => (r.tags || []).map((t: any) => t.label || t)))
+		].slice(0, 8)
+	);
+
+	let detailReviewsWithNotes = $derived(
+		detailReviews.filter(
+			(r: any) =>
+				r.additionalComments ||
+				(r.contentNotes?.length > 0 && !r.contentNotes.every((n: string) => n === 'none'))
+		)
+	);
+
 	async function refreshSelection() {
 		isRefreshing = true;
 		try {
@@ -110,8 +142,8 @@
 	{:else}
 		<section class="bg-gallery-50 rounded-xl border border-gallery-200 p-8">
 			<p class="text-gallery-500 text-center">
-				No selection data available. Run <code
-					class="bg-gallery-200 px-2 py-0.5 rounded text-xs">npm run update-selection</code
+				No selection data available. Run <code class="bg-gallery-200 px-2 py-0.5 rounded text-xs"
+					>npm run update-selection</code
 				> to generate.
 			</p>
 		</section>
@@ -121,7 +153,9 @@
 	<section class="space-y-6">
 		<details open class="group">
 			<summary class="cursor-pointer list-none">
-				<div class="flex items-center gap-2 text-xl font-bold text-gallery-900 hover:text-black transition-colors">
+				<div
+					class="flex items-center gap-2 text-xl font-bold text-gallery-900 hover:text-black transition-colors"
+				>
 					<span class="transition-transform group-open:rotate-90 text-gallery-400">▶</span>
 					Highlights ({data.highlights.length})
 				</div>
@@ -147,12 +181,18 @@
 										alt={film.title}
 										class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
 									/>
-									<div class="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors"></div>
+									<div
+										class="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors"
+									></div>
 									{#if film.tags?.length > 0}
-										<div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity">
+										<div
+											class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity"
+										>
 											<div class="flex flex-wrap gap-1">
 												{#each film.tags.slice(0, 5) as tag}
-													<span class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full">{tag}</span>
+													<span class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full"
+														>{tag}</span
+													>
 												{/each}
 											</div>
 										</div>
@@ -165,19 +205,27 @@
 										alt={film.title}
 										class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
 									/>
-									<div class="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors"></div>
+									<div
+										class="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors"
+									></div>
 									{#if film.tags?.length > 0}
-										<div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity">
+										<div
+											class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity"
+										>
 											<div class="flex flex-wrap gap-1">
 												{#each film.tags.slice(0, 5) as tag}
-													<span class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full">{tag}</span>
+													<span class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full"
+														>{tag}</span
+													>
 												{/each}
 											</div>
 										</div>
 									{/if}
 								</div>
 							{:else}
-								<div class="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+								<div
+									class="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+								>
 									<span class="text-gallery-400 text-4xl">🎬</span>
 								</div>
 							{/if}
@@ -186,23 +234,33 @@
 							<div class="p-5 flex-1 flex flex-col space-y-4">
 								<div class="flex justify-between items-start gap-4">
 									<div class="flex-1 min-w-0">
-										<h3 class="font-bold text-lg leading-tight text-gallery-900 truncate">{film.title}</h3>
+										<h3 class="font-bold text-lg leading-tight text-gallery-900 truncate">
+											{film.title}
+										</h3>
 										<p class="text-sm text-gallery-600 font-medium mt-1">
 											{film.director}
-											{#if film.length}<span class="text-gallery-300 mx-1.5">•</span><span>{film.length} min</span>{/if}
+											{#if film.length}<span class="text-gallery-300 mx-1.5">•</span><span
+													>{film.length} min</span
+												>{/if}
 										</p>
 									</div>
 									<div class="flex flex-col items-end gap-1">
 										{#if film.score !== undefined}
-											<span class="text-xl font-black text-gallery-900 leading-none">{film.score.toFixed(0)}%</span>
+											<span class="text-xl font-black text-gallery-900 leading-none"
+												>{film.score.toFixed(0)}%</span
+											>
 										{/if}
 										{#if film.avgRating}
-											<span class="text-xs font-bold text-gallery-400">★ {film.avgRating.toFixed(1)}</span>
+											<span class="text-xs font-bold text-gallery-400"
+												>★ {film.avgRating.toFixed(1)}</span
+											>
 										{/if}
 									</div>
 								</div>
 								<!-- Footer -->
-								<div class="mt-auto pt-3 border-t border-gallery-100 flex items-center justify-between">
+								<div
+									class="mt-auto pt-3 border-t border-gallery-100 flex items-center justify-between"
+								>
 									<div class="flex items-center gap-1.5">
 										<span class="text-xs" style="color: var(--color-highlight-500)">★</span>
 										<span class="text-[10px] font-black text-gallery-600 uppercase tracking-widest">
@@ -212,7 +270,10 @@
 									{#if film.flags && film.flags.length > 0}
 										<div class="flex gap-1">
 											{#each film.flags.slice(0, 2) as flag}
-												<span class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded {flag.color}">{flag.label}</span>
+												<span
+													class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded {flag.color}"
+													>{flag.label}</span
+												>
 											{/each}
 										</div>
 									{/if}
@@ -230,11 +291,15 @@
 		<section class="space-y-6">
 			<details class="group">
 				<summary class="cursor-pointer list-none">
-					<div class="flex items-center gap-2 text-xl font-bold text-gallery-900 hover:text-black transition-colors">
+					<div
+						class="flex items-center gap-2 text-xl font-bold text-gallery-900 hover:text-black transition-colors"
+					>
 						<span class="transition-transform group-open:rotate-90 text-gallery-400">▶</span>
 						100% Approval ({unanimousFiltered.length})
 					</div>
-					<p class="text-sm text-gallery-500 mt-1 ml-6">Films unanimously approved by all reviewers</p>
+					<p class="text-sm text-gallery-500 mt-1 ml-6">
+						Films unanimously approved by all reviewers
+					</p>
 				</summary>
 
 				<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
@@ -246,30 +311,54 @@
 							<!-- Poster/Screenshot -->
 							{#if film.poster?.asset}
 								<div class="relative aspect-video bg-gallery-100 overflow-hidden">
-									<img src={`${film.poster.asset.url}?w=600&h=400&fit=crop`} alt={film.title} class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105" />
-									<div class="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors"></div>
+									<img
+										src={`${film.poster.asset.url}?w=600&h=400&fit=crop`}
+										alt={film.title}
+										class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
+									/>
+									<div
+										class="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors"
+									></div>
 									{#if film.tags?.length > 0}
-										<div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity">
+										<div
+											class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity"
+										>
 											<div class="flex flex-wrap gap-1">
-												{#each film.tags.slice(0, 5) as tag}<span class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full">{tag}</span>{/each}
+												{#each film.tags.slice(0, 5) as tag}<span
+														class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full"
+														>{tag}</span
+													>{/each}
 											</div>
 										</div>
 									{/if}
 								</div>
 							{:else if film.screenshots?.[0]?.asset}
 								<div class="relative aspect-video bg-gallery-100 overflow-hidden">
-									<img src={`${film.screenshots[0].asset.url}?w=600&h=400&fit=crop`} alt={film.title} class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105" />
-									<div class="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors"></div>
+									<img
+										src={`${film.screenshots[0].asset.url}?w=600&h=400&fit=crop`}
+										alt={film.title}
+										class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
+									/>
+									<div
+										class="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors"
+									></div>
 									{#if film.tags?.length > 0}
-										<div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity">
+										<div
+											class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity"
+										>
 											<div class="flex flex-wrap gap-1">
-												{#each film.tags.slice(0, 5) as tag}<span class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full">{tag}</span>{/each}
+												{#each film.tags.slice(0, 5) as tag}<span
+														class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full"
+														>{tag}</span
+													>{/each}
 											</div>
 										</div>
 									{/if}
 								</div>
 							{:else}
-								<div class="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+								<div
+									class="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+								>
 									<span class="text-gallery-400 text-4xl">🎬</span>
 								</div>
 							{/if}
@@ -277,17 +366,27 @@
 							<div class="p-5 flex-1 flex flex-col space-y-4">
 								<div class="flex justify-between items-start gap-4">
 									<div class="flex-1 min-w-0">
-										<h3 class="font-bold text-lg leading-tight text-gallery-900 truncate">{film.title}</h3>
-										<p class="text-sm text-gallery-600 font-medium mt-1">{film.director}{#if film.length}<span class="text-gallery-300 mx-1.5">•</span><span>{film.length} min</span>{/if}</p>
+										<h3 class="font-bold text-lg leading-tight text-gallery-900 truncate">
+											{film.title}
+										</h3>
+										<p class="text-sm text-gallery-600 font-medium mt-1">
+											{film.director}{#if film.length}<span class="text-gallery-300 mx-1.5">•</span
+												><span>{film.length} min</span>{/if}
+										</p>
 									</div>
 									<div class="flex flex-col items-end gap-1">
 										<span class="text-xl font-black text-green-600 leading-none">100%</span>
-										{#if film.avgRating}<span class="text-xs font-bold text-gallery-400">★ {film.avgRating.toFixed(1)}</span>{/if}
+										{#if film.avgRating}<span class="text-xs font-bold text-gallery-400"
+												>★ {film.avgRating.toFixed(1)}</span
+											>{/if}
 									</div>
 								</div>
 								{#if film.flags && film.flags.length > 0}
 									<div class="mt-auto pt-3 border-t border-gallery-100 flex gap-1">
-										{#each film.flags.slice(0, 3) as flag}<span class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded {flag.color}">{flag.label}</span>{/each}
+										{#each film.flags.slice(0, 3) as flag}<span
+												class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded {flag.color}"
+												>{flag.label}</span
+											>{/each}
 									</div>
 								{/if}
 							</div>
@@ -302,11 +401,15 @@
 	<section class="space-y-6">
 		<details class="group">
 			<summary class="cursor-pointer list-none">
-				<div class="flex items-center gap-2 text-xl font-bold text-gallery-900 hover:text-black transition-colors">
+				<div
+					class="flex items-center gap-2 text-xl font-bold text-gallery-900 hover:text-black transition-colors"
+				>
 					<span class="transition-transform group-open:rotate-90 text-gallery-400">▶</span>
 					Selected (≥65%) ({selectedFiltered.length})
 				</div>
-				<p class="text-sm text-gallery-500 mt-1 ml-6">Films with strong curator support (65%+ approval)</p>
+				<p class="text-sm text-gallery-500 mt-1 ml-6">
+					Films with strong curator support (65%+ approval)
+				</p>
 			</summary>
 
 			{#if selectedFiltered.length === 0}
@@ -323,30 +426,54 @@
 							<!-- Poster/Screenshot -->
 							{#if film.poster?.asset}
 								<div class="relative aspect-video bg-gallery-100 overflow-hidden">
-									<img src={`${film.poster.asset.url}?w=600&h=400&fit=crop`} alt={film.title} class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105" />
-									<div class="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors"></div>
+									<img
+										src={`${film.poster.asset.url}?w=600&h=400&fit=crop`}
+										alt={film.title}
+										class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
+									/>
+									<div
+										class="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors"
+									></div>
 									{#if film.tags?.length > 0}
-										<div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity">
+										<div
+											class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity"
+										>
 											<div class="flex flex-wrap gap-1">
-												{#each film.tags.slice(0, 5) as tag}<span class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full">{tag}</span>{/each}
+												{#each film.tags.slice(0, 5) as tag}<span
+														class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full"
+														>{tag}</span
+													>{/each}
 											</div>
 										</div>
 									{/if}
 								</div>
 							{:else if film.screenshots?.[0]?.asset}
 								<div class="relative aspect-video bg-gallery-100 overflow-hidden">
-									<img src={`${film.screenshots[0].asset.url}?w=600&h=400&fit=crop`} alt={film.title} class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105" />
-									<div class="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors"></div>
+									<img
+										src={`${film.screenshots[0].asset.url}?w=600&h=400&fit=crop`}
+										alt={film.title}
+										class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
+									/>
+									<div
+										class="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors"
+									></div>
 									{#if film.tags?.length > 0}
-										<div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity">
+										<div
+											class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity"
+										>
 											<div class="flex flex-wrap gap-1">
-												{#each film.tags.slice(0, 5) as tag}<span class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full">{tag}</span>{/each}
+												{#each film.tags.slice(0, 5) as tag}<span
+														class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full"
+														>{tag}</span
+													>{/each}
 											</div>
 										</div>
 									{/if}
 								</div>
 							{:else}
-								<div class="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+								<div
+									class="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+								>
 									<span class="text-gallery-400 text-4xl">🎬</span>
 								</div>
 							{/if}
@@ -354,17 +481,30 @@
 							<div class="p-5 flex-1 flex flex-col space-y-4">
 								<div class="flex justify-between items-start gap-4">
 									<div class="flex-1 min-w-0">
-										<h3 class="font-bold text-lg leading-tight text-gallery-900 truncate">{film.title}</h3>
-										<p class="text-sm text-gallery-600 font-medium mt-1">{film.director}{#if film.length}<span class="text-gallery-300 mx-1.5">•</span><span>{film.length} min</span>{/if}</p>
+										<h3 class="font-bold text-lg leading-tight text-gallery-900 truncate">
+											{film.title}
+										</h3>
+										<p class="text-sm text-gallery-600 font-medium mt-1">
+											{film.director}{#if film.length}<span class="text-gallery-300 mx-1.5">•</span
+												><span>{film.length} min</span>{/if}
+										</p>
 									</div>
 									<div class="flex flex-col items-end gap-1">
-										{#if film.score !== undefined}<span class="text-xl font-black text-gallery-900 leading-none">{film.score.toFixed(0)}%</span>{/if}
-										{#if film.avgRating}<span class="text-xs font-bold text-gallery-400">★ {film.avgRating.toFixed(1)}</span>{/if}
+										{#if film.score !== undefined}<span
+												class="text-xl font-black text-gallery-900 leading-none"
+												>{film.score.toFixed(0)}%</span
+											>{/if}
+										{#if film.avgRating}<span class="text-xs font-bold text-gallery-400"
+												>★ {film.avgRating.toFixed(1)}</span
+											>{/if}
 									</div>
 								</div>
 								{#if film.flags && film.flags.length > 0}
 									<div class="mt-auto pt-3 border-t border-gallery-100 flex gap-1">
-										{#each film.flags.slice(0, 3) as flag}<span class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded {flag.color}">{flag.label}</span>{/each}
+										{#each film.flags.slice(0, 3) as flag}<span
+												class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded {flag.color}"
+												>{flag.label}</span
+											>{/each}
 									</div>
 								{/if}
 							</div>
@@ -379,11 +519,15 @@
 	<section class="space-y-6">
 		<details class="group">
 			<summary class="cursor-pointer list-none">
-				<div class="flex items-center gap-2 text-xl font-bold text-gallery-900 hover:text-black transition-colors">
+				<div
+					class="flex items-center gap-2 text-xl font-bold text-gallery-900 hover:text-black transition-colors"
+				>
 					<span class="transition-transform group-open:rotate-90 text-gallery-400">▶</span>
 					Maybe (35-65%) ({maybeFiltered.length})
 				</div>
-				<p class="text-sm text-gallery-500 mt-1 ml-6">Films under consideration for final selection</p>
+				<p class="text-sm text-gallery-500 mt-1 ml-6">
+					Films under consideration for final selection
+				</p>
 			</summary>
 
 			{#if maybeFiltered.length === 0}
@@ -400,30 +544,54 @@
 							<!-- Poster/Screenshot -->
 							{#if film.poster?.asset}
 								<div class="relative aspect-video bg-gallery-100 overflow-hidden">
-									<img src={`${film.poster.asset.url}?w=600&h=400&fit=crop`} alt={film.title} class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105" />
-									<div class="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors"></div>
+									<img
+										src={`${film.poster.asset.url}?w=600&h=400&fit=crop`}
+										alt={film.title}
+										class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
+									/>
+									<div
+										class="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors"
+									></div>
 									{#if film.tags?.length > 0}
-										<div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity">
+										<div
+											class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity"
+										>
 											<div class="flex flex-wrap gap-1">
-												{#each film.tags.slice(0, 5) as tag}<span class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full">{tag}</span>{/each}
+												{#each film.tags.slice(0, 5) as tag}<span
+														class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full"
+														>{tag}</span
+													>{/each}
 											</div>
 										</div>
 									{/if}
 								</div>
 							{:else if film.screenshots?.[0]?.asset}
 								<div class="relative aspect-video bg-gallery-100 overflow-hidden">
-									<img src={`${film.screenshots[0].asset.url}?w=600&h=400&fit=crop`} alt={film.title} class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105" />
-									<div class="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors"></div>
+									<img
+										src={`${film.screenshots[0].asset.url}?w=600&h=400&fit=crop`}
+										alt={film.title}
+										class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
+									/>
+									<div
+										class="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors"
+									></div>
 									{#if film.tags?.length > 0}
-										<div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity">
+										<div
+											class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity"
+										>
 											<div class="flex flex-wrap gap-1">
-												{#each film.tags.slice(0, 5) as tag}<span class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full">{tag}</span>{/each}
+												{#each film.tags.slice(0, 5) as tag}<span
+														class="text-[9px] px-1.5 py-0.5 bg-white/20 text-white rounded-full"
+														>{tag}</span
+													>{/each}
 											</div>
 										</div>
 									{/if}
 								</div>
 							{:else}
-								<div class="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+								<div
+									class="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+								>
 									<span class="text-gallery-400 text-4xl">🎬</span>
 								</div>
 							{/if}
@@ -431,17 +599,30 @@
 							<div class="p-5 flex-1 flex flex-col space-y-4">
 								<div class="flex justify-between items-start gap-4">
 									<div class="flex-1 min-w-0">
-										<h3 class="font-bold text-lg leading-tight text-gallery-900 truncate">{film.title}</h3>
-										<p class="text-sm text-gallery-600 font-medium mt-1">{film.director}{#if film.length}<span class="text-gallery-300 mx-1.5">•</span><span>{film.length} min</span>{/if}</p>
+										<h3 class="font-bold text-lg leading-tight text-gallery-900 truncate">
+											{film.title}
+										</h3>
+										<p class="text-sm text-gallery-600 font-medium mt-1">
+											{film.director}{#if film.length}<span class="text-gallery-300 mx-1.5">•</span
+												><span>{film.length} min</span>{/if}
+										</p>
 									</div>
 									<div class="flex flex-col items-end gap-1">
-										{#if film.score !== undefined}<span class="text-xl font-black text-gallery-900 leading-none">{film.score.toFixed(0)}%</span>{/if}
-										{#if film.avgRating}<span class="text-xs font-bold text-gallery-400">★ {film.avgRating.toFixed(1)}</span>{/if}
+										{#if film.score !== undefined}<span
+												class="text-xl font-black text-gallery-900 leading-none"
+												>{film.score.toFixed(0)}%</span
+											>{/if}
+										{#if film.avgRating}<span class="text-xs font-bold text-gallery-400"
+												>★ {film.avgRating.toFixed(1)}</span
+											>{/if}
 									</div>
 								</div>
 								{#if film.flags && film.flags.length > 0}
 									<div class="mt-auto pt-3 border-t border-gallery-100 flex gap-1">
-										{#each film.flags.slice(0, 3) as flag}<span class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded {flag.color}">{flag.label}</span>{/each}
+										{#each film.flags.slice(0, 3) as flag}<span
+												class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded {flag.color}"
+												>{flag.label}</span
+											>{/each}
 									</div>
 								{/if}
 							</div>
@@ -584,7 +765,9 @@
 											>({formatTime(cluster.relevantMinutes)})</span
 										>
 									</summary>
-									<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 pt-4">
+									<div
+										class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 pt-4"
+									>
 										{#each cluster.relevantMovies as movie}
 											<a
 												href="/review/{movie._id}"
@@ -640,7 +823,10 @@
 		role="dialog"
 		tabindex="-1"
 	>
-		<div class="absolute inset-0 bg-black/60 backdrop-blur-sm" transition:fade={{ duration: 150 }}></div>
+		<div
+			class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+			transition:fade={{ duration: 150 }}
+		></div>
 
 		<div
 			class="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
@@ -662,7 +848,9 @@
 						class="w-full h-full object-cover"
 					/>
 				{/if}
-				<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+				<div
+					class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"
+				></div>
 
 				<!-- Close button -->
 				<button
@@ -689,77 +877,73 @@
 
 			<!-- Content -->
 			<div class="p-6 overflow-y-auto max-h-[calc(90vh-12rem)]">
-				{#if detailVideo}
-					{@const reviews = detailVideo.reviews || []}
-					{@const selectedCount = reviews.filter((r: any) => r.selection === 'selected').length}
-					{@const maybeCount = reviews.filter((r: any) => r.selection === 'maybe').length}
-					{@const rejectedCount = reviews.filter((r: any) => r.selection === 'rejected').length}
-					{@const ratingsWithValue = reviews.filter((r: any) => r.rating != null)}
-					{@const avgRating = ratingsWithValue.length > 0 ? ratingsWithValue.reduce((sum: number, r: any) => sum + r.rating, 0) / ratingsWithValue.length : null}
-					{@const allTags = [...new Set(reviews.flatMap((r: any) => (r.tags || []).map((t: any) => t.label || t)))].slice(0, 8)}
-					{@const reviewsWithNotes = reviews.filter((r: any) => r.additionalComments || (r.contentNotes?.length > 0 && !r.contentNotes.every((n: string) => n === 'none')))}
+				<!-- Quick Stats Row -->
+				<div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-5 text-xs">
+					{#if detailVideo.country}
+						<span class="text-gallery-500">{detailVideo.country}</span>
+					{/if}
+					{#if detailVideo.filmLanguage}
+						<span class="text-gallery-400">{detailVideo.filmLanguage}</span>
+					{/if}
+					{#if detailReviews.length > 0}
+						<span class="text-gallery-400">•</span>
+						<span class="font-medium text-gallery-600">
+							{detailSelectedCount}<span class="text-green-500 ml-0.5">✓</span>
+							{detailMaybeCount}<span class="text-yellow-500 ml-0.5">~</span>
+							{detailRejectedCount}<span class="text-red-400 ml-0.5">✗</span>
+						</span>
+					{/if}
+					{#if detailAvgRating}
+						<span class="font-bold text-gallery-700">★ {detailAvgRating.toFixed(1)}</span>
+					{/if}
+				</div>
 
-					<!-- Quick Stats Row -->
-					<div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-5 text-xs">
-						{#if detailVideo.country}
-							<span class="text-gallery-500">{detailVideo.country}</span>
-						{/if}
-						{#if detailVideo.filmLanguage}
-							<span class="text-gallery-400">{detailVideo.filmLanguage}</span>
-						{/if}
-						{#if reviews.length > 0}
-							<span class="text-gallery-400">•</span>
-							<span class="font-medium text-gallery-600">
-								{selectedCount}<span class="text-green-500 ml-0.5">✓</span>
-								{maybeCount}<span class="text-yellow-500 ml-0.5">~</span>
-								{rejectedCount}<span class="text-red-400 ml-0.5">✗</span>
-							</span>
-						{/if}
-						{#if avgRating}
-							<span class="font-bold text-gallery-700">★ {avgRating.toFixed(1)}</span>
-						{/if}
+				<!-- Tags -->
+				{#if detailAllTags.length > 0}
+					<div class="flex flex-wrap gap-1.5 mb-5">
+						{#each detailAllTags as tag}
+							<span class="text-[10px] px-2 py-0.5 bg-gallery-100 text-gallery-600 rounded-full"
+								>{tag}</span
+							>
+						{/each}
 					</div>
+				{/if}
 
-					<!-- Tags -->
-					{#if allTags.length > 0}
-						<div class="flex flex-wrap gap-1.5 mb-5">
-							{#each allTags as tag}
-								<span class="text-[10px] px-2 py-0.5 bg-gallery-100 text-gallery-600 rounded-full">{tag}</span>
+				<!-- Synopsis -->
+				{#if detailVideo.synopsis}
+					<div class="mb-5 pt-4 border-t border-gallery-100">
+						<h3 class="text-[10px] font-bold uppercase tracking-wider text-gallery-500 mb-2">
+							Synopsis
+						</h3>
+						<p class="text-sm text-gallery-700 leading-relaxed">{detailVideo.synopsis}</p>
+					</div>
+				{/if}
+
+				<!-- Curator Notes -->
+				{#if detailReviewsWithNotes.length > 0}
+					<div class="mb-5 pt-4 border-t border-gallery-100">
+						<h3 class="text-[10px] font-bold uppercase tracking-wider text-gallery-500 mb-3">
+							Curator Notes
+						</h3>
+						<div class="space-y-3 max-h-48 overflow-y-auto">
+							{#each detailReviewsWithNotes as review}
+								<div class="p-3 bg-gallery-50 rounded-lg">
+									{#if review.additionalComments}
+										<p class="text-sm text-gallery-700">{review.additionalComments}</p>
+									{/if}
+									{#if review.contentNotes?.length > 0 && !review.contentNotes.every((n: string) => n === 'none')}
+										<p class="text-xs text-gallery-500 mt-1 italic">
+											Content warnings: {review.contentNotes
+												.filter((n: string) => n !== 'none')
+												.join(', ')}
+										</p>
+									{/if}
+									<p class="text-xs text-gallery-400 mt-2">— {review.curatorName}</p>
+								</div>
 							{/each}
 						</div>
-					{/if}
-
-					<!-- Synopsis -->
-					{#if detailVideo.synopsis}
-						<div class="mb-5 pt-4 border-t border-gallery-100">
-							<h3 class="text-[10px] font-bold uppercase tracking-wider text-gallery-500 mb-2">
-								Synopsis
-							</h3>
-							<p class="text-sm text-gallery-700 leading-relaxed">{detailVideo.synopsis}</p>
-						</div>
-					{/if}
-
-					<!-- Curator Notes -->
-					{#if reviewsWithNotes.length > 0}
-						<div class="mb-5 pt-4 border-t border-gallery-100">
-							<h3 class="text-[10px] font-bold uppercase tracking-wider text-gallery-500 mb-3">
-								Curator Notes
-							</h3>
-							<div class="space-y-3 max-h-48 overflow-y-auto">
-								{#each reviewsWithNotes as review}
-									<div class="p-3 bg-gallery-50 rounded-lg">
-										{#if review.additionalComments}
-											<p class="text-sm text-gallery-700">{review.additionalComments}</p>
-										{/if}
-										{#if review.contentNotes?.length > 0 && !review.contentNotes.every((n: string) => n === 'none')}
-											<p class="text-xs text-gallery-500 mt-1 italic">Content warnings: {review.contentNotes.filter((n: string) => n !== 'none').join(', ')}</p>
-										{/if}
-										<p class="text-xs text-gallery-400 mt-2">— {review.curatorName}</p>
-									</div>
-								{/each}
-							</div>
-						</div>
-					{/if}
+					</div>
+				{/if}
 
 				<!-- Screenshots -->
 				{#if detailVideo.screenshots?.length > 1}
