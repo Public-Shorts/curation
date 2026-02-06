@@ -1,6 +1,6 @@
 {
-  "lastUpdated": "2026-02-06T18:14:04.958Z",
-  "summary": "The 314 submissions received for this year’s short film festival presented a diverse range of cinematic approaches, with a significant emphasis on experimental and abstract forms. Of the 53 films selected by the jury, totaling 913 minutes of runtime, a notable trend emerged toward highly scored, often concise works – several achieving perfect scores (100%). Recurring thematic elements included nature, body, and technology, indicated by a high frequency of curator tags such as ‘animation,’ ‘abstract,’ ‘nature,’ and ‘ai.’ The overall average weighted score of 51.5% suggests a significant degree of variation in quality, reflecting the challenging nature of evaluating a large volume of submissions. Several films utilized innovative formal techniques, including performance, 3D, and mixed-media approaches.\n\nParticular attention was given to works prioritizing conceptual engagement. The selection criteria heavily favored films demonstrating a strong artistic vision, often characterized by limited narrative structures or unconventional techniques. Films like Ahmet Mete Balyan’s '#toma*_001' and the multiple 11-minute pieces focused on dance and movement (e.g., 'The Mobility Scooter Dance Collective') were repeatedly highlighted. The use of specific visual styles, such as black and white and abstract compositions, was also evident across the selected works, contributing to a cohesive aesthetic within the chosen highlights.\n\nThe ‘Maybe’ category comprised 77 films, suggesting a considerable degree of debate within the jury. This group contains works that demonstrate innovative ideas but may not fully meet the threshold for inclusion. The prevalence of themes like memory, city, and animals further indicates a diverse range of interests within the submitted material. While no single dominant genre emerged, the selection consistently prioritized work demonstrating originality and artistic merit, ultimately forming a curated collection reflecting a commitment to contemporary experimental and conceptual filmmaking.",
+  "lastUpdated": "2026-02-06T18:44:15.043Z",
+  "summary": "The 314 submissions to this year's short film festival presented a diverse range of experimental and conceptual works. Approximately one-third of submissions (77) received a score of 65% or higher, ultimately resulting in 53 films selected for highlights and a further 77 films categorized as ‘maybe.’ The overall average weighted score across all reviewed films was 51.5%, indicating a generally lower level of engagement with the submitted material. Notably, a strong thematic preference was observed, with 'experimental,' 'abstract,' and 'animation' appearing most frequently among curator tags, alongside recurring interests in nature, the body, and technology-related themes. This suggests a focus on unconventional approaches and concepts within the short form. \n\nSeveral standout films achieved a perfect score of 100%, including Ahmet Mete Balyan’s '#toma*_001', the collective dance piece ‘The Mobility Scooter Dance Collective,’ and a series of evocative micro-shorts. The selections leaned heavily towards works under 15 minutes, with a considerable number categorized as ‘micro-short’ (15) and ‘animation’ (44), alongside ‘abstract’ (46) and ‘experimental’ (73) approaches. Formal tendencies included a notable interest in black and white imagery (19) and a preference for concise narratives, often centered on singular experiences or moments – exemplified by several films under 10 minutes.\n\nUltimately, the selected group of 77 films represents a concentrated exploration of diverse artistic approaches, prioritizing conceptual and aesthetic experimentation over traditional narrative structures. While the overall average score reflects a challenging evaluation process, the selection committee identified works demonstrating a clear commitment to innovation and pushing the boundaries of the short film format. The overall runtime of the highlighted and selected films totals 913 minutes, highlighting a significant investment in these conceptual works.",
   "highlights": [
     {
       "_id": "XVfZPt812hOyvnx10qcdoi",
@@ -2758,6 +2758,1240 @@
       "curatorCount": 1,
       "curators": [
         "Josue Flores"
+      ]
+    }
+  ],
+  "unanimous": [
+    {
+      "_id": "XVfZPt812hOyvnx10qcdoi",
+      "title": "#toma*_001",
+      "director": "Ahmet Mete Balyan",
+      "length": 5,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-df3cab5d0c43a42ea4edf103bb63199e9286fe0a-1932x1082-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/df3cab5d0c43a42ea4edf103bb63199e9286fe0a-1932x1082.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-02a6d2cfd639b0fa2750daf35438b17b96b108b3-1932x1082-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/02a6d2cfd639b0fa2750daf35438b17b96b108b3-1932x1082.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-4e1cce80dd6536e2a8c5b0dd554989ae5c7268e9-1932x1082-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/4e1cce80dd6536e2a8c5b0dd554989ae5c7268e9-1932x1082.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-7a437e5b43c69648a53fb8b9d8ae6a19ff53873c-1932x1082-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/7a437e5b43c69648a53fb8b9d8ae6a19ff53873c-1932x1082.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-89fb3b6dc8ff1881468897db17b00c66ac0c80a6-1932x1082-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/89fb3b6dc8ff1881468897db17b00c66ac0c80a6-1932x1082.png"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 4.3,
+      "reviewCount": 11,
+      "tags": [
+        "animation",
+        "political",
+        "digital",
+        "experimental",
+        "music",
+        "police",
+        "protest",
+        "internet",
+        "essay",
+        "violence",
+        "mixed-media",
+        "vfx",
+        "add",
+        "absurd",
+        "collage",
+        "documentary"
+      ],
+      "flags": [],
+      "curatorCount": 7,
+      "curators": [
+        "Yağmur Uçkunkaya",
+        "Josue Flores",
+        "Sena Doğan",
+        "Célestin Meunier",
+        "Su Durakbaşa",
+        "Christina Pitiakoudi",
+        "Helin Ulas"
+      ]
+    },
+    {
+      "_id": "pdJAYs0aGGa4JnkeMvtH9I",
+      "title": "The Mobility Scooter Dance Collective (The First Dance)",
+      "director": "Femke Hoppenbrouwer",
+      "length": 11,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-c1f53c033d7bb7f22e3f01c10fee92a600ab94bf-1920x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/c1f53c033d7bb7f22e3f01c10fee92a600ab94bf-1920x1080.jpg"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 4.1,
+      "reviewCount": 8,
+      "tags": [
+        "aging",
+        "wholesome",
+        "dance",
+        "city",
+        "social",
+        "emotional",
+        "lights",
+        "documentary",
+        "performance",
+        "heartfelt",
+        "technology",
+        "show",
+        "cars",
+        "oldpeeps"
+      ],
+      "flags": [],
+      "curatorCount": 5,
+      "curators": [
+        "Yağmur Uçkunkaya",
+        "Josue Flores",
+        "Sena Doğan",
+        "Célestin Meunier",
+        "Christina Pitiakoudi"
+      ]
+    },
+    {
+      "_id": "XVfZPt812hOyvnx10xjDKA",
+      "title": "surrender!",
+      "director": "Erhan Muratoglu",
+      "length": 1,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-6fc49cb99f103c33f2e86328321a1e03896765e4-1920x1080-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/6fc49cb99f103c33f2e86328321a1e03896765e4-1920x1080.png"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 3.4,
+      "reviewCount": 6,
+      "tags": [
+        "animation",
+        "political",
+        "based on true events",
+        "handdrawn animation",
+        "action"
+      ],
+      "flags": [
+        {
+          "label": "AI",
+          "details": "Soundtrack is produced with AI.",
+          "color": "text-purple-700 bg-purple-50 border-purple-200"
+        },
+        {
+          "label": "WARNINGS",
+          "details": "sexualContent, horrorDisturbingImages",
+          "color": "text-orange-700 bg-orange-50 border-orange-200"
+        }
+      ],
+      "curatorCount": 1,
+      "curators": [
+        "Manus Nijhoff"
+      ]
+    },
+    {
+      "_id": "aeuE8qO3ZehbEk11ZbAxFX",
+      "title": "FIRST PHONE",
+      "director": "Ruba Al-Sweel",
+      "length": 4,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-ade05ee8ef72212584ff0aa512ab2195e2da5ff5-1189x670-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/ade05ee8ef72212584ff0aa512ab2195e2da5ff5-1189x670.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-b03e671bdbd82b4330a446155ac59aa8887898ce-1197x675-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/b03e671bdbd82b4330a446155ac59aa8887898ce-1197x675.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-e38b9190cacdcc4d4c1a89e3b907848dd50ea8ad-1184x672-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/e38b9190cacdcc4d4c1a89e3b907848dd50ea8ad-1184x672.png"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 4.1,
+      "reviewCount": 5,
+      "tags": [
+        "essay",
+        "found footage",
+        "discourse",
+        "terminally online",
+        "technology",
+        "new forms",
+        "political",
+        "internet",
+        "first-person",
+        "mixed-media",
+        "doom",
+        "apocalypse",
+        "phone",
+        "semiotics"
+      ],
+      "flags": [],
+      "curatorCount": 2,
+      "curators": [
+        "Josue Flores",
+        "Christina Pitiakoudi"
+      ]
+    },
+    {
+      "_id": "OoTI4MXQu5fEWZn9Y7qkPY",
+      "title": "Something with Plutonium\t",
+      "director": "Raoni Assis",
+      "length": 11,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-0de49b52a65fbfe8860394dfa9201b48d9974ea4-1920x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/0de49b52a65fbfe8860394dfa9201b48d9974ea4-1920x1080.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-2f31ba04fa0b31a02fb2f8424c6c1c488c4a9941-1920x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/2f31ba04fa0b31a02fb2f8424c6c1c488c4a9941-1920x1080.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-b22c259fe292d04ffb2f7b25b610e6303120e736-1920x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/b22c259fe292d04ffb2f7b25b610e6303120e736-1920x1080.jpg"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 3.8,
+      "reviewCount": 4,
+      "tags": [
+        "glitch",
+        "deranged",
+        "fuzz",
+        "noise",
+        "haunted",
+        "urban",
+        "collage",
+        "ai",
+        "textures",
+        "architecture",
+        "decay",
+        "alienation",
+        "urbandecay",
+        "dystopian",
+        "animation",
+        "animals",
+        "psychedelic",
+        "psych rock anthem",
+        "crt"
+      ],
+      "flags": [
+        {
+          "label": "AI",
+          "details": "10% of the scenes have AI mixed with the illustrations.",
+          "color": "text-purple-700 bg-purple-50 border-purple-200"
+        }
+      ],
+      "curatorCount": 0,
+      "curators": []
+    },
+    {
+      "_id": "OoTI4MXQu5fEWZn9Xj8LHg",
+      "title": "TACET",
+      "director": "Nonoka Matsuo and Tomi Katz",
+      "length": 11,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-f1773046352012e26274fd88d229c44938d7f126-3840x2160-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/f1773046352012e26274fd88d229c44938d7f126-3840x2160.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-e5baad2dfe4eaf88a643bfced98b9c1f791af247-3840x2160-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/e5baad2dfe4eaf88a643bfced98b9c1f791af247-3840x2160.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-33678daadae8464d2366b5bbe3e28150404e7b09-3840x2160-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/33678daadae8464d2366b5bbe3e28150404e7b09-3840x2160.png"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 4,
+      "reviewCount": 4,
+      "tags": [
+        "feet",
+        "moon",
+        "coffee",
+        "technology",
+        "clean",
+        "working",
+        "uncanny",
+        "3d",
+        "sci-fi",
+        "pretty",
+        "lights",
+        "surreal",
+        "mirrors",
+        "scifi",
+        "alienation"
+      ],
+      "flags": [],
+      "curatorCount": 1,
+      "curators": [
+        "Célestin Meunier"
+      ]
+    },
+    {
+      "_id": "pdJAYs0aGGa4JnkeMVWU1I",
+      "title": "The Garden",
+      "director": "Fer Moraga",
+      "length": 13,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-84334e48d74996a83871826814d6676c85533be7-1357x765-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/84334e48d74996a83871826814d6676c85533be7-1357x765.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-3cb61a091227dfa569cae0f5fc10f1a0e9820288-1351x761-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/3cb61a091227dfa569cae0f5fc10f1a0e9820288-1351x761.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-b479bdc66a78e9094df3c00859f7ee477b5db3e2-1357x766-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/b479bdc66a78e9094df3c00859f7ee477b5db3e2-1357x766.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-bd10afe9920c537a5821a5ba73161d7833a85cd2-1357x763-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/bd10afe9920c537a5821a5ba73161d7833a85cd2-1357x763.png"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 3.8,
+      "reviewCount": 4,
+      "tags": [
+        "ai",
+        "deranged",
+        "nature",
+        "technology",
+        "music",
+        "scary",
+        "doom",
+        "stroboscopic",
+        "meditative",
+        "glitch",
+        "corrupt",
+        "unsettling",
+        "atmosphere",
+        "abstract",
+        "noise",
+        "insanity",
+        "bionic",
+        "hyper",
+        "server"
+      ],
+      "flags": [
+        {
+          "label": "AI",
+          "details": "prayertothequeenmother is a multimedia project that explores techno-economic acceleration as a process of increasingly radical abstraction of territory, the body, and the psyche. 'the garden' is a module of this project in the form of an installation, based on the sonification of global gross domestic product data and video synthesis through diffusion models. Recorded images where put through a AI image generator. This use of generative technology is not incidental. It follows an exploration of the concept of artificiality versus nature.",
+          "color": "text-purple-700 bg-purple-50 border-purple-200"
+        }
+      ],
+      "curatorCount": 2,
+      "curators": [
+        "Josue Flores",
+        "Célestin Meunier"
+      ]
+    },
+    {
+      "_id": "OoTI4MXQu5fEWZn9XL1uwj",
+      "title": "Chapter 2 - floor",
+      "director": "Sabiwa",
+      "length": 7,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-d5ab0b1e0c0faa42303057de93138099aede0e6c-1440x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/d5ab0b1e0c0faa42303057de93138099aede0e6c-1440x1080.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-318489fe58558d7407afb4609fb669a351ead546-1440x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/318489fe58558d7407afb4609fb669a351ead546-1440x1080.jpg"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 4.3,
+      "reviewCount": 3,
+      "tags": [
+        "experimental",
+        "#abstract",
+        "dreamlike",
+        "surreal",
+        "trapped",
+        "mental breakdown",
+        "house",
+        "diary",
+        "sound art"
+      ],
+      "flags": [],
+      "curatorCount": 1,
+      "curators": [
+        "Elisabeth Scholz"
+      ]
+    },
+    {
+      "_id": "NHlvMph6nvFnCxBbD5oLV0",
+      "title": "Gardens are always for the future",
+      "director": "Nicolas Dulphan-Lado",
+      "length": 12,
+      "poster": {
+        "asset": {
+          "_id": "image-067a786693415c721f6a27a5d89f76164d24054d-853x1280-jpg",
+          "url": "https://cdn.sanity.io/images/0ome5qpf/production/067a786693415c721f6a27a5d89f76164d24054d-853x1280.jpg"
+        }
+      },
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-74434ff784f2e70187bd0a53d9c39e5ce9f1fe31-3583x2014-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/74434ff784f2e70187bd0a53d9c39e5ce9f1fe31-3583x2014.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-1af51283c198fbce7cc2dab6e3ad09c25433d706-3584x2016-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/1af51283c198fbce7cc2dab6e3ad09c25433d706-3584x2016.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-ab042dfa1d41a8309843642d57f7787f904281ce-3350x1886-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/ab042dfa1d41a8309843642d57f7787f904281ce-3350x1886.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-d4c0500e314deeff319e66ef7dd827025c960217-3584x2011-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/d4c0500e314deeff319e66ef7dd827025c960217-3584x2011.png"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 3.7,
+      "reviewCount": 3,
+      "tags": [
+        "goth",
+        "death",
+        "artist",
+        "artistry",
+        "decay",
+        "city",
+        "garden",
+        "nature",
+        "biology",
+        "flowers",
+        "documentary",
+        "russia",
+        "artisticpraxis",
+        "gardens",
+        "artist talk",
+        "praxis",
+        "sound system"
+      ],
+      "flags": [],
+      "curatorCount": 0,
+      "curators": []
+    },
+    {
+      "_id": "9glD2Ob7xE3NcaXj878VQ7",
+      "title": "Into the Digital Cartographic Void",
+      "director": "canvaswan",
+      "length": 9,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-a0a6cf544534b11eecc0d733e0b62fb453150997-1920x1080-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/a0a6cf544534b11eecc0d733e0b62fb453150997-1920x1080.png"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 4.2,
+      "reviewCount": 3,
+      "tags": [
+        "maps",
+        "collage",
+        "digital",
+        "power",
+        "computer",
+        "nature",
+        "essay",
+        "violence",
+        "mixed-media",
+        "erasure",
+        "puzzle",
+        "follow the rabbit",
+        "censorship"
+      ],
+      "flags": [],
+      "curatorCount": 0,
+      "curators": []
+    },
+    {
+      "_id": "aeuE8qO3ZehbEk11ZWxVYl",
+      "title": "Poplars ",
+      "director": "ALEXANDROS VOUNATSOS",
+      "length": 11,
+      "poster": {
+        "asset": {
+          "_id": "image-340731d7406f15d6e92b98f19f23dc857f0fd61f-533x800-jpg",
+          "url": "https://cdn.sanity.io/images/0ome5qpf/production/340731d7406f15d6e92b98f19f23dc857f0fd61f-533x800.jpg"
+        }
+      },
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-410c6ce3596fbb934f5b644584e0eee23e23dc1a-1998x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/410c6ce3596fbb934f5b644584e0eee23e23dc1a-1998x1080.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-66119291f59e5a767e67c0d6332c4e5ada9dce62-1310x711-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/66119291f59e5a767e67c0d6332c4e5ada9dce62-1310x711.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-237e1beb13c5b7c07b3f624fed3f26539c15ef2c-1998x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/237e1beb13c5b7c07b3f624fed3f26539c15ef2c-1998x1080.jpg"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 4.2,
+      "reviewCount": 3,
+      "tags": [
+        "3d",
+        "animation",
+        "watercolor",
+        "family",
+        "abstract",
+        "beautiful",
+        "story",
+        "water",
+        "blue",
+        "red",
+        "coming of age",
+        "memory",
+        "poetic",
+        "childhood",
+        "greece",
+        "trees",
+        "nature",
+        "ecology",
+        "aging"
+      ],
+      "flags": [],
+      "curatorCount": 2,
+      "curators": [
+        "Célestin Meunier",
+        "Manus Nijhoff"
+      ]
+    },
+    {
+      "_id": "DTeDCSNllGR2ZQbDle10od",
+      "title": "Strategies for Departure (Vignettes from Suitcase Wanderers)",
+      "director": "Cecilia Mandrile ( Art & Animation)  /  Lynn Bechtold (Music & Sounds)",
+      "length": 2,
+      "poster": {
+        "asset": {
+          "_id": "image-925b6896501ef5962fd2c61ac9c6437a2d9c223a-1674x2250-jpg",
+          "url": "https://cdn.sanity.io/images/0ome5qpf/production/925b6896501ef5962fd2c61ac9c6437a2d9c223a-1674x2250.jpg"
+        }
+      },
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-dde38ae9b1ad0971617db3eb10e208d936d59feb-3840x2956-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/dde38ae9b1ad0971617db3eb10e208d936d59feb-3840x2956.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-6b75c72165533b9bb7f60741cb51317a651d3be4-3053x2362-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/6b75c72165533b9bb7f60741cb51317a651d3be4-3053x2362.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-c7204cdcb282a587d9de30715383217e38f073c9-2640x1990-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/c7204cdcb282a587d9de30715383217e38f073c9-2640x1990.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-abfc0d9dc9df62d7d3ae6a1e74e26c1ee28d8a25-2678x2008-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/abfc0d9dc9df62d7d3ae6a1e74e26c1ee28d8a25-2678x2008.jpg"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 3.7,
+      "reviewCount": 3,
+      "tags": [
+        "animation",
+        "creepy"
+      ],
+      "flags": [],
+      "curatorCount": 1,
+      "curators": [
+        "Lilli Grube"
+      ]
+    },
+    {
+      "_id": "OoTI4MXQu5fEWZn9XEuv03",
+      "title": "The Dwelling",
+      "director": "Maurizio Segato, Hanna Stijnen",
+      "length": 4,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-9b2d09cbc3f4092f6b1c6160e8f9c2487af11d4b-2160x789-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/9b2d09cbc3f4092f6b1c6160e8f9c2487af11d4b-2160x789.jpg"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 3.2,
+      "reviewCount": 3,
+      "tags": [
+        "city",
+        "history",
+        "split screen",
+        "abstract"
+      ],
+      "flags": [],
+      "curatorCount": 1,
+      "curators": [
+        "Sena Doğan"
+      ]
+    },
+    {
+      "_id": "DTeDCSNllGR2ZQbDlklKVX",
+      "title": "The Hungry Steppe ",
+      "director": " Ruslan Jubanysh / täuelxsız",
+      "length": 13,
+      "poster": {
+        "asset": {
+          "_id": "image-f3c6e3546ef38ef7fa9483a7e11a66c8d160b598-1024x1280-jpg",
+          "url": "https://cdn.sanity.io/images/0ome5qpf/production/f3c6e3546ef38ef7fa9483a7e11a66c8d160b598-1024x1280.jpg"
+        }
+      },
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-e03db58b775d156dbc8361e9ee5a110836827ef7-1024x1280-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/e03db58b775d156dbc8361e9ee5a110836827ef7-1024x1280.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-804eb6cd2ed85b719eda97988a64649e2a7de96f-1024x1280-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/804eb6cd2ed85b719eda97988a64649e2a7de96f-1024x1280.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-4fdf46a8df6dbccbcda55f83c03037bb938ccf50-1024x1280-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/4fdf46a8df6dbccbcda55f83c03037bb938ccf50-1024x1280.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-44293a3cca35dd72d07b02995370f17a02b5366e-1080x1345-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/44293a3cca35dd72d07b02995370f17a02b5366e-1080x1345.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-8264f33f802792a6dd2a97c76804a9ea8cd80854-1024x1280-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/8264f33f802792a6dd2a97c76804a9ea8cd80854-1024x1280.jpg"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 4.2,
+      "reviewCount": 3,
+      "tags": [
+        "death",
+        "dark",
+        "black and white",
+        "hunger",
+        "tragic",
+        "history",
+        "desert",
+        "steppe",
+        "trauma",
+        "memory",
+        "violence",
+        "difficult watch",
+        "famine"
+      ],
+      "flags": [
+        {
+          "label": "EXPLICIT",
+          "details": "This video contains disturbing and emotionally intense imagery related to historical violence and human suffering.\r\nThere is no nudity, no sexual content, no strong language, and no epilepsy-triggering effects.\r\nBlood/violence is implied rather than graphically shown, but the themes may be upsetting for young audiences.",
+          "color": "text-red-700 bg-red-50 border-red-200"
+        },
+        {
+          "label": "WARNINGS",
+          "details": "sensitiveThemes, violence, horrorDisturbingImages",
+          "color": "text-orange-700 bg-orange-50 border-orange-200"
+        }
+      ],
+      "curatorCount": 0,
+      "curators": []
+    },
+    {
+      "_id": "aeuE8qO3ZehbEk11a4ApaR",
+      "title": "Tsuru",
+      "director": "Pedro Anias",
+      "length": 6,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-48cc7bdcba590fd3f29f9fcf49653a9014dd48e6-1594x1080-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/48cc7bdcba590fd3f29f9fcf49653a9014dd48e6-1594x1080.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-7e2cc3786b1748554289ee6b149e0c179fab3ad0-1593x1080-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/7e2cc3786b1748554289ee6b149e0c179fab3ad0-1593x1080.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-648ac34de70bbd68a061966cd47a209ff3a08c99-1579x1080-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/648ac34de70bbd68a061966cd47a209ff3a08c99-1579x1080.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-38fe429ad19a835927d8117270dad3eb31d7507f-1588x1080-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/38fe429ad19a835927d8117270dad3eb31d7507f-1588x1080.png"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 4.5,
+      "reviewCount": 3,
+      "tags": [
+        "stop motion",
+        "origami",
+        "sentimental"
+      ],
+      "flags": [],
+      "curatorCount": 2,
+      "curators": [
+        "Josue Flores",
+        "Su Durakbaşa"
+      ]
+    },
+    {
+      "_id": "XVfZPt812hOyvnx10vpjJo",
+      "title": "Incised",
+      "director": "Katarina Sopcic",
+      "length": 10,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-ef98f3ca7d6f1332c912ffda258f7112cc15b635-2327x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/ef98f3ca7d6f1332c912ffda258f7112cc15b635-2327x1080.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-0c1e480a4976084e8afeadf8e8d010d3ff728570-2327x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/0c1e480a4976084e8afeadf8e8d010d3ff728570-2327x1080.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-086d50df07a829a0b04755e9307481a6a5c0aebb-2327x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/086d50df07a829a0b04755e9307481a6a5c0aebb-2327x1080.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-2cbcfb7237081a47138ea99e84b0113365d16c92-2327x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/2cbcfb7237081a47138ea99e84b0113365d16c92-2327x1080.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-2cf54f0c506e7803f9724e75a67a7063c3adc420-2327x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/2cf54f0c506e7803f9724e75a67a7063c3adc420-2327x1080.jpg"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 4,
+      "reviewCount": 2,
+      "tags": [
+        "mountain",
+        "ecology",
+        "marble extraction",
+        "drone",
+        "nature",
+        "contemplative",
+        "ambient",
+        "landscape",
+        "meditative",
+        "extracstivist"
+      ],
+      "flags": [],
+      "curatorCount": 0,
+      "curators": []
+    },
+    {
+      "_id": "OX1A0VuAnVlk0SvUtLaOiz",
+      "title": "MEA-SEA-URE",
+      "director": "Alexandra Dalibakh",
+      "length": 5,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-5c7da568c05984a93b72516492629b56f9f25fe5-1920x1080-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/5c7da568c05984a93b72516492629b56f9f25fe5-1920x1080.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-b94c6673051c6f863b1c87ac495bb056f01f183f-2634x1469-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/b94c6673051c6f863b1c87ac495bb056f01f183f-2634x1469.png"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 3.8,
+      "reviewCount": 2,
+      "tags": [
+        "black and white",
+        "sea",
+        "immeasurability",
+        "scale",
+        "experience",
+        "movement",
+        "rhythm",
+        "body",
+        "presence",
+        "balance",
+        "sand",
+        "kinda intimate?"
+      ],
+      "flags": [],
+      "curatorCount": 1,
+      "curators": [
+        "Lilli Frog"
+      ]
+    },
+    {
+      "_id": "OoTI4MXQu5fEWZn9XLvD02",
+      "title": "Nights and Days",
+      "director": "Daniela Sláviková",
+      "length": 7,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-aa4db71699d055907fd49a1b46a055a8a385b7e9-1920x1080-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/aa4db71699d055907fd49a1b46a055a8a385b7e9-1920x1080.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-64afea88d533a34d9a4e1e0f09a14a9846d44f36-2880x1800-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/64afea88d533a34d9a4e1e0f09a14a9846d44f36-2880x1800.png"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 4.5,
+      "reviewCount": 2,
+      "tags": [
+        "family",
+        "sisters",
+        "snooping",
+        "conflict",
+        "love",
+        "girlhood",
+        "secrets",
+        "poetic"
+      ],
+      "flags": [
+        {
+          "label": "WARNINGS",
+          "details": "sexualContent",
+          "color": "text-orange-700 bg-orange-50 border-orange-200"
+        }
+      ],
+      "curatorCount": 1,
+      "curators": [
+        "Lilli Grube"
+      ]
+    },
+    {
+      "_id": "OX1A0VuAnVlk0SvUu6yQzP",
+      "title": "One man's dream",
+      "director": "Daria Kuznetsova",
+      "length": 5,
+      "poster": {
+        "asset": {
+          "_id": "image-9c88b1dcf5cf7550543b4f605350ae7d0cb21860-1080x1920-jpg",
+          "url": "https://cdn.sanity.io/images/0ome5qpf/production/9c88b1dcf5cf7550543b4f605350ae7d0cb21860-1080x1920.jpg"
+        }
+      },
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-5ce82eb727f038be126a87056dc86a240d130a93-1920x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/5ce82eb727f038be126a87056dc86a240d130a93-1920x1080.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-fb3b5d84d32cad1afffa08ac065c9cf65fde496a-1920x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/fb3b5d84d32cad1afffa08ac065c9cf65fde496a-1920x1080.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-f91f18b094008a47f34a6b92ecf299a818ca13e8-1920x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/f91f18b094008a47f34a6b92ecf299a818ca13e8-1920x1080.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-cf410934da1a3d3ac8705536a21fca41fbe3f5d1-1920x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/cf410934da1a3d3ac8705536a21fca41fbe3f5d1-1920x1080.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-a354f82b0e4c7655e45c99c5db5cd0def1d93e94-1920x1080-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/a354f82b0e4c7655e45c99c5db5cd0def1d93e94-1920x1080.jpg"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 4.8,
+      "reviewCount": 2,
+      "tags": [
+        "night",
+        "narrative",
+        "black and white",
+        "moon",
+        "stop motion",
+        "puppets",
+        "dream",
+        "sleep",
+        "creepy",
+        "mixed-media",
+        "haunting",
+        "melancholic",
+        "poetic"
+      ],
+      "flags": [],
+      "curatorCount": 1,
+      "curators": [
+        "Lilli Frog"
+      ]
+    },
+    {
+      "_id": "ZIz8oL1E3YL1Ugy6L6xpXH",
+      "title": "Purusa: Wedding Sacred",
+      "director": "I Made Suniartika",
+      "length": 15,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-b88a024770c7a4bfe765922d6ce0df3af20f97e6-2880x2160-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/b88a024770c7a4bfe765922d6ce0df3af20f97e6-2880x2160.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-ab42d653cd3581d78be9eb025fc9d7e887b3cca1-2880x2160-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/ab42d653cd3581d78be9eb025fc9d7e887b3cca1-2880x2160.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-ab42d653cd3581d78be9eb025fc9d7e887b3cca1-2880x2160-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/ab42d653cd3581d78be9eb025fc9d7e887b3cca1-2880x2160.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-39c42895f72f622d5ae0dcad6e2b83877d811b89-2880x2160-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/39c42895f72f622d5ae0dcad6e2b83877d811b89-2880x2160.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-be9eb0dce612ac2b1a0ff2b994b5869e3f1f5425-2880x2160-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/be9eb0dce612ac2b1a0ff2b994b5869e3f1f5425-2880x2160.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-31a8dffe910d479e9cb6a87dab393aef61b1c4ad-2880x2160-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/31a8dffe910d479e9cb6a87dab393aef61b1c4ad-2880x2160.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-b88a024770c7a4bfe765922d6ce0df3af20f97e6-2880x2160-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/b88a024770c7a4bfe765922d6ce0df3af20f97e6-2880x2160.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-ab42d653cd3581d78be9eb025fc9d7e887b3cca1-2880x2160-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/ab42d653cd3581d78be9eb025fc9d7e887b3cca1-2880x2160.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-39c42895f72f622d5ae0dcad6e2b83877d811b89-2880x2160-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/39c42895f72f622d5ae0dcad6e2b83877d811b89-2880x2160.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-be9eb0dce612ac2b1a0ff2b994b5869e3f1f5425-2880x2160-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/be9eb0dce612ac2b1a0ff2b994b5869e3f1f5425-2880x2160.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-31a8dffe910d479e9cb6a87dab393aef61b1c4ad-2880x2160-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/31a8dffe910d479e9cb6a87dab393aef61b1c4ad-2880x2160.jpg"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 3.5,
+      "reviewCount": 2,
+      "tags": [
+        "fiction",
+        "marriage",
+        "pregnancy",
+        "coming of age"
+      ],
+      "flags": [
+        {
+          "label": "WARNINGS",
+          "details": "sensitiveThemes",
+          "color": "text-orange-700 bg-orange-50 border-orange-200"
+        }
+      ],
+      "curatorCount": 0,
+      "curators": []
+    },
+    {
+      "_id": "OoTI4MXQu5fEWZn9Xs5oDp",
+      "title": "Subliminal Lullabies for a Postmodern Inheritance",
+      "director": "Denise Lee",
+      "length": 5,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-cfe0385aaf53644920c886627d6b512bac983aa1-3024x1732-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/cfe0385aaf53644920c886627d6b512bac983aa1-3024x1732.png"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 3,
+      "reviewCount": 2,
+      "tags": [
+        "eerie"
+      ],
+      "flags": [],
+      "curatorCount": 0,
+      "curators": []
+    },
+    {
+      "_id": "OoTI4MXQu5fEWZn9Y28G96",
+      "title": "They said we could reach anything",
+      "director": "Rabea Janek Peter",
+      "length": 4,
+      "poster": {
+        "asset": {
+          "_id": "image-3aa7a7267a28371cf7b748f1d7323ecabef547e0-1199x668-jpg",
+          "url": "https://cdn.sanity.io/images/0ome5qpf/production/3aa7a7267a28371cf7b748f1d7323ecabef547e0-1199x668.jpg"
+        }
+      },
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-5f22d112987d2b29afb6faeef1bce9e3ba5178cb-1920x1080-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/5f22d112987d2b29afb6faeef1bce9e3ba5178cb-1920x1080.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-e36015317b5ea35c22625063f5a14d65fd7b3cf0-1198x675-jpg",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/e36015317b5ea35c22625063f5a14d65fd7b3cf0-1198x675.jpg"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-2af382c76355b32a3a50272434e6d0f64e0c7592-1920x1080-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/2af382c76355b32a3a50272434e6d0f64e0c7592-1920x1080.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-ffbb02abbcece01825c2f282ea3c00d1c3227343-300x169-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/ffbb02abbcece01825c2f282ea3c00d1c3227343-300x169.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-288ef5fc7ffadaba1a9a1971637bbe8123963f31-300x169-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/288ef5fc7ffadaba1a9a1971637bbe8123963f31-300x169.png"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 2.8,
+      "reviewCount": 2,
+      "tags": [],
+      "flags": [],
+      "curatorCount": 0,
+      "curators": []
+    },
+    {
+      "_id": "OX1A0VuAnVlk0SvUu7i0cB",
+      "title": "i want to go into the water and i can't swim",
+      "director": "Ying-Ju Chen",
+      "length": 4,
+      "poster": null,
+      "screenshots": [
+        {
+          "asset": {
+            "_id": "image-82dd319556eabff1712e71644c0564c5dd0ee6ea-1888x1884-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/82dd319556eabff1712e71644c0564c5dd0ee6ea-1888x1884.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-23bcf08c48ac7078dffc07015019b423c7960682-1887x1887-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/23bcf08c48ac7078dffc07015019b423c7960682-1887x1887.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-5647d118312cb886bb0c2afc6058199c7b7855be-1883x1886-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/5647d118312cb886bb0c2afc6058199c7b7855be-1883x1886.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-1a0b2b4bbbca0a47cd2261659f2d15d9a4b97196-1887x1883-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/1a0b2b4bbbca0a47cd2261659f2d15d9a4b97196-1887x1883.png"
+          }
+        },
+        {
+          "asset": {
+            "_id": "image-2d7bb461ad461a11e5af79691e9cce757520a395-1883x1883-png",
+            "url": "https://cdn.sanity.io/images/0ome5qpf/production/2d7bb461ad461a11e5af79691e9cce757520a395-1883x1883.png"
+          }
+        }
+      ],
+      "score": 100,
+      "avgRating": 4.3,
+      "reviewCount": 2,
+      "tags": [
+        "energetic",
+        "pretty",
+        "juicy",
+        "homemade",
+        "flowers",
+        "book",
+        "baguette",
+        "cucumber",
+        "intrusive thoughts",
+        "destruction",
+        "oranges",
+        "ecalator"
+      ],
+      "flags": [],
+      "curatorCount": 1,
+      "curators": [
+        "Manus Nijhoff"
       ]
     }
   ],
