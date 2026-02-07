@@ -1,8 +1,27 @@
+<script lang="ts">
+	type FlaggedItem = {
+		id: string;
+		title: string;
+		curator: string;
+	};
+
+	type FlaggedStat = {
+		reason: string;
+		items: FlaggedItem[];
+	};
+
+	let { flaggedStats }: { flaggedStats: FlaggedStat[] } = $props();
+
+	let totalFlags = $derived(
+		flaggedStats.reduce((acc, curr) => acc + curr.items.length, 0)
+	);
+</script>
+
 <section class="space-y-6 lg:col-span-6">
 			<header class="flex items-center justify-between">
 				<h2 class="text-2xl font-semibold text-red-700">Flagged Content Index</h2>
 				<p class="text-sm text-gray-500">
-					{flaggedStats.reduce((acc: any, curr: any) => acc + curr.items.length, 0)} flags
+					{totalFlags} flags
 				</p>
 			</header>
 

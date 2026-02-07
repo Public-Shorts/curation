@@ -93,11 +93,11 @@
 	$effect(() => {
 		if (chartInstance && data) {
 			chartInstance.data = {
-				labels: data.map((d) => d.date),
+				labels: data.map((d: { date: string; count: number }) => d.date),
 				datasets: [
 					{
 						label: 'Submissions',
-						data: data.map((d) => d.count),
+						data: data.map((d: { date: string; count: number }) => d.count),
 						fill: true,
 						borderColor: 'rgb(37, 99, 235)',
 						backgroundColor: 'rgba(37, 99, 235, 0.1)',

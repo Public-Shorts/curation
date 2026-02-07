@@ -44,6 +44,7 @@
 		"@sanity/client": "^7.13.2",
 		"@sanity/image-url": "^2.0.2",
 		"chart.js": "^4.5.1",
-		"lucide-svelte": "^0.563.0"
+		"lucide-svelte": "^0.563.0",
+		"svelte-sonner": "^1.0.7"
 	}
 }

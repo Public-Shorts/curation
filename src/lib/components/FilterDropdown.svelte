@@ -27,7 +27,7 @@
 
     function toggleOption(option: string) {
         if (selected.includes(option)) {
-            selected = selected.filter(s => s !== option);
+            selected = selected.filter((s: string) => s !== option);
         } else {
             selected = [...selected, option];
         }

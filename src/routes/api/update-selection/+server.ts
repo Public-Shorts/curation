@@ -242,9 +242,9 @@ export const POST: RequestHandler = async () => {
 			// Collect tags
 			const tags = reviews.flatMap((r: any) => r.tags || []);
 			const uniqueTagLabels = [
-				...new Set(tags.map((t: any) => t.label?.toLowerCase()).filter(Boolean))
+				...new Set(tags.map((t: any) => t.label?.toLowerCase()).filter((label): label is string => Boolean(label)))
 			];
-			uniqueTagLabels.forEach((tag) => {
+			uniqueTagLabels.forEach((tag: string) => {
 				tagDistribution[tag] = (tagDistribution[tag] || 0) + 1;
 			});
 
@@ -262,9 +262,9 @@ export const POST: RequestHandler = async () => {
 					details: sub.aiExplanation || 'AI usage declared',
 					color: 'text-purple-700 bg-purple-50 border-purple-200'
 				});
-			const contentNotes = [
+			const contentNotes = ([
 				...new Set(reviews.flatMap((r: any) => r.contentNotes || []))
-			].filter((n: string) => n.toLowerCase() !== 'none');
+			] as string[]).filter((n: string) => n.toLowerCase() !== 'none');
 			if (contentNotes.length > 0)
 				flags.push({
 					label: 'WARNINGS',
