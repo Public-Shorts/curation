@@ -79,7 +79,8 @@ export const load: LayoutServerLoad = async () => {
 	const festivalSettingsPromise = sanityClient.fetch(`
 		*[_type == "festivalSettings"][0] {
 			selectedThreshold,
-			maybeThreshold
+			maybeThreshold,
+			vetoedSubmissions
 		}
 	`);
 
@@ -91,10 +92,46 @@ export const load: LayoutServerLoad = async () => {
 		festivalSettingsPromise
 	]);
 
+	// Identify vetoed submissions
+	const vetoedIds = new Set<string>();
+	if (festivalSettings?.vetoedSubmissions) {
+		festivalSettings.vetoedSubmissions.forEach((v: any) => {
+			if (v.submission?._ref) {
+				vetoedIds.add(v.submission._ref);
+			}
+		});
+	}
+
+	// Filter submissions
+	const filteredSubmissions = (submissions as any[]).filter(
+		(s: any) => !vetoedIds.has(s._id)
+	);
+
+	// Filter selection data
+	if (selectionData) {
+		selectionData.highlights = selectionData.highlights.filter(
+			(f: any) => !vetoedIds.has(f._id)
+		);
+		selectionData.unanimous = selectionData.unanimous.filter(
+			(f: any) => !vetoedIds.has(f._id)
+		);
+		selectionData.selected = selectionData.selected.filter(
+			(f: any) => !vetoedIds.has(f._id)
+		);
+		selectionData.maybe = selectionData.maybe.filter((f: any) => !vetoedIds.has(f._id));
+	}
+
+	// Filter clusters
+	const filteredClusters = ((clustersData as any).clusters || []).map((c: any) => ({
+		...c,
+		highlightedMovies: c.highlightedMovies?.filter((m: any) => !vetoedIds.has(m._id)) || [],
+		relevantMovies: c.relevantMovies?.filter((m: any) => !vetoedIds.has(m._id)) || []
+	}));
+
 	// Build a map of submission ID -> curator tags
 	const submissionTags: Record<string, string[]> = {};
 	for (const review of reviews as any[]) {
-		if (!review.film?._id || !review.tags) continue;
+		if (!review.film?._id || !review.tags || vetoedIds.has(review.film._id)) continue;
 		const filmId = review.film._id;
 		const tags = Array.isArray(review.tags)
 			? review.tags.map((t: any) => (typeof t === 'string' ? t : t.label || t.value)).filter(Boolean)
@@ -112,14 +149,14 @@ export const load: LayoutServerLoad = async () => {
 	const highlightCounts: Record<string, number> = {};
 	for (const curator of curators as any[]) {
 		for (const h of curator.highlights || []) {
-			if (h?._id) {
+			if (h?._id && !vetoedIds.has(h._id)) {
 				highlightCounts[h._id] = (highlightCounts[h._id] || 0) + 1;
 			}
 		}
 	}
 
 	return {
-		submissions: (submissions as any[]).map((s: any) => ({
+		submissions: filteredSubmissions.map((s: any) => ({
 			...s,
 			isHighlighted: (highlightCounts[s._id] || 0) > 0,
 			highlightCount: highlightCounts[s._id] || 0,
@@ -128,7 +165,7 @@ export const load: LayoutServerLoad = async () => {
 		screenings,
 		selectionData,  // Add selection data for film organization
 		suggestions: suggestions as Record<string, string[]>,
-		clusters: (clustersData as any).clusters || [],
+		clusters: filteredClusters,
 		settings: {
 			selectedThreshold: festivalSettings?.selectedThreshold ?? 65,
 			maybeThreshold: festivalSettings?.maybeThreshold ?? 35
