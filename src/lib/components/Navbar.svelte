@@ -22,7 +22,9 @@
 					<Logo />
 				</div>
 				{#if isJury}
-					<span class="px-2 py-1 text-[10px] font-black uppercase tracking-wider bg-accent-500 text-white rounded shadow-sm">
+					<span
+						class="px-2 py-1 text-[10px] font-black uppercase tracking-wider bg-accent-500 text-white rounded shadow-sm"
+					>
 						Jury
 					</span>
 				{/if}
@@ -38,6 +40,9 @@
 					<a class="uppercase hover:text-gallery-900" href="/vetoed">Vetoed</a>
 				{/if}
 				<a class="uppercase hover:text-gallery-900" href="/selection">Selection</a>
+				{#if isAdmin || isJury}
+					<a class="uppercase hover:text-gallery-900" href="/screenings-maker">Screenings</a>
+				{/if}
 			</div>
 
 			<!-- Desktop Logout -->
@@ -101,6 +106,15 @@
 				>
 					Selection
 				</a>
+				{#if isAdmin || isJury}
+					<a
+						class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
+						href="/screenings-maker"
+						onclick={toggleMenu}
+					>
+						Screenings
+					</a>
+				{/if}
 				<form method="POST" action="/api/auth/logout" class="pt-2">
 					<button
 						type="submit"

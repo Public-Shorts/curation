@@ -21,7 +21,7 @@
 <div class="min-h-screen bg-gallery-100 text-gallery-700 font-PPMori">
 	<Navbar currentPath={data.currentPath} isAdmin={data.isAdmin} isJury={data.isJury} />
 
-	<main class="mx-auto max-w-7xl px-4 py-8">
+	<main>
 		{@render children()}
 	</main>
 </div>

@@ -9,7 +9,7 @@
 
 <button
 	{onclick}
-	class="flex flex-col rounded-xl bg-white shadow-sm border border-gallery-100 overflow-hidden hover:shadow-xl transition-all duration-300 group/card text-left cursor-pointer"
+	class="flex flex-col rounded-xl bg-white shadow-sm border border-gallery-100 overflow-hidden hover:shadow-xl transition-all duration-300 group/card text-left cursor-pointer w-full h-full"
 	class:opacity-30={!film.isVisible}
 	class:grayscale={!film.isVisible}
 	class:pointer-events-none={!film.isVisible}

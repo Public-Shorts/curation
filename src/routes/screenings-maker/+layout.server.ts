@@ -1,9 +1,10 @@
 import { sanityClient } from '$lib/server/sanity';
-import type { PageServerLoad } from './$types';
+import type { LayoutServerLoad } from './$types';
 import { dev } from '$app/environment';
 import suggestions from '$lib/data/suggestions.json';
+import clustersData from '$lib/data/clusters.json';
 
-export const load: PageServerLoad = async () => {
+export const load: LayoutServerLoad = async () => {
 	// Fetch all submissions
 	const submissionsPromise = sanityClient.fetch(`
 		*[_type == "submission"] {
@@ -11,26 +12,38 @@ export const load: PageServerLoad = async () => {
 			englishTitle,
 			directorName,
 			synopsis,
+			country,
+			filmLanguage,
 			poster { asset->{_id, url} },
 			screenshots[] { asset->{_id, url} },
 			length,
-			assignedCategory,
-			linkToWatch
+			assignedScreening,
+			linkToWatch,
+			linkToDownload,
+			linkPassword
 		}
 	`);
 
-	// Fetch all categories
-	const clustersPromise = sanityClient.fetch(`
-		*[_type == "category"] {
+	// Fetch all screenings
+	const screeningsPromise = sanityClient.fetch(`
+		*[_type == "screening"] | order(date desc) {
+			_id,
+			title,
+			date,
+			location,
+			description,
+			keywords,
+			juryMembers[]->{_id, name, email}
+		}
+	`);
+
+	// Fetch highlights from curators and curator details
+	const curatorsPromise = sanityClient.fetch(`
+		*[_type == "curator"] | order(name asc) {
 			_id,
 			name,
-			description
-		}
-	`);
-
-	// Fetch highlights from curators
-	const curatorsPromise = sanityClient.fetch(`
-		*[_type == "curator"] {
+			email,
+			jury,
 			highlights[]->{_id}
 		}
 	`);
@@ -43,11 +56,39 @@ export const load: PageServerLoad = async () => {
 		}
 	`);
 
-	const [submissions, clusters, curators, reviews] = await Promise.all([
+	// Load selection data for film organization
+	let selectionData: {
+		highlights: any[];
+		unanimous: any[];
+		selected: any[];
+		maybe: any[];
+	} = {
+		highlights: [],
+		unanimous: [],
+		selected: [],
+		maybe: []
+	};
+	try {
+		const module = await import('$lib/data/selection.json');
+		selectionData = module.default;
+	} catch (e) {
+		console.warn('selection.json not found - films will not be organized by priority');
+	}
+
+	// Fetch festival settings for thresholds
+	const festivalSettingsPromise = sanityClient.fetch(`
+		*[_type == "festivalSettings"][0] {
+			selectedThreshold,
+			maybeThreshold
+		}
+	`);
+
+	const [submissions, screenings, curators, reviews, festivalSettings] = await Promise.all([
 		submissionsPromise,
-		clustersPromise,
+		screeningsPromise,
 		curatorsPromise,
-		reviewsPromise
+		reviewsPromise,
+		festivalSettingsPromise
 	]);
 
 	// Build a map of submission ID -> curator tags
@@ -84,8 +125,15 @@ export const load: PageServerLoad = async () => {
 			highlightCount: highlightCounts[s._id] || 0,
 			curatorTags: submissionTags[s._id] || []
 		})),
-		clusters,
+		screenings,
+		selectionData,  // Add selection data for film organization
 		suggestions: suggestions as Record<string, string[]>,
+		clusters: (clustersData as any).clusters || [],
+		settings: {
+			selectedThreshold: festivalSettings?.selectedThreshold ?? 65,
+			maybeThreshold: festivalSettings?.maybeThreshold ?? 35
+		},
+		curatorsList: (curators as any[]).filter((c) => c.jury),
 		isDev: dev
 	};
 };

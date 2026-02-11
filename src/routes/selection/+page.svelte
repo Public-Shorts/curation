@@ -278,8 +278,8 @@
 
 	<!-- Selected Section -->
 	<FilmSection
-		title="Selected (≥65%)"
-		description="Films with strong curator support (65%+ approval)"
+		title="Selected (≥{data.settings.selectedThreshold}%)"
+		description="Films with strong curator support ({data.settings.selectedThreshold}%+ approval)"
 		films={selectedWithVisibility}
 		{viewMode}
 		totalCount={selectedStats.totalCount}
@@ -293,7 +293,7 @@
 
 	<!-- Maybe Section -->
 	<FilmSection
-		title="Maybe (35-65%)"
+		title="Maybe ({data.settings.maybeThreshold}-{data.settings.selectedThreshold - 1}%)"
 		description="Films under consideration for final selection"
 		films={maybeWithVisibility}
 		{viewMode}

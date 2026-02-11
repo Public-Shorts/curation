@@ -10,49 +10,57 @@ export async function POST({ request, url }) {
 
     try {
         switch (action) {
-            case 'create-category': {
+            case 'create-screening': {
                 const doc = {
-                    _type: 'category',
-                    name: params.name,
-                    slug: { _type: 'slug', current: params.name.toLowerCase().replace(/\s+/g, '-') },
+                    _type: 'screening',
+                    title: params.title,
+                    slug: { _type: 'slug', current: params.title.toLowerCase().replace(/\s+/g, '-') },
+                    date: params.date || new Date().toISOString(),
+                    location: params.location || 'TBD',
+                    juryMembers: [],
                     keywords: []
                 };
                 const result = await sanityClient.create(doc);
                 return json({ success: true, result });
             }
 
-            case 'update-category': {
+            case 'update-screening': {
                 const result = await sanityClient.patch(params.id)
-                    .set({ name: params.name })
+                    .set({
+                        title: params.title,
+                        date: params.date,
+                        location: params.location,
+                        juryMembers: params.juryMembers || []
+                    })
                     .commit();
                 return json({ success: true, result });
             }
 
-            case 'delete-category': {
-                // First unassign all videos referencing this category
-                const videos = await sanityClient.fetch(`*[_type == "submission" && assignedCategory._ref == $id]._id`, { id: params.id });
+            case 'delete-screening': {
+                // First unassign all videos referencing this screening
+                const videos = await sanityClient.fetch(`*[_type == "submission" && assignedScreening._ref == $id]._id`, { id: params.id });
                 if (videos.length > 0) {
                     const transaction = sanityClient.transaction();
                     videos.forEach((vidId: string) => {
-                        transaction.patch(vidId, (p) => p.unset(['assignedCategory']));
+                        transaction.patch(vidId, (p) => p.unset(['assignedScreening']));
                     });
                     await transaction.commit();
                 }
-                // Then delete the category
+                // Then delete the screening
                 await sanityClient.delete(params.id);
                 return json({ success: true });
             }
 
             case 'assign-video': {
                 const result = await sanityClient.patch(params.videoId)
-                    .set({ assignedCategory: { _type: 'reference', _ref: params.clusterId } })
+                    .set({ assignedScreening: { _type: 'reference', _ref: params.screeningId } })
                     .commit();
                 return json({ success: true, result });
             }
 
             case 'unassign-video': {
                 const result = await sanityClient.patch(params.videoId)
-                    .unset(['assignedCategory'])
+                    .unset(['assignedScreening'])
                     .commit();
                 return json({ success: true, result });
             }

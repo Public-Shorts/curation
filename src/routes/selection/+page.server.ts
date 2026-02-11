@@ -16,9 +16,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 		isJury = curator?.jury || false;
 	}
 
-	// Fetch vetoed submissions
+	// Fetch vetoed submissions and threshold settings
 	const settings = await sanityClient.fetch(
-		`*[_type == "festivalSettings"][0]{ vetoedSubmissions }`
+		`*[_type == "festivalSettings"][0]{ vetoedSubmissions, selectedThreshold, maybeThreshold }`
 	);
 	if (settings?.vetoedSubmissions) {
 		settings.vetoedSubmissions.forEach((v: any) => {
@@ -176,6 +176,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 		// Jury mode
 		isJury,
 		submissionsWithReviews,
+
+		// Threshold settings
+		settings: {
+			selectedThreshold: settings?.selectedThreshold ?? 65,
+			maybeThreshold: settings?.maybeThreshold ?? 35
+		},
 
 		// Dev mode flag
 		isDev: dev

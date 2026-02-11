@@ -16,6 +16,7 @@
 		onFilmClick: (film: any) => void;
 		open?: boolean;
 		emptyMessage?: string;
+		cardSnippet?: import('svelte').Snippet<[any]>;
 	}
 
 	let {
@@ -30,7 +31,8 @@
 		hasActiveFilters,
 		onFilmClick,
 		open = false,
-		emptyMessage = 'No films in this category yet.'
+		emptyMessage = 'No films in this category yet.',
+		cardSnippet
 	}: Props = $props();
 </script>
 
@@ -63,6 +65,16 @@
 		{#if films.length === 0}
 			<div class="mt-6 p-8 bg-gallery-50 rounded-lg text-center">
 				<p class="text-gallery-500">{emptyMessage}</p>
+			</div>
+		{:else if cardSnippet}
+			<div
+				class={viewMode === 'compact'
+					? 'space-y-2 mt-6'
+					: 'grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6'}
+			>
+				{#each films as film (film._id)}
+					{@render cardSnippet(film)}
+				{/each}
 			</div>
 		{:else if viewMode === 'compact'}
 			<div class="space-y-2 mt-6">
