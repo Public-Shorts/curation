@@ -39,7 +39,9 @@
 				{#if isAdmin}
 					<a class="uppercase hover:text-gallery-900" href="/vetoed">Vetoed</a>
 				{/if}
-				<a class="uppercase hover:text-gallery-900" href="/selection">Selection</a>
+				{#if !isJury}
+					<a class="uppercase hover:text-gallery-900" href="/selection">Selection</a>
+				{/if}
 				{#if isAdmin || isJury}
 					<a class="uppercase hover:text-gallery-900" href="/screenings-maker">Screenings</a>
 				{/if}

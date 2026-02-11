@@ -66,7 +66,9 @@
 		{ key: 'flags', label: 'Flags', default: false }
 	];
 
-	let visibleColumns = $state(new Set(columnDefinitions.filter((c) => c.default).map((c) => c.key)));
+	let visibleColumns = $state(
+		new Set(columnDefinitions.filter((c) => c.default).map((c) => c.key))
+	);
 
 	// Filters
 	type FilterState = {
@@ -87,7 +89,9 @@
 
 	// Extract available filter options
 	let availableLanguages = $derived(
-		[...new Set(data.submissions.map((s: any) => s.filmLanguage).filter(Boolean))].sort() as string[]
+		[
+			...new Set(data.submissions.map((s: any) => s.filmLanguage).filter(Boolean))
+		].sort() as string[]
 	);
 
 	let availableCategories = $derived(
@@ -129,9 +133,18 @@
 			// Selection status filter using dynamic thresholds
 			const score = s.score || 0;
 			const hasReviews = (s.reviewsCount || 0) > 0;
-			if (filters.selectionStatus === 'selected' && score < settings.selectedThreshold) return false;
-			if (filters.selectionStatus === 'maybe' && (score < settings.maybeThreshold || score >= settings.selectedThreshold)) return false;
-			if (filters.selectionStatus === 'rejected' && (score >= settings.maybeThreshold || !hasReviews)) return false;
+			if (filters.selectionStatus === 'selected' && score < settings.selectedThreshold)
+				return false;
+			if (
+				filters.selectionStatus === 'maybe' &&
+				(score < settings.maybeThreshold || score >= settings.selectedThreshold)
+			)
+				return false;
+			if (
+				filters.selectionStatus === 'rejected' &&
+				(score >= settings.maybeThreshold || !hasReviews)
+			)
+				return false;
 			if (filters.selectionStatus === 'no-reviews' && hasReviews) return false;
 
 			// Flags filter
@@ -255,225 +268,256 @@
 	let showSettings = $state(false);
 </script>
 
-<!-- Minimal Header -->
-<header class="header">
-	<div class="header-top">
-		<h1>Curation</h1>
-		<a href="/my-reviews" class="link-subtle">My Reviews →</a>
-	</div>
-	<div class="header-meta">
-		<span>{curator?.name}</span>
-		<span class="sep"></span>
-		<span>{total} reviews</span>
-		<span class="sep"></span>
-		<span>{approvalRate}% approved</span>
-		<span class="sep"></span>
-		<span>{timeDisplay} watched</span>
-	</div>
-</header>
+<div class="container mx-auto max-w-7xl px-6 py-6">
+	<!-- Minimal Header -->
+	<header class="header">
+		<div class="header-top">
+			<h1>Curation</h1>
+			<a href="/my-reviews" class="link-subtle">My Reviews →</a>
+		</div>
+		<div class="header-meta">
+			<span>{curator?.name}</span>
+			<span class="sep"></span>
+			<span>{total} reviews</span>
+			<span class="sep"></span>
+			<span>{approvalRate}% approved</span>
+			<span class="sep"></span>
+			<span>{timeDisplay} watched</span>
+		</div>
+	</header>
 
-<!-- Selection Overview -->
-<section class="selection-bar">
-	<SelectionStatsDisplay stats={selectionStats} />
-	<div class="selection-bar-actions">
-		<button class="btn-ghost" onclick={() => (showSettings = !showSettings)}>
-			{showSettings ? 'Hide' : 'Thresholds'}
-		</button>
-	</div>
-</section>
+	<!-- Selection Overview -->
+	<section class="selection-bar">
+		<SelectionStatsDisplay stats={selectionStats} />
+		<div class="selection-bar-actions">
+			<button class="btn-ghost" onclick={() => (showSettings = !showSettings)}>
+				{showSettings ? 'Hide' : 'Thresholds'}
+			</button>
+		</div>
+	</section>
 
-{#if showSettings}
-	<div class="settings-wrap">
-		<SettingsPanel bind:settings isAdmin={data.isAdmin} />
-	</div>
-{/if}
+	{#if showSettings}
+		<div class="settings-wrap">
+			<SettingsPanel bind:settings isAdmin={data.isAdmin} />
+		</div>
+	{/if}
 
-<!-- Toolbar -->
-<div class="toolbar">
-	<div class="toolbar-left">
-		<FiltersPanel bind:filters {availableLanguages} {availableCategories} />
+	<!-- Toolbar -->
+	<div class="toolbar">
+		<div class="toolbar-left">
+			<FiltersPanel bind:filters {availableLanguages} {availableCategories} />
+		</div>
+		<div class="toolbar-right">
+			<span class="count-label">{submissions.length}/{scoredSubmissions.length}</span>
+			<ColumnToggle columns={columnDefinitions} bind:visibleColumns />
+		</div>
 	</div>
-	<div class="toolbar-right">
-		<span class="count-label">{submissions.length}/{scoredSubmissions.length}</span>
-		<ColumnToggle columns={columnDefinitions} bind:visibleColumns />
-	</div>
-</div>
 
-<!-- Table -->
-<div class="table-wrap">
-	<Table>
-		<TableHead>
-			<tr>
-				{#if visibleColumns.has('highlight')}
-					<th class="th-icon" onclick={() => setSort('highlighted')}>
-						<span class="th-star">★</span>
-						{#if sortKey === 'highlighted'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
-					</th>
-				{/if}
-				{#if visibleColumns.has('title')}
-					<th class="th-sortable" onclick={() => setSort('englishTitle')}>
-						Title {#if sortKey === 'englishTitle'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
-					</th>
-				{/if}
-				{#if visibleColumns.has('director')}
-					<th class="th-sortable" onclick={() => setSort('directorName')}>
-						Director {#if sortKey === 'directorName'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
-					</th>
-				{/if}
-				{#if visibleColumns.has('language')}
-					<th class="th-sortable" onclick={() => setSort('filmLanguage')}>
-						Lang {#if sortKey === 'filmLanguage'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
-					</th>
-				{/if}
-				{#if visibleColumns.has('categories')}
-					<th class="th-sortable" onclick={() => setSort('categories')}>
-						Cat {#if sortKey === 'categories'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
-					</th>
-				{/if}
-				{#if visibleColumns.has('length')}
-					<th class="th-sortable" onclick={() => setSort('length')}>
-						Len {#if sortKey === 'length'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
-					</th>
-				{/if}
-				{#if visibleColumns.has('uploaded')}
-					<th class="th-sortable" onclick={() => setSort('_createdAt')}>
-						Date {#if sortKey === '_createdAt'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
-					</th>
-				{/if}
-				{#if visibleColumns.has('reviewedBy')}
-					<th class="th-sortable" onclick={() => setSort('reviewsCount')}>
-						Reviews {#if sortKey === 'reviewsCount'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
-					</th>
-				{/if}
-				{#if visibleColumns.has('votes')}
-					<th class="th-plain">Votes</th>
-				{/if}
-				{#if visibleColumns.has('score')}
-					<th class="th-sortable" onclick={() => setSort('score')}>
-						Score {#if sortKey === 'score'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
-					</th>
-				{/if}
-				{#if visibleColumns.has('flags')}
-					<th class="th-plain">Flags</th>
-				{/if}
-				<th class="th-plain th-center"></th>
-			</tr>
-		</TableHead>
-
-		<TableBody>
-			{#each submissions as s (s._id)}
-				{@const score = s.score || 0}
-				{@const hasReviews = (s.reviewsCount || 0) > 0}
-				<TableRow
-					class="{s.hasReviewed ? 'reviewed-row' : ''} {s.isHighlighted
-						? 'highlight-row'
-						: hasReviews && score >= settings.selectedThreshold
-							? 'row-selected'
-							: hasReviews && score >= settings.maybeThreshold
-								? 'row-maybe'
-								: hasReviews
-									? 'row-rejected'
-									: ''}"
-				>
+	<!-- Table -->
+	<div class="table-wrap">
+		<Table>
+			<TableHead>
+				<tr>
 					{#if visibleColumns.has('highlight')}
-						<td class="td-icon">
-							{#if s.isHighlighted}
-								<span
-									class="highlight-indicator"
-									title="Highlighted by: {s.highlightedBy.join(', ')}"
-								>★</span>
-							{:else}
-								<span class="td-muted">-</span>
-							{/if}
-						</td>
+						<th class="th-icon" onclick={() => setSort('highlighted')}>
+							<span class="th-star">★</span>
+							{#if sortKey === 'highlighted'}<span class="sort-arrow"
+									>{sortDir === 'asc' ? '↑' : '↓'}</span
+								>{/if}
+						</th>
 					{/if}
 					{#if visibleColumns.has('title')}
-						<td class="td-title" title={s.englishTitle}>
-							{s.englishTitle}
-						</td>
+						<th class="th-sortable" onclick={() => setSort('englishTitle')}>
+							Title {#if sortKey === 'englishTitle'}<span class="sort-arrow"
+									>{sortDir === 'asc' ? '↑' : '↓'}</span
+								>{/if}
+						</th>
 					{/if}
 					{#if visibleColumns.has('director')}
-						<td class="td-truncate td-secondary" title={s.directorName}>
-							{s.directorName || '-'}
-						</td>
+						<th class="th-sortable" onclick={() => setSort('directorName')}>
+							Director {#if sortKey === 'directorName'}<span class="sort-arrow"
+									>{sortDir === 'asc' ? '↑' : '↓'}</span
+								>{/if}
+						</th>
 					{/if}
 					{#if visibleColumns.has('language')}
-						<td class="td-truncate" title={s.filmLanguage}>{s.filmLanguage}</td>
+						<th class="th-sortable" onclick={() => setSort('filmLanguage')}>
+							Lang {#if sortKey === 'filmLanguage'}<span class="sort-arrow"
+									>{sortDir === 'asc' ? '↑' : '↓'}</span
+								>{/if}
+						</th>
 					{/if}
 					{#if visibleColumns.has('categories')}
-						<td
-							class="td-truncate"
-							title={s.categories?.join(', ') +
-								(s.categories?.includes('other') && s.categoryOther
-									? `, ${s.categoryOther}`
-									: '')}
-						>
-							{s.categories?.join(', ') +
-								(s.categories?.includes('other') && s.categoryOther
-									? `, ${s.categoryOther}`
-									: '')}
-						</td>
+						<th class="th-sortable" onclick={() => setSort('categories')}>
+							Cat {#if sortKey === 'categories'}<span class="sort-arrow"
+									>{sortDir === 'asc' ? '↑' : '↓'}</span
+								>{/if}
+						</th>
 					{/if}
 					{#if visibleColumns.has('length')}
-						<td class="td-num">{s.length}′</td>
+						<th class="th-sortable" onclick={() => setSort('length')}>
+							Len {#if sortKey === 'length'}<span class="sort-arrow"
+									>{sortDir === 'asc' ? '↑' : '↓'}</span
+								>{/if}
+						</th>
 					{/if}
 					{#if visibleColumns.has('uploaded')}
-						<td class="td-date" title={new Date(s._createdAt).toLocaleString()}>
-							{new Date(s._createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
-						</td>
+						<th class="th-sortable" onclick={() => setSort('_createdAt')}>
+							Date {#if sortKey === '_createdAt'}<span class="sort-arrow"
+									>{sortDir === 'asc' ? '↑' : '↓'}</span
+								>{/if}
+						</th>
 					{/if}
 					{#if visibleColumns.has('reviewedBy')}
-						<td
-							class="td-reviews"
-							title={s.reviews?.map((r: any) => r.curatorName).join(', ') || 'None'}
-						>
-							{#if s.reviews?.length}
-								<span class="review-count">{s.reviews.length}</span>
-								<span class="review-names">{s.reviews.map((r: any) => r.curatorName).join(', ')}</span>
-							{:else}
-								<span class="td-muted">-</span>
-							{/if}
-						</td>
+						<th class="th-sortable" onclick={() => setSort('reviewsCount')}>
+							Reviews {#if sortKey === 'reviewsCount'}<span class="sort-arrow"
+									>{sortDir === 'asc' ? '↑' : '↓'}</span
+								>{/if}
+						</th>
 					{/if}
 					{#if visibleColumns.has('votes')}
-						<td class="td-votes">
-							<VoteBreakdown reviews={s.reviews || []} compact />
-						</td>
+						<th class="th-plain">Votes</th>
 					{/if}
 					{#if visibleColumns.has('score')}
-						<td class="td-score">
-							{#if hasReviews}
-								<span class="score-value" class:score-high={score >= settings.selectedThreshold} class:score-mid={score >= settings.maybeThreshold && score < settings.selectedThreshold} class:score-low={score < settings.maybeThreshold}>{score.toFixed(0)}%</span>
-							{:else}
-								<span class="td-muted">-</span>
-							{/if}
-						</td>
+						<th class="th-sortable" onclick={() => setSort('score')}>
+							Score {#if sortKey === 'score'}<span class="sort-arrow"
+									>{sortDir === 'asc' ? '↑' : '↓'}</span
+								>{/if}
+						</th>
 					{/if}
 					{#if visibleColumns.has('flags')}
-						<td class="td-flags">
-							{#if s.flags && s.flags.length > 0}
-								<div class="flags-wrap">
-									{#each s.flags as flag}
-										<FlagBadge {flag} />
-									{/each}
-								</div>
-							{:else}
-								<span class="td-muted">-</span>
-							{/if}
-						</td>
+						<th class="th-plain">Flags</th>
 					{/if}
-					<td class="td-action">
-						<a href={`/review/${s._id}`} class="review-link">Review</a>
-					</td>
-				</TableRow>
-			{/each}
-		</TableBody>
-	</Table>
-</div>
+					<th class="th-plain th-center"></th>
+				</tr>
+			</TableHead>
 
-{#if submissions.length === 0}
-	<p class="empty">No submissions match the selected filters.</p>
-{/if}
+			<TableBody>
+				{#each submissions as s (s._id)}
+					{@const score = s.score || 0}
+					{@const hasReviews = (s.reviewsCount || 0) > 0}
+					<TableRow
+						class="{s.hasReviewed ? 'reviewed-row' : ''} {s.isHighlighted
+							? 'highlight-row'
+							: hasReviews && score >= settings.selectedThreshold
+								? 'row-selected'
+								: hasReviews && score >= settings.maybeThreshold
+									? 'row-maybe'
+									: hasReviews
+										? 'row-rejected'
+										: ''}"
+					>
+						{#if visibleColumns.has('highlight')}
+							<td class="td-icon">
+								{#if s.isHighlighted}
+									<span
+										class="highlight-indicator"
+										title="Highlighted by: {s.highlightedBy.join(', ')}">★</span
+									>
+								{:else}
+									<span class="td-muted">-</span>
+								{/if}
+							</td>
+						{/if}
+						{#if visibleColumns.has('title')}
+							<td class="td-title" title={s.englishTitle}>
+								{s.englishTitle}
+							</td>
+						{/if}
+						{#if visibleColumns.has('director')}
+							<td class="td-truncate td-secondary" title={s.directorName}>
+								{s.directorName || '-'}
+							</td>
+						{/if}
+						{#if visibleColumns.has('language')}
+							<td class="td-truncate" title={s.filmLanguage}>{s.filmLanguage}</td>
+						{/if}
+						{#if visibleColumns.has('categories')}
+							<td
+								class="td-truncate"
+								title={s.categories?.join(', ') +
+									(s.categories?.includes('other') && s.categoryOther
+										? `, ${s.categoryOther}`
+										: '')}
+							>
+								{s.categories?.join(', ') +
+									(s.categories?.includes('other') && s.categoryOther
+										? `, ${s.categoryOther}`
+										: '')}
+							</td>
+						{/if}
+						{#if visibleColumns.has('length')}
+							<td class="td-num">{s.length}′</td>
+						{/if}
+						{#if visibleColumns.has('uploaded')}
+							<td class="td-date" title={new Date(s._createdAt).toLocaleString()}>
+								{new Date(s._createdAt).toLocaleDateString('en-GB', {
+									day: '2-digit',
+									month: 'short'
+								})}
+							</td>
+						{/if}
+						{#if visibleColumns.has('reviewedBy')}
+							<td
+								class="td-reviews"
+								title={s.reviews?.map((r: any) => r.curatorName).join(', ') || 'None'}
+							>
+								{#if s.reviews?.length}
+									<span class="review-count">{s.reviews.length}</span>
+									<span class="review-names"
+										>{s.reviews.map((r: any) => r.curatorName).join(', ')}</span
+									>
+								{:else}
+									<span class="td-muted">-</span>
+								{/if}
+							</td>
+						{/if}
+						{#if visibleColumns.has('votes')}
+							<td class="td-votes">
+								<VoteBreakdown reviews={s.reviews || []} compact />
+							</td>
+						{/if}
+						{#if visibleColumns.has('score')}
+							<td class="td-score">
+								{#if hasReviews}
+									<span
+										class="score-value"
+										class:score-high={score >= settings.selectedThreshold}
+										class:score-mid={score >= settings.maybeThreshold &&
+											score < settings.selectedThreshold}
+										class:score-low={score < settings.maybeThreshold}>{score.toFixed(0)}%</span
+									>
+								{:else}
+									<span class="td-muted">-</span>
+								{/if}
+							</td>
+						{/if}
+						{#if visibleColumns.has('flags')}
+							<td class="td-flags">
+								{#if s.flags && s.flags.length > 0}
+									<div class="flags-wrap">
+										{#each s.flags as flag}
+											<FlagBadge {flag} />
+										{/each}
+									</div>
+								{:else}
+									<span class="td-muted">-</span>
+								{/if}
+							</td>
+						{/if}
+						<td class="td-action">
+							<a href={`/review/${s._id}`} class="review-link">Review</a>
+						</td>
+					</TableRow>
+				{/each}
+			</TableBody>
+		</Table>
+	</div>
+
+	{#if submissions.length === 0}
+		<p class="empty">No submissions match the selected filters.</p>
+	{/if}
+</div>
 
 <style>
 	/* ---- Header ---- */

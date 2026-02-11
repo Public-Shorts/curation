@@ -16,9 +16,7 @@
 	let filteredVetoes = $derived.by(() => {
 		if (filterType === 'all') return data.vetoedSubmissions;
 		if (filterType === 'cinema')
-			return data.vetoedSubmissions.filter(
-				(v: any) => v.vetoedFromCinema && !v.vetoedFromTV
-			);
+			return data.vetoedSubmissions.filter((v: any) => v.vetoedFromCinema && !v.vetoedFromTV);
 		if (filterType === 'tv')
 			return data.vetoedSubmissions.filter((v: any) => v.vetoedFromTV && !v.vetoedFromCinema);
 		if (filterType === 'both')
@@ -129,162 +127,164 @@
 	}
 </script>
 
-<div class="space-y-8">
-	<!-- Header -->
-	<header>
-		<h1 class="text-3xl font-bold mb-1">Vetoed Submissions</h1>
-		<p class="text-gallery-600 text-sm">
-			Videos excluded from cinema and/or TV display ({data.vetoedSubmissions.length})
-		</p>
-	</header>
+<div class="container mx-auto max-w-7xl px-6 py-6">
+	<div class="space-y-8">
+		<!-- Header -->
+		<header>
+			<h1 class="text-3xl font-bold mb-1">Vetoed Submissions</h1>
+			<p class="text-gallery-600 text-sm">
+				Videos excluded from cinema and/or TV display ({data.vetoedSubmissions.length})
+			</p>
+		</header>
 
-	<!-- Filter Buttons -->
-	{#if data.vetoedSubmissions.length > 0}
-		<div class="flex gap-2">
-			<button
-				onclick={() => (filterType = 'all')}
-				class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors {filterType === 'all'
-					? 'bg-gallery-900 text-white'
-					: 'bg-gallery-100 text-gallery-700 hover:bg-gallery-200'}"
-			>
-				All ({data.vetoedSubmissions.length})
-			</button>
-			<button
-				onclick={() => (filterType = 'cinema')}
-				class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors {filterType ===
-				'cinema'
-					? 'bg-gallery-900 text-white'
-					: 'bg-gallery-100 text-gallery-700 hover:bg-gallery-200'}"
-			>
-				Cinema Only
-			</button>
-			<button
-				onclick={() => (filterType = 'tv')}
-				class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors {filterType === 'tv'
-					? 'bg-gallery-900 text-white'
-					: 'bg-gallery-100 text-gallery-700 hover:bg-gallery-200'}"
-			>
-				TV Only
-			</button>
-			<button
-				onclick={() => (filterType = 'both')}
-				class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors {filterType === 'both'
-					? 'bg-gallery-900 text-white'
-					: 'bg-gallery-100 text-gallery-700 hover:bg-gallery-200'}"
-			>
-				Both
-			</button>
-		</div>
-	{/if}
-
-	<!-- Vetoed Submissions List -->
-	<div class="space-y-4">
-		{#if filteredVetoes.length === 0}
-			<div class="rounded-lg bg-gallery-50 p-12 text-center">
-				<p class="text-gallery-500">
-					{#if filterType !== 'all'}
-						No submissions match this filter.
-					{:else}
-						No vetoed submissions yet.
-					{/if}
-				</p>
+		<!-- Filter Buttons -->
+		{#if data.vetoedSubmissions.length > 0}
+			<div class="flex gap-2">
+				<button
+					onclick={() => (filterType = 'all')}
+					class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors {filterType === 'all'
+						? 'bg-gallery-900 text-white'
+						: 'bg-gallery-100 text-gallery-700 hover:bg-gallery-200'}"
+				>
+					All ({data.vetoedSubmissions.length})
+				</button>
+				<button
+					onclick={() => (filterType = 'cinema')}
+					class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors {filterType ===
+					'cinema'
+						? 'bg-gallery-900 text-white'
+						: 'bg-gallery-100 text-gallery-700 hover:bg-gallery-200'}"
+				>
+					Cinema Only
+				</button>
+				<button
+					onclick={() => (filterType = 'tv')}
+					class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors {filterType === 'tv'
+						? 'bg-gallery-900 text-white'
+						: 'bg-gallery-100 text-gallery-700 hover:bg-gallery-200'}"
+				>
+					TV Only
+				</button>
+				<button
+					onclick={() => (filterType = 'both')}
+					class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors {filterType === 'both'
+						? 'bg-gallery-900 text-white'
+						: 'bg-gallery-100 text-gallery-700 hover:bg-gallery-200'}"
+				>
+					Both
+				</button>
 			</div>
-		{:else}
-			{#each filteredVetoes as veto}
-				<div class="bg-white rounded-lg border border-gallery-200 p-4 shadow-sm">
-					<div class="flex gap-4">
-						<!-- Thumbnail -->
-						<div class="h-24 w-32 rounded bg-gallery-100 flex-shrink-0 overflow-hidden">
-							{#if veto.submission.poster?.asset}
-								<img
-									src={`${veto.submission.poster.asset.url}?w=200&h=150&fit=crop`}
-									alt={veto.submission.englishTitle}
-									class="h-full w-full object-cover"
-								/>
-							{:else if veto.submission.screenshots?.[0]?.asset}
-								<img
-									src={`${veto.submission.screenshots[0].asset.url}?w=200&h=150&fit=crop`}
-									alt={veto.submission.englishTitle}
-									class="h-full w-full object-cover"
-								/>
-							{:else}
-								<div class="h-full w-full flex items-center justify-center text-2xl">🎬</div>
+		{/if}
+
+		<!-- Vetoed Submissions List -->
+		<div class="space-y-4">
+			{#if filteredVetoes.length === 0}
+				<div class="rounded-lg bg-gallery-50 p-12 text-center">
+					<p class="text-gallery-500">
+						{#if filterType !== 'all'}
+							No submissions match this filter.
+						{:else}
+							No vetoed submissions yet.
+						{/if}
+					</p>
+				</div>
+			{:else}
+				{#each filteredVetoes as veto}
+					<div class="bg-white rounded-lg border border-gallery-200 p-4 shadow-sm">
+						<div class="flex gap-4">
+							<!-- Thumbnail -->
+							<div class="h-24 w-32 rounded bg-gallery-100 flex-shrink-0 overflow-hidden">
+								{#if veto.submission.poster?.asset}
+									<img
+										src={`${veto.submission.poster.asset.url}?w=200&h=150&fit=crop`}
+										alt={veto.submission.englishTitle}
+										class="h-full w-full object-cover"
+									/>
+								{:else if veto.submission.screenshots?.[0]?.asset}
+									<img
+										src={`${veto.submission.screenshots[0].asset.url}?w=200&h=150&fit=crop`}
+										alt={veto.submission.englishTitle}
+										class="h-full w-full object-cover"
+									/>
+								{:else}
+									<div class="h-full w-full flex items-center justify-center text-2xl">🎬</div>
+								{/if}
+							</div>
+
+							<!-- Content -->
+							<div class="flex-1 min-w-0 space-y-2">
+								<!-- Title and Info -->
+								<div>
+									<h3 class="font-bold text-lg text-gallery-900">
+										{veto.submission.englishTitle}
+									</h3>
+									<p class="text-sm text-gallery-600">
+										{veto.submission.directorName}
+										{#if veto.submission.length}
+											<span class="text-gallery-300 mx-1.5">•</span>
+											<span>{veto.submission.length} min</span>
+										{/if}
+										{#if veto.submission.categories?.length > 0}
+											<span class="text-gallery-300 mx-1.5">•</span>
+											<span>{veto.submission.categories.join(', ')}</span>
+										{/if}
+									</p>
+								</div>
+
+								<!-- Veto Status Badges -->
+								<div class="flex gap-2">
+									{#if veto.vetoedFromCinema}
+										<span
+											class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 rounded-full border border-purple-200"
+										>
+											<span>🎬</span>
+											Cinema
+										</span>
+									{/if}
+									{#if veto.vetoedFromTV}
+										<span
+											class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full border border-blue-200"
+										>
+											<span>📺</span>
+											TV
+										</span>
+									{/if}
+								</div>
+
+								<!-- Reason -->
+								<div class="text-sm">
+									<span class="font-medium text-gallery-700">Reason:</span>
+									<span class="text-gallery-600">{veto.reason}</span>
+								</div>
+
+								<!-- Meta Info -->
+								<div class="text-xs text-gallery-500">
+									Vetoed by {veto.vetoedBy?.name || 'Unknown'} on {formatDate(veto.vetoedAt)}
+								</div>
+							</div>
+
+							<!-- Actions -->
+							{#if data.isAdmin}
+								<div class="flex flex-col gap-2 justify-center">
+									<button
+										onclick={() => openEditDialog(veto)}
+										class="px-3 py-1.5 text-xs font-medium text-gallery-700 bg-gallery-100 hover:bg-gallery-200 rounded-lg transition-colors"
+									>
+										Edit Veto
+									</button>
+									<button
+										onclick={() => openRemoveDialog(veto)}
+										class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+									>
+										Remove Veto
+									</button>
+								</div>
 							{/if}
 						</div>
-
-						<!-- Content -->
-						<div class="flex-1 min-w-0 space-y-2">
-							<!-- Title and Info -->
-							<div>
-								<h3 class="font-bold text-lg text-gallery-900">
-									{veto.submission.englishTitle}
-								</h3>
-								<p class="text-sm text-gallery-600">
-									{veto.submission.directorName}
-									{#if veto.submission.length}
-										<span class="text-gallery-300 mx-1.5">•</span>
-										<span>{veto.submission.length} min</span>
-									{/if}
-									{#if veto.submission.categories?.length > 0}
-										<span class="text-gallery-300 mx-1.5">•</span>
-										<span>{veto.submission.categories.join(', ')}</span>
-									{/if}
-								</p>
-							</div>
-
-							<!-- Veto Status Badges -->
-							<div class="flex gap-2">
-								{#if veto.vetoedFromCinema}
-									<span
-										class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 rounded-full border border-purple-200"
-									>
-										<span>🎬</span>
-										Cinema
-									</span>
-								{/if}
-								{#if veto.vetoedFromTV}
-									<span
-										class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full border border-blue-200"
-									>
-										<span>📺</span>
-										TV
-									</span>
-								{/if}
-							</div>
-
-							<!-- Reason -->
-							<div class="text-sm">
-								<span class="font-medium text-gallery-700">Reason:</span>
-								<span class="text-gallery-600">{veto.reason}</span>
-							</div>
-
-							<!-- Meta Info -->
-							<div class="text-xs text-gallery-500">
-								Vetoed by {veto.vetoedBy?.name || 'Unknown'} on {formatDate(veto.vetoedAt)}
-							</div>
-						</div>
-
-						<!-- Actions -->
-						{#if data.isAdmin}
-							<div class="flex flex-col gap-2 justify-center">
-								<button
-									onclick={() => openEditDialog(veto)}
-									class="px-3 py-1.5 text-xs font-medium text-gallery-700 bg-gallery-100 hover:bg-gallery-200 rounded-lg transition-colors"
-								>
-									Edit Veto
-								</button>
-								<button
-									onclick={() => openRemoveDialog(veto)}
-									class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
-								>
-									Remove Veto
-								</button>
-							</div>
-						{/if}
 					</div>
-				</div>
-			{/each}
-		{/if}
+				{/each}
+			{/if}
+		</div>
 	</div>
 </div>
 
@@ -362,8 +362,8 @@
 		<div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
 			<h2 class="text-xl font-bold mb-1">Remove Veto</h2>
 			<p class="text-sm text-gallery-600 mb-4">
-				Are you sure you want to remove the veto from "{selectedVeto.submission.englishTitle}"?
-				This will allow it to appear in highlights again.
+				Are you sure you want to remove the veto from "{selectedVeto.submission.englishTitle}"? This
+				will allow it to appear in highlights again.
 			</p>
 
 			{#if error}

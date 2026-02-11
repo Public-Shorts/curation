@@ -20,7 +20,15 @@ export const load: LayoutServerLoad = async () => {
 			assignedScreening,
 			linkToWatch,
 			linkToDownload,
-			linkPassword
+			linkPassword,
+			"reviews": *[_type == "review" && film._ref == ^._id] {
+				selection,
+				rating,
+				tags,
+				additionalComments,
+				contentNotes,
+				"curatorName": curator->name
+			}
 		}
 	`);
 
@@ -45,14 +53,6 @@ export const load: LayoutServerLoad = async () => {
 			email,
 			jury,
 			highlights[]->{_id}
-		}
-	`);
-
-	// Fetch all reviews with curator tags
-	const reviewsPromise = sanityClient.fetch(`
-		*[_type == "review" && defined(tags)] {
-			film->{_id},
-			tags
 		}
 	`);
 
@@ -84,11 +84,10 @@ export const load: LayoutServerLoad = async () => {
 		}
 	`);
 
-	const [submissions, screenings, curators, reviews, festivalSettings] = await Promise.all([
+	const [submissions, screenings, curators, festivalSettings] = await Promise.all([
 		submissionsPromise,
 		screeningsPromise,
 		curatorsPromise,
-		reviewsPromise,
 		festivalSettingsPromise
 	]);
 
@@ -130,20 +129,22 @@ export const load: LayoutServerLoad = async () => {
 
 	// Build a map of submission ID -> curator tags
 	const submissionTags: Record<string, string[]> = {};
-	for (const review of reviews as any[]) {
-		if (!review.film?._id || !review.tags || vetoedIds.has(review.film._id)) continue;
-		const filmId = review.film._id;
-		const tags = Array.isArray(review.tags)
-			? review.tags.map((t: any) => (typeof t === 'string' ? t : t.label || t.value)).filter(Boolean)
-			: [];
-		if (!submissionTags[filmId]) submissionTags[filmId] = [];
-		submissionTags[filmId].push(...tags);
-	}
 
-	// Dedupe tags per submission
-	for (const id of Object.keys(submissionTags)) {
-		submissionTags[id] = [...new Set(submissionTags[id])];
-	}
+	// Iterate through submissions to extract tags from their reviews
+	filteredSubmissions.forEach((submission: any) => {
+		if (submission.reviews && Array.isArray(submission.reviews)) {
+			// Flatten tags from all reviews for this submission
+			const tags = submission.reviews.flatMap((review: any) => {
+				if (!review.tags) return [];
+				return Array.isArray(review.tags)
+					? review.tags.map((t: any) => (typeof t === 'string' ? t : t.label || t.value)).filter(Boolean)
+					: [];
+			}) as string[];
+			if (tags.length > 0) {
+				submissionTags[submission._id] = [...new Set(tags)];
+			}
+		}
+	});
 
 	// Count how many curators highlighted each movie
 	const highlightCounts: Record<string, number> = {};

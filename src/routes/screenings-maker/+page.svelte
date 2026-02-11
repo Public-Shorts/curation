@@ -470,7 +470,7 @@
 
 		<!-- Right: Screenings (40% = 2 cols) -->
 		<div class="col-span-2 space-y-4 overflow-y-auto max-h-screen pb-20">
-			{#each data.screenings as screening (screening._id)}
+			{#each data.screenings.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) as screening (screening._id)}
 				{@const films = getScreeningFilms(screening._id)}
 				<div class="bg-white rounded-lg border border-gallery-200 shadow-sm">
 					<div

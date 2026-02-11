@@ -109,7 +109,9 @@
 	}
 
 	// Apply filters - add isVisible property to each film
-	let highlightsWithVisibility = $derived(addVisibilityToFilms(data.highlights, filmMatchesFilters));
+	let highlightsWithVisibility = $derived(
+		addVisibilityToFilms(data.highlights, filmMatchesFilters)
+	);
 	let unanimousWithVisibility = $derived(
 		addVisibilityToFilms(unanimousFiltered, filmMatchesFilters)
 	);
@@ -167,144 +169,146 @@
 	</div>
 {/if}
 
-<div class="space-y-12 pb-20">
-	<!-- Stats Bar -->
-	<section class="grid gap-4 md:grid-cols-5">
-		<StatCard label="Total Films" value={totalFilms} />
-		<StatCard label="Highlights" value={data.highlights.length} />
-		<StatCard label="Selected" value={data.selected.length} />
-		<StatCard label="Maybe" value={data.maybe.length} />
-		<StatCard label="Total Runtime">
-			<p class="text-lg font-semibold">{formatTime(totalRuntime)}</p>
-		</StatCard>
-	</section>
+<div class="container mx-auto max-w-7xl px-6 py-6">
+	<div class="space-y-12 pb-20">
+		<!-- Stats Bar -->
+		<section class="grid gap-4 md:grid-cols-5">
+			<StatCard label="Total Films" value={totalFilms} />
+			<StatCard label="Highlights" value={data.highlights.length} />
+			<StatCard label="Selected" value={data.selected.length} />
+			<StatCard label="Maybe" value={data.maybe.length} />
+			<StatCard label="Total Runtime">
+				<p class="text-lg font-semibold">{formatTime(totalRuntime)}</p>
+			</StatCard>
+		</section>
 
-	<!-- Editorial Summary
-	<section class="space-y-6">
-		<details class="group">
-			<summary class="cursor-pointer list-none">
-				<div
-					class="flex items-center gap-2 text-xl font-bold text-gallery-900 hover:text-black transition-colors"
+		<!-- Editorial Summary
+		<section class="space-y-6">
+			<details class="group">
+				<summary class="cursor-pointer list-none">
+					<div
+						class="flex items-center gap-2 text-xl font-bold text-gallery-900 hover:text-black transition-colors"
+					>
+						<span class="transition-transform group-open:rotate-90 text-gallery-400">▶</span>
+						Editorial Summary
+					</div>
+					<p class="text-sm text-gallery-500 mt-1 ml-6">Overview of the selection</p>
+				</summary>
+
+				<div class="mt-6 bg-white rounded-xl border border-gallery-200 p-8">
+					<div class="prose prose-sm max-w-none text-gallery-700 leading-relaxed space-y-4">
+						<p>
+							This year's selection showcases a diverse range of voices and perspectives from filmmakers
+							around the world. The curated films explore themes of identity, social justice, and human
+							connection through innovative storytelling techniques.
+						</p>
+						<p>
+							Our jury has carefully reviewed each submission to identify works that push creative
+							boundaries while maintaining strong narrative and technical execution.
+						</p>
+					</div>
+				</div>
+			</details>
+		</section> -->
+
+		<!-- Filters and View Toggle -->
+		<section class="flex flex-wrap items-center justify-between gap-4">
+			<SelectionFilters
+				bind:selectedClusters
+				bind:selectedTags
+				{availableClusters}
+				{availableTags}
+				onClear={() => {
+					selectedClusters = new Set();
+					selectedTags = new Set();
+				}}
+			/>
+
+			<!-- View Mode Toggle -->
+			<div class="flex items-center gap-1 bg-gallery-100 p-1 rounded-lg border border-gallery-200">
+				<button
+					onclick={() => (viewMode = 'grid')}
+					class="p-1.5 rounded-md transition-all {viewMode === 'grid'
+						? 'bg-white shadow-sm text-gallery-900'
+						: 'text-gallery-500 hover:text-gallery-700'}"
+					aria-label="Grid View"
 				>
-					<span class="transition-transform group-open:rotate-90 text-gallery-400">▶</span>
-					Editorial Summary
-				</div>
-				<p class="text-sm text-gallery-500 mt-1 ml-6">Overview of the selection</p>
-			</summary>
-
-			<div class="mt-6 bg-white rounded-xl border border-gallery-200 p-8">
-				<div class="prose prose-sm max-w-none text-gallery-700 leading-relaxed space-y-4">
-					<p>
-						This year's selection showcases a diverse range of voices and perspectives from filmmakers
-						around the world. The curated films explore themes of identity, social justice, and human
-						connection through innovative storytelling techniques.
-					</p>
-					<p>
-						Our jury has carefully reviewed each submission to identify works that push creative
-						boundaries while maintaining strong narrative and technical execution.
-					</p>
-				</div>
+					<LayoutGrid size={16} />
+				</button>
+				<button
+					onclick={() => (viewMode = 'compact')}
+					class="p-1.5 rounded-md transition-all {viewMode === 'compact'
+						? 'bg-white shadow-sm text-gallery-900'
+						: 'text-gallery-500 hover:text-gallery-700'}"
+					aria-label="Compact List View"
+				>
+					<List size={16} />
+				</button>
 			</div>
-		</details>
-	</section> -->
+		</section>
 
-	<!-- Filters and View Toggle -->
-	<section class="flex flex-wrap items-center justify-between gap-4">
-		<SelectionFilters
-			bind:selectedClusters
-			bind:selectedTags
-			{availableClusters}
-			{availableTags}
-			onClear={() => {
-				selectedClusters = new Set();
-				selectedTags = new Set();
-			}}
-		/>
-
-		<!-- View Mode Toggle -->
-		<div class="flex items-center gap-1 bg-gallery-100 p-1 rounded-lg border border-gallery-200">
-			<button
-				onclick={() => (viewMode = 'grid')}
-				class="p-1.5 rounded-md transition-all {viewMode === 'grid'
-					? 'bg-white shadow-sm text-gallery-900'
-					: 'text-gallery-500 hover:text-gallery-700'}"
-				aria-label="Grid View"
-			>
-				<LayoutGrid size={16} />
-			</button>
-			<button
-				onclick={() => (viewMode = 'compact')}
-				class="p-1.5 rounded-md transition-all {viewMode === 'compact'
-					? 'bg-white shadow-sm text-gallery-900'
-					: 'text-gallery-500 hover:text-gallery-700'}"
-				aria-label="Compact List View"
-			>
-				<List size={16} />
-			</button>
-		</div>
-	</section>
-
-	<!-- Highlights Section -->
-	<FilmSection
-		title="Highlights"
-		description="Hand-picked favorites from our curators"
-		films={highlightsWithVisibility}
-		{viewMode}
-		totalCount={highlightsStats.totalCount}
-		visibleCount={highlightsStats.visibleCount}
-		totalMinutes={highlightsStats.totalMinutes}
-		visibleMinutes={highlightsStats.visibleMinutes}
-		{hasActiveFilters}
-		onFilmClick={showDetails}
-		open={true}
-		emptyMessage="No highlights yet."
-	/>
-
-	<!-- 100% Approval Section -->
-	{#if unanimousFiltered.length > 0}
+		<!-- Highlights Section -->
 		<FilmSection
-			title="100% Approval"
-			description="Films unanimously approved by all reviewers"
-			films={unanimousWithVisibility}
+			title="Highlights"
+			description="Hand-picked favorites from our curators"
+			films={highlightsWithVisibility}
 			{viewMode}
-			totalCount={unanimousStats.totalCount}
-			visibleCount={unanimousStats.visibleCount}
-			totalMinutes={unanimousStats.totalMinutes}
-			visibleMinutes={unanimousStats.visibleMinutes}
+			totalCount={highlightsStats.totalCount}
+			visibleCount={highlightsStats.visibleCount}
+			totalMinutes={highlightsStats.totalMinutes}
+			visibleMinutes={highlightsStats.visibleMinutes}
 			{hasActiveFilters}
 			onFilmClick={showDetails}
+			open={true}
+			emptyMessage="No highlights yet."
 		/>
-	{/if}
 
-	<!-- Selected Section -->
-	<FilmSection
-		title="Selected (≥{data.settings.selectedThreshold}%)"
-		description="Films with strong curator support ({data.settings.selectedThreshold}%+ approval)"
-		films={selectedWithVisibility}
-		{viewMode}
-		totalCount={selectedStats.totalCount}
-		visibleCount={selectedStats.visibleCount}
-		totalMinutes={selectedStats.totalMinutes}
-		visibleMinutes={selectedStats.visibleMinutes}
-		{hasActiveFilters}
-		onFilmClick={showDetails}
-		emptyMessage="No selected films yet."
-	/>
+		<!-- 100% Approval Section -->
+		{#if unanimousFiltered.length > 0}
+			<FilmSection
+				title="100% Approval"
+				description="Films unanimously approved by all reviewers"
+				films={unanimousWithVisibility}
+				{viewMode}
+				totalCount={unanimousStats.totalCount}
+				visibleCount={unanimousStats.visibleCount}
+				totalMinutes={unanimousStats.totalMinutes}
+				visibleMinutes={unanimousStats.visibleMinutes}
+				{hasActiveFilters}
+				onFilmClick={showDetails}
+			/>
+		{/if}
 
-	<!-- Maybe Section -->
-	<FilmSection
-		title="Maybe ({data.settings.maybeThreshold}-{data.settings.selectedThreshold - 1}%)"
-		description="Films under consideration for final selection"
-		films={maybeWithVisibility}
-		{viewMode}
-		totalCount={maybeStats.totalCount}
-		visibleCount={maybeStats.visibleCount}
-		totalMinutes={maybeStats.totalMinutes}
-		visibleMinutes={maybeStats.visibleMinutes}
-		{hasActiveFilters}
-		onFilmClick={showDetails}
-		emptyMessage="No maybe films yet."
-	/>
+		<!-- Selected Section -->
+		<FilmSection
+			title="Selected (≥{data.settings.selectedThreshold}%)"
+			description="Films with strong curator support ({data.settings.selectedThreshold}%+ approval)"
+			films={selectedWithVisibility}
+			{viewMode}
+			totalCount={selectedStats.totalCount}
+			visibleCount={selectedStats.visibleCount}
+			totalMinutes={selectedStats.totalMinutes}
+			visibleMinutes={selectedStats.visibleMinutes}
+			{hasActiveFilters}
+			onFilmClick={showDetails}
+			emptyMessage="No selected films yet."
+		/>
+
+		<!-- Maybe Section -->
+		<FilmSection
+			title="Maybe ({data.settings.maybeThreshold}-{data.settings.selectedThreshold - 1}%)"
+			description="Films under consideration for final selection"
+			films={maybeWithVisibility}
+			{viewMode}
+			totalCount={maybeStats.totalCount}
+			visibleCount={maybeStats.visibleCount}
+			totalMinutes={maybeStats.totalMinutes}
+			visibleMinutes={maybeStats.visibleMinutes}
+			{hasActiveFilters}
+			onFilmClick={showDetails}
+			emptyMessage="No maybe films yet."
+		/>
+	</div>
 </div>
 
 <!-- Video Detail Dialog -->
