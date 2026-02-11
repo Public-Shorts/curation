@@ -80,6 +80,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				"screenshots": screenshots[]{ asset->{ _id, url } },
 				linkToWatch,
 				linkToDownload,
+				linkPassword,
 				"reviews": *[_type == "review" && film._ref == ^._id]{
 					_id,
 					selection,

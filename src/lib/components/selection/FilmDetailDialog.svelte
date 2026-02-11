@@ -190,27 +190,44 @@
 				{/if}
 
 				<!-- Watch/Download Links -->
-				{#if film.linkToWatch || film.linkToDownload}
-					<div class="flex items-center gap-3 pt-4 border-t border-gallery-100">
-						{#if film.linkToWatch}
-							<a
-								href={film.linkToWatch}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="px-4 py-2 bg-accent-500 text-white! rounded-lg text-sm font-semibold hover:bg-accent-600 transition-colors flex items-center gap-2"
+				{#if film.linkToWatch || film.linkToDownload || film.linkPassword}
+					<div class="pt-4 border-t border-gallery-100 space-y-3">
+						{#if film.linkPassword}
+							<div
+								class="flex items-center gap-2 bg-gallery-50 rounded-lg px-3 py-2 border border-gallery-100"
 							>
-								Watch Film
-							</a>
+								<span class="text-lg">🔑</span>
+								<span class="text-xs text-gallery-500">Password:</span>
+								<code
+									class="text-sm font-mono text-gallery-700 bg-white px-2 py-1 rounded border border-gallery-200"
+								>
+									{film.linkPassword}
+								</code>
+							</div>
 						{/if}
-						{#if film.linkToDownload}
-							<a
-								href={film.linkToDownload}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="px-4 py-2 bg-gallery-700 text-white! rounded-lg text-sm font-semibold hover:bg-gallery-800 transition-colors flex items-center gap-2"
-							>
-								Download
-							</a>
+						{#if film.linkToWatch || film.linkToDownload}
+							<div class="flex items-center gap-3">
+								{#if film.linkToWatch}
+									<a
+										href={film.linkToWatch}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="px-4 py-2 bg-accent-500 text-white! rounded-lg text-sm font-semibold hover:bg-accent-600 transition-colors flex items-center gap-2"
+									>
+										Watch Film
+									</a>
+								{/if}
+								{#if film.linkToDownload}
+									<a
+										href={film.linkToDownload}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="px-4 py-2 bg-gallery-700 text-white! rounded-lg text-sm font-semibold hover:bg-gallery-800 transition-colors flex items-center gap-2"
+									>
+										Download
+									</a>
+								{/if}
+							</div>
 						{/if}
 					</div>
 				{/if}
