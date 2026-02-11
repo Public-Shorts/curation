@@ -65,8 +65,8 @@
 		const map = new Map<string, string[]>();
 		data.clusters.forEach((cluster: any) => {
 			const allMovieIds = [
-				...(cluster.highlightedMovies?.map((m: any) => m._id) || []),
-				...(cluster.relevantMovies?.map((m: any) => m._id) || [])
+				...(cluster.highlightedMovieIds || []),
+				...(cluster.relevantMovieIds || [])
 			];
 			allMovieIds.forEach((id: string) => {
 				if (!map.has(id)) map.set(id, []);

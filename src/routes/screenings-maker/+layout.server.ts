@@ -123,8 +123,8 @@ export const load: LayoutServerLoad = async () => {
 	// Filter clusters
 	const filteredClusters = ((clustersData as any).clusters || []).map((c: any) => ({
 		...c,
-		highlightedMovies: c.highlightedMovies?.filter((m: any) => !vetoedIds.has(m._id)) || [],
-		relevantMovies: c.relevantMovies?.filter((m: any) => !vetoedIds.has(m._id)) || []
+		highlightedMovieIds: c.highlightedMovieIds?.filter((id: string) => !vetoedIds.has(id)) || [],
+		relevantMovieIds: c.relevantMovieIds?.filter((id: string) => !vetoedIds.has(id)) || []
 	}));
 
 	// Build a map of submission ID -> curator tags
