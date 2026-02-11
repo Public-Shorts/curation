@@ -365,8 +365,8 @@
 			<!-- Filters & Controls -->
 			<section class="flex flex-wrap items-center justify-between gap-4">
 				<SelectionFilters
-					clusters={data.clusters.map((c: any) => ({ label: c.name, id: c.id }))}
-					tags={availableTags}
+					availableClusters={data.clusters.map((c: any) => ({ label: c.name, id: c.id }))}
+					{availableTags}
 					bind:selectedClusters
 					bind:selectedTags
 					onClear={() => {
