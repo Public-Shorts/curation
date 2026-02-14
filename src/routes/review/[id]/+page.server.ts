@@ -12,6 +12,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		`{
             "submission": *[_type == "submission" && _id == $id][0]{
                 _id,
+                _createdAt,
                 directorName,
                 socialMedia,
                 website,

@@ -10,6 +10,7 @@ export const load: PageServerLoad = async ({ locals }) => {
       name,
       highlights[]->{
         _id,
+        _createdAt,
         englishTitle,
         originalTitle,
         directorName,

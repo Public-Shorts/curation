@@ -130,6 +130,17 @@
 				Additional Info
 			</h3>
 			<div class="space-y-4">
+				{#if submission._createdAt}
+					<div class="flex items-start gap-4">
+						<dt class="text-sm font-medium text-gallery-800 min-w-32">Submitted:</dt>
+						<dd class="text-sm text-gallery-600">
+							{new Date(submission._createdAt).toLocaleString('en-US', {
+								dateStyle: 'medium',
+								timeStyle: 'short'
+							})}
+						</dd>
+					</div>
+				{/if}
 				{#if submission.additionalInfo}
 					<p class="text-sm text-gallery-700 leading-relaxed">{submission.additionalInfo}</p>
 				{/if}
@@ -141,7 +152,7 @@
 						<p class="text-sm text-amber-800">{submission.specialRequirements}</p>
 					</div>
 				{/if}
-				{#if !submission.additionalInfo && !submission.specialRequirements}
+				{#if !submission.additionalInfo && !submission.specialRequirements && !submission._createdAt}
 					<p class="text-sm text-gallery-400 italic">None provided</p>
 				{/if}
 			</div>

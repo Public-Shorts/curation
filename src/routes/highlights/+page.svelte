@@ -560,6 +560,23 @@
 															{/each}
 														</div>
 													</div>
+
+													<!-- Submission Date -->
+													{#if submission._createdAt}
+														<div class="space-y-1.5 pt-1 border-t border-gallery-100">
+															<p
+																class="text-[9px] font-bold text-gallery-400 uppercase tracking-widest"
+															>
+																Submitted
+															</p>
+															<p class="text-[10px] text-gallery-600">
+																{new Date(submission._createdAt).toLocaleString('en-US', {
+																	dateStyle: 'medium',
+																	timeStyle: 'short'
+																})}
+															</p>
+														</div>
+													{/if}
 												</div>
 											</div>
 										</div>
@@ -699,6 +716,23 @@
 														{/each}
 													</div>
 												</div>
+
+												<!-- Submission Date -->
+												{#if submission._createdAt}
+													<div class="space-y-1.5 pt-1 border-t border-gallery-100">
+														<p
+															class="text-[9px] font-bold text-gallery-400 uppercase tracking-widest"
+														>
+															Submitted
+														</p>
+														<p class="text-[10px] text-gallery-600">
+															{new Date(submission._createdAt).toLocaleString('en-US', {
+																dateStyle: 'medium',
+																timeStyle: 'short'
+															})}
+														</p>
+													</div>
+												{/if}
 											</div>
 										</div>
 									</div>

@@ -107,6 +107,16 @@
 					{#if film.filmLanguage}
 						<span class="text-gallery-400">{film.filmLanguage}</span>
 					{/if}
+					{#if film._createdAt}
+						<span class="text-gallery-400">•</span>
+						<span class="text-gallery-500">
+							Submitted {new Date(film._createdAt).toLocaleDateString('en-US', {
+								month: 'short',
+								day: 'numeric',
+								year: 'numeric'
+							})}
+						</span>
+					{/if}
 					{#if reviews.length > 0}
 						<span class="text-gallery-400">•</span>
 						<span class="font-medium text-gallery-600">

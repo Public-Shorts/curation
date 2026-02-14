@@ -36,14 +36,15 @@
 					<a class="uppercase hover:text-gallery-900" href="/my-reviews">My Reviews</a>
 				{/if}
 				<a class="uppercase hover:text-gallery-900" href="/stats">Stats</a>
-				{#if isAdmin}
-					<a class="uppercase hover:text-gallery-900" href="/vetoed">Vetoed</a>
-				{/if}
 				{#if !isJury}
 					<a class="uppercase hover:text-gallery-900" href="/selection">Selection</a>
 				{/if}
-				{#if isAdmin || isJury}
+				{#if isAdmin}
 					<a class="uppercase hover:text-gallery-900" href="/screenings-maker">Screenings</a>
+					<a class="uppercase hover:text-gallery-900" href="/admin">Admin</a>
+				{/if}
+				{#if isAdmin || isJury}
+					<a class="uppercase hover:text-gallery-900" href="/meta-categories">Meta Categories</a>
 				{/if}
 			</div>
 
@@ -85,15 +86,6 @@
 						My Reviews
 					</a>
 				{/if}
-				{#if isAdmin}
-					<a
-						class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
-						href="/vetoed"
-						onclick={toggleMenu}
-					>
-						Vetoed
-					</a>
-				{/if}
 				<a
 					class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
 					href="/stats"
@@ -101,20 +93,38 @@
 				>
 					Stats
 				</a>
-				<a
-					class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
-					href="/selection"
-					onclick={toggleMenu}
-				>
-					Selection
-				</a>
+				{#if !isJury}
+					<a
+						class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
+						href="/selection"
+						onclick={toggleMenu}
+					>
+						Selection
+					</a>
+				{/if}
 				{#if isAdmin || isJury}
+					<a
+						class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
+						href="/meta-categories"
+						onclick={toggleMenu}
+					>
+						Meta Categories
+					</a>
+				{/if}
+				{#if isAdmin}
 					<a
 						class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
 						href="/screenings-maker"
 						onclick={toggleMenu}
 					>
 						Screenings
+					</a>
+					<a
+						class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
+						href="/admin"
+						onclick={toggleMenu}
+					>
+						Admin
 					</a>
 				{/if}
 				<form method="POST" action="/api/auth/logout" class="pt-2">
