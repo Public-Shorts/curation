@@ -123,6 +123,10 @@ async function fetchAllData() {
 		"allReviews": *[_type == "review"]{
 			"curatorId": curator._ref,
 			selection
+		},
+		"settings": *[_type == "festivalSettings"][0]{
+			selectedThreshold, maybeThreshold, volumeExponent, tendencyPenalty,
+			vetoedSubmissions
 		}
 	}`;
 	return await client.fetch(query);
@@ -138,6 +142,8 @@ async function generateSummary(data: {
 	tagDistribution: Record<string, number>;
 	totalRuntime: number;
 	avgScore: number;
+	selectedThreshold: number;
+	maybeThreshold: number;
 }) {
 	console.log(`Asking Ollama (${MODEL}) to generate editorial summary...`);
 
@@ -156,13 +162,13 @@ async function generateSummary(data: {
 		.map((s: any) => `"${s.title}" by ${s.director} (${s.length}min, score ${s.score}%)`)
 		.join('; ');
 
-	const prompt = `You are writing an internal editorial brief for a short film festival jury. Use 'we' as you are writing on behalf of the curation team. Based on the data below, write a 2-3 paragraph summary that describes what has been submitted and what the curators have selected. Be factual, analytical, and concise — not promotional. Describe thematic patterns, formal tendencies, and notable characteristics. Don't be over empahtic or use flowery. Stay close to the facts. Mention specific films only if they exemplify a broader trend. 
+	const prompt = `You are writing an internal editorial brief for a short film festival jury. Use 'we' as you are writing on behalf of the curation team. Based on the data below, write a 2-3 paragraph summary that describes what has been submitted and what the curators have selected. Be factual, analytical, and concise — not promotional. Describe thematic patterns, formal tendencies, and notable characteristics. Don't be over empahtic or use flowery. Stay close to the facts. Mention specific films only if they exemplify a broader trend.
 
 DATA:
 - Total submissions: ${data.totalSubmissions}
 - Curator highlights: ${data.highlights.length} films (${data.highlights.reduce((s: number, h: any) => s + (h.length || 0), 0)} min total)
-- Selected (score ≥65%): ${data.selected.length} films
-- Maybe (35-65%): ${data.maybe.length} films
+- Selected (score >=${data.selectedThreshold}%): ${data.selected.length} films
+- Maybe (${data.maybeThreshold}-${data.selectedThreshold}%): ${data.maybe.length} films
 - Average weighted score across all reviewed films: ${data.avgScore.toFixed(1)}%
 - Total runtime of highlights + selected: ${data.totalRuntime} minutes
 - Most frequent curator tags: ${topTags}
@@ -201,10 +207,24 @@ Return ONLY a JSON object: { "summary": "your 2-3 paragraph text here" }`;
 // --- Main ---
 
 async function main() {
-	const { submissions, curators, allReviews } = await fetchAllData();
+	const { submissions, curators, allReviews, settings } = await fetchAllData();
 	console.log(
 		`Fetched ${submissions.length} submissions, ${curators.length} curators with highlights`
 	);
+
+	// Festival selection parameters from settings (see FESTIVAL_SELECTION.md)
+	const selectedThreshold = settings?.selectedThreshold || 60;
+	const maybeThreshold = settings?.maybeThreshold || 35;
+	const volumeExponent = settings?.volumeExponent ?? 1;
+	const tendencyPenalty = settings?.tendencyPenalty ?? 2;
+
+	// Build vetoed IDs set
+	const vetoedIds = new Set<string>();
+	settings?.vetoedSubmissions?.forEach((v: any) => {
+		if ((v.vetoedFromCinema || v.vetoedFromTV) && v.submission?._ref) {
+			vetoedIds.add(v.submission._ref);
+		}
+	});
 
 	// 1. Build curator stats
 	const curatorStats: Record<
@@ -223,7 +243,7 @@ async function main() {
 		stat.approvalRate = stat.totalReviews > 0 ? stat.approvedCount / stat.totalReviews : 0;
 	});
 
-	const curatorWeights = calculateCuratorWeights(curatorStats, 1, 4);
+	const curatorWeights = calculateCuratorWeights(curatorStats, volumeExponent, tendencyPenalty);
 
 	// 2. Build highlighted IDs set + curator map
 	const highlightedIds = new Set<string>();
@@ -239,6 +259,7 @@ async function main() {
 	});
 
 	// 3. Score and categorize all submissions
+	// Festival Selection = (Highlighted OR Score >= Threshold) AND NOT Vetoed
 	const tagDistribution: Record<string, number> = {};
 	const highlights: any[] = [];
 	const unanimous: any[] = [];
@@ -246,6 +267,9 @@ async function main() {
 	const maybe: any[] = [];
 
 	submissions.forEach((sub: any) => {
+		// Skip vetoed films
+		if (vetoedIds.has(sub._id)) return;
+
 		const score = scoreMovie(sub, curatorWeights);
 		const reviews = sub.reviews || [];
 
@@ -316,9 +340,9 @@ async function main() {
 			unanimous.push(filmData);
 		}
 
-		if (score >= 65) {
+		if (score >= selectedThreshold) {
 			selected.push(filmData);
-		} else if (score >= 35) {
+		} else if (score >= maybeThreshold) {
 			maybe.push(filmData);
 		}
 	});
@@ -350,7 +374,9 @@ async function main() {
 		maybe,
 		tagDistribution,
 		totalRuntime,
-		avgScore
+		avgScore,
+		selectedThreshold,
+		maybeThreshold
 	});
 
 	console.log('\nGenerated summary:');

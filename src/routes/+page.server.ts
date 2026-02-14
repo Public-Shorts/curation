@@ -70,7 +70,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	// Default settings if none exist in Sanity
 	const settings = {
-		selectedThreshold: data.settings?.selectedThreshold ?? 65,
+		selectedThreshold: data.settings?.selectedThreshold ?? 60,
 		maybeThreshold: data.settings?.maybeThreshold ?? 35
 	};
 

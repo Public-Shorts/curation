@@ -1,11 +1,11 @@
 <script lang="ts">
 	import type { LayoutData } from './$types';
-	import FilmSection from '$lib/components/selection/FilmSection.svelte';
-	import FilmDetailDialog from '$lib/components/selection/FilmDetailDialog.svelte';
-	import FilmCardCompact from '$lib/components/selection/FilmCardCompact.svelte';
-	import FilmCardGrid from '$lib/components/selection/FilmCardGrid.svelte';
+	import FilmSection from '$lib/components/films/FilmSection.svelte';
+	import FilmDetailDialog from '$lib/components/films/FilmDetailDialog.svelte';
+	import FilmCardCompact from '$lib/components/films/FilmCardCompact.svelte';
+	import FilmCardGrid from '$lib/components/films/FilmCardGrid.svelte';
 	import DraggableSelectionCard from '$lib/components/screenings/DraggableSelectionCard.svelte';
-	import SelectionFilters from '$lib/components/selection/SelectionFilters.svelte';
+	import SelectionFilters from '$lib/components/films/SelectionFilters.svelte';
 	import { addVisibilityToFilms, calculateSectionStats } from '$lib/utils/selectionStats';
 	import { ChevronDown, ChevronRight, LayoutGrid, List } from 'lucide-svelte';
 

@@ -14,53 +14,84 @@ export const load: PageServerLoad = async ({parent}) => {
       tags,
       summary,
       lastUpdated,
-      "films": films[]->{
-        _id,
-        _createdAt,
-        englishTitle,
-        originalTitle,
-        directorName,
-        length,
-        categories,
-        yearOfCompletion,
-        synopsis,
-        explicit,
-        explicitDetails,
-        aiUsed,
-        aiExplanation,
-        "screenshots": screenshots[]{
-          asset->{
-            _id,
-            url
-          }
-        },
-        "poster": poster{
-          asset->{
-            _id,
-            url
-          }
-        },
-        "reviews": *[_type == "review" && film._ref == ^._id]{
+      "films": films[]{
+        score,
+        metric,
+        "film": film->{
           _id,
-          selection,
-          rating,
-          tags,
-          contentNotes,
-          "curatorName": curator->name
+          _createdAt,
+          englishTitle,
+          originalTitle,
+          directorName,
+          length,
+          categories,
+          yearOfCompletion,
+          synopsis,
+          explicit,
+          explicitDetails,
+          aiUsed,
+          aiExplanation,
+          country,
+          filmLanguage,
+          linkToWatch,
+          linkToDownload,
+          linkPassword,
+          "screenshots": screenshots[]{
+            asset->{
+              _id,
+              url
+            }
+          },
+          "poster": poster{
+            asset->{
+              _id,
+              url
+            }
+          },
+          "reviews": *[_type == "review" && film._ref == ^._id]{
+            _id,
+            selection,
+            rating,
+            tags,
+            contentNotes,
+            additionalComments,
+            "curatorName": curator->name
+          },
+          "highlightCount": count(*[_type == "curator" && ^._id in highlights[]._ref])
         }
       }
+    },
+    "festivalSelection": *[_id == "festivalSelection"][0]{
+      "films": films[]{ "filmId": film._ref, selectionScore }
     }
   }`;
 
-	const {metaCategories} = await sanityClient.fetch(query);
+	const {metaCategories, festivalSelection} = await sanityClient.fetch(query);
 
-	// Calculate stats for each meta-category
+	// Build selection score lookup
+	const selectionScoreMap = new Map<string, number>();
+	(festivalSelection?.films || []).forEach((f: any) => {
+		if (f.filmId) selectionScoreMap.set(f.filmId, f.selectionScore);
+	});
+
+	// Flatten films (merge score/metric into film object) and sort by score
 	const enrichedMetaCategories = metaCategories.map((mc: any) => {
-		const filmCount = mc.films?.length || 0;
-		const totalMinutes = mc.films?.reduce((sum: number, film: any) => sum + (film?.length || 0), 0) || 0;
+		const films = (mc.films || [])
+			.filter((entry: any) => entry.film)
+			.map((entry: any) => ({
+				...entry.film,
+				score: entry.score,
+				metric: entry.metric,
+				selectionScore: selectionScoreMap.get(entry.film._id),
+			}))
+			.sort((a: any, b: any) => (b.score || 0) - (a.score || 0));
+
+		const filmCount = films.length;
+		const totalMinutes = films.reduce((sum: number, f: any) => sum + (f?.length || 0), 0);
 
 		return {
 			...mc,
+			films,
 			filmCount,
 			totalMinutes,
 			totalHours: Math.floor(totalMinutes / 60),

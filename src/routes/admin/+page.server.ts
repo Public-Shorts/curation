@@ -205,7 +205,7 @@ export const load: PageServerLoad = async ({parent, locals}) => {
 		selectionData,
 		clusters: filteredClusters,
 		settings: {
-			selectedThreshold: festivalSettings?.selectedThreshold ?? 65,
+			selectedThreshold: festivalSettings?.selectedThreshold ?? 60,
 			maybeThreshold: festivalSettings?.maybeThreshold ?? 35,
 		},
 		vetoedSubmissions,

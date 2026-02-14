@@ -3,7 +3,7 @@
     import SelectionTag from '$lib/components/SelectionTag.svelte';
 
     // 1. Give 'reviews' a default value of [] to prevent "undefined" errors
-    let { reviews = [] } = $props<{ reviews: any[] }>();
+    let { reviews = [], onFilmClick }: { reviews: any[]; onFilmClick?: (id: string) => void } = $props();
 
     let isExpanded = $state(true);
     let sortField = $state('englishTitle');
@@ -86,7 +86,16 @@
 									class="truncate-cell py-2 pr-4 font-medium text-gray-900"
 									title={s.englishTitle}
 								>
-									{s.englishTitle}
+									{#if onFilmClick}
+										<button
+											class="text-left hover:text-black transition-colors cursor-pointer"
+											onclick={() => onFilmClick(s._id)}
+										>
+											{s.englishTitle}
+										</button>
+									{:else}
+										{s.englishTitle}
+									{/if}
 								</td>
 
 								<td class="truncate-cell py-2 pr-4">

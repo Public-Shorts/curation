@@ -88,8 +88,13 @@
 						{film.score.toFixed(0)}%
 					</span>
 				{/if}
-				{#if film.avgRating}
-					<span class="text-xs font-bold text-gallery-400">★ {film.avgRating.toFixed(1)}</span>
+				{#if film.metric}
+					<span class="text-[10px] font-medium text-gallery-400 uppercase tracking-wide text-right">
+						{film.metric}
+					</span>
+				{/if}
+				{#if film.selectionScore !== undefined}
+					<span class="text-xs font-bold text-gallery-400">sel. {film.selectionScore}%</span>
 				{/if}
 			</div>
 		</div>

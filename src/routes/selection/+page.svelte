@@ -5,9 +5,9 @@
 	import { invalidateAll } from '$app/navigation';
 	import { getToastMessages } from '$lib/toast/toastMessages.svelte.ts';
 	import { LayoutGrid, List } from 'lucide-svelte';
-	import SelectionFilters from '$lib/components/selection/SelectionFilters.svelte';
-	import FilmSection from '$lib/components/selection/FilmSection.svelte';
-	import FilmDetailDialog from '$lib/components/selection/FilmDetailDialog.svelte';
+	import SelectionFilters from '$lib/components/films/SelectionFilters.svelte';
+	import FilmSection from '$lib/components/films/FilmSection.svelte';
+	import FilmDetailDialog from '$lib/components/films/FilmDetailDialog.svelte';
 	import { calculateSectionStats, addVisibilityToFilms } from '$lib/utils/selectionStats';
 
 	type Film = {
@@ -126,9 +126,9 @@
 
 	let hasActiveFilters = $derived(selectedClusters.size > 0 || selectedTags.size > 0);
 
-	// Calculate stats
+	// Calculate stats (maybes excluded — not part of festival selection)
 	let totalFilms = $derived(
-		new Set([...data.highlights, ...data.selected, ...data.maybe].map((f: Film) => f._id)).size
+		new Set([...data.highlights, ...data.selected].map((f: Film) => f._id)).size
 	);
 	let totalRuntime = $derived(
 		[...data.highlights, ...data.selected].reduce(
@@ -172,11 +172,10 @@
 <div class="container mx-auto max-w-7xl px-6 py-6">
 	<div class="space-y-12 pb-20">
 		<!-- Stats Bar -->
-		<section class="grid gap-4 md:grid-cols-5">
+		<section class="grid gap-4 md:grid-cols-4">
 			<StatCard label="Total Films" value={totalFilms} />
 			<StatCard label="Highlights" value={data.highlights.length} />
 			<StatCard label="Selected" value={data.selected.length} />
-			<StatCard label="Maybe" value={data.maybe.length} />
 			<StatCard label="Total Runtime">
 				<p class="text-lg font-semibold">{formatTime(totalRuntime)}</p>
 			</StatCard>
@@ -294,20 +293,23 @@
 			emptyMessage="No selected films yet."
 		/>
 
-		<!-- Maybe Section -->
-		<FilmSection
-			title="Maybe ({data.settings.maybeThreshold}-{data.settings.selectedThreshold - 1}%)"
-			description="Films under consideration for final selection"
-			films={maybeWithVisibility}
-			{viewMode}
-			totalCount={maybeStats.totalCount}
-			visibleCount={maybeStats.visibleCount}
-			totalMinutes={maybeStats.totalMinutes}
-			visibleMinutes={maybeStats.visibleMinutes}
-			{hasActiveFilters}
-			onFilmClick={showDetails}
-			emptyMessage="No maybe films yet."
-		/>
+		<!-- Maybe Section (not part of festival selection) -->
+		<div class="border-t border-dashed border-gallery-300 pt-8 opacity-60 hover:opacity-100 transition-opacity duration-300">
+			<p class="text-xs font-bold uppercase tracking-widest text-gallery-400 mb-6">Not in selection</p>
+			<FilmSection
+				title="Maybe ({data.settings.maybeThreshold}-{data.settings.selectedThreshold - 1}%)"
+				description="Films under consideration — not counted in festival selection"
+				films={maybeWithVisibility}
+				{viewMode}
+				totalCount={maybeStats.totalCount}
+				visibleCount={maybeStats.visibleCount}
+				totalMinutes={maybeStats.totalMinutes}
+				visibleMinutes={maybeStats.visibleMinutes}
+				{hasActiveFilters}
+				onFilmClick={showDetails}
+				emptyMessage="No maybe films yet."
+			/>
+		</div>
 	</div>
 </div>
 

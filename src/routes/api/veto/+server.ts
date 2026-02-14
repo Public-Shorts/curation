@@ -51,7 +51,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			await sanityClient.create({
 				_type: 'festivalSettings',
 				title: 'Festival Settings',
-				selectedThreshold: 65,
+				selectedThreshold: 60,
 				maybeThreshold: 35,
 				volumeExponent: 1,
 				tendencyPenalty: 2,

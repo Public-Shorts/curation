@@ -1,5 +1,5 @@
 <script lang="ts">
-	import FilmCardGrid from '$lib/components/selection/FilmCardGrid.svelte';
+	import FilmCardGrid from '$lib/components/films/FilmCardGrid.svelte';
 	import {ChevronDown, ChevronRight, Lock, X} from 'lucide-svelte';
 
 	interface Props {
@@ -88,29 +88,17 @@
 			</p>
 		{/if}
 
-		<!-- Tags (always visible) -->
-		{#if metaCategory.tags && metaCategory.tags.length > 0}
-			<div class="flex flex-wrap gap-1.5 ml-8">
-				{#each metaCategory.tags as tag}
-					<span class="text-xs px-2 py-0.5 bg-gallery-100 text-gallery-600 rounded-full">
-						{tag}
-					</span>
-				{/each}
-			</div>
+		<!-- AI Summary (always visible) -->
+		{#if metaCategory.summary}
+			<p class="text-sm text-gallery-700 leading-relaxed italic ml-8">
+				{metaCategory.summary}
+			</p>
 		{/if}
 	</button>
 
 	<!-- Expanded Content -->
 	{#if !collapsed}
 		<div class="border-t border-gallery-100 bg-gallery-50/50">
-			<!-- Summary -->
-			{#if metaCategory.summary}
-				<div class="px-6 pt-4 pb-2">
-					<p class="text-sm text-gallery-700 leading-relaxed italic">
-						{metaCategory.summary}
-					</p>
-				</div>
-			{/if}
 
 			<!-- Films Grid -->
 			{#if metaCategory.films && metaCategory.films.length > 0}
@@ -120,11 +108,13 @@
 					>
 						{#each metaCategory.films as film}
 							{@const removingKey = `${metaCategory._id}-${film._id}`}
-							{@const preparedFilm = {
+							{@const reviewTags = [...new Set((film.reviews || []).flatMap((r: any) => (r.tags || []).map((t: any) => t.label || t)))]}
+						{@const preparedFilm = {
 								...film,
 								title: film.englishTitle || film.title,
 								director: film.directorName || film.director,
-								curatorCount: film.reviews?.length || 0,
+								curatorCount: film.highlightCount || 0,
+								tags: reviewTags,
 								isVisible: true,
 							}}
 
@@ -155,7 +145,7 @@
 
 								<FilmCardGrid
 									film={preparedFilm}
-									onclick={() => onFilmClick?.(film)}
+									onclick={() => onFilmClick?.(preparedFilm)}
 								/>
 							</div>
 						{/each}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import {StatCard} from '$lib/components/ui';
 	import MetaCategorySection from '$lib/components/meta-categories/MetaCategorySection.svelte';
-	import FilmDetailDialog from '$lib/components/selection/FilmDetailDialog.svelte';
+	import FilmDetailDialog from '$lib/components/films/FilmDetailDialog.svelte';
 	import {onMount} from 'svelte';
 
 	let {data} = $props();

@@ -10,7 +10,7 @@
 	} from '$lib/components/ui';
 	import VoteBreakdown from '$lib/components/selection/VoteBreakdown.svelte';
 	import SelectionStatsDisplay from '$lib/components/selection/SelectionStats.svelte';
-	import SettingsPanel from '$lib/components/selection/SettingsPanel.svelte';
+	import ThresholdSettings from '$lib/components/selection/ThresholdSettings.svelte';
 	import { scoreMoviesSimple } from '$lib/utils/scoring';
 	import type { SelectionStats } from '$lib/utils/types';
 
@@ -298,7 +298,7 @@
 
 	{#if showSettings}
 		<div class="settings-wrap">
-			<SettingsPanel bind:settings isAdmin={data.isAdmin} />
+			<ThresholdSettings bind:settings isAdmin={data.isAdmin} />
 		</div>
 	{/if}
 

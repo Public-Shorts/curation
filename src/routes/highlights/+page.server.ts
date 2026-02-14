@@ -34,12 +34,18 @@ export const load: PageServerLoad = async ({ locals }) => {
             url
           }
         },
+        linkToWatch,
+        linkToDownload,
+        linkPassword,
+        country,
+        filmLanguage,
         "reviews": *[_type == "review" && film._ref == ^._id]{
           _id,
           selection,
           rating,
           tags,
           contentNotes,
+          additionalComments,
           "curatorId": curator._ref,
           "curatorName": curator->name
         }
@@ -52,10 +58,13 @@ export const load: PageServerLoad = async ({ locals }) => {
     "vetoedIds": *[_type == "festivalSettings"][0].vetoedSubmissions[
       vetoedFromCinema == true || vetoedFromTV == true
     ].submission->_id,
+    "settings": *[_type == "festivalSettings"][0]{
+      volumeExponent, tendencyPenalty
+    },
     "isAdmin": *[_type == "curator" && _id == $curatorId][0].admin
   }`;
 
-  const { curators, curatorStatsRaw, vetoedIds, isAdmin } = await sanityClient.fetch(query, {
+  const { curators, curatorStatsRaw, vetoedIds, settings, isAdmin } = await sanityClient.fetch(query, {
     curatorId: locals.curatorId || ''
   });
 
@@ -86,7 +95,9 @@ export const load: PageServerLoad = async ({ locals }) => {
     stat.approvalRate = stat.totalReviews > 0 ? stat.approvedCount / stat.totalReviews : 0;
   });
 
-  const curatorWeights = calculateCuratorWeights(curatorStatsMap, 1, 4); // Default presets from selection page
+  const volumeExponent = settings?.volumeExponent ?? 1;
+  const tendencyPenalty = settings?.tendencyPenalty ?? 2;
+  const curatorWeights = calculateCuratorWeights(curatorStatsMap, volumeExponent, tendencyPenalty);
 
   // 4. Aggregate highlights: create a map of submission -> curators and enriched data
   const highlightMap = new Map<string, any>();

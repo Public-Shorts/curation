@@ -179,7 +179,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 		// Threshold settings
 		settings: {
-			selectedThreshold: settings?.selectedThreshold ?? 65,
+			selectedThreshold: settings?.selectedThreshold ?? 60,
 			maybeThreshold: settings?.maybeThreshold ?? 35
 		},
 

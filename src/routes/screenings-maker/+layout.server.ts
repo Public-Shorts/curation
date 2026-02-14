@@ -168,7 +168,7 @@ export const load: LayoutServerLoad = async () => {
 		suggestions: suggestions as Record<string, string[]>,
 		clusters: filteredClusters,
 		settings: {
-			selectedThreshold: festivalSettings?.selectedThreshold ?? 65,
+			selectedThreshold: festivalSettings?.selectedThreshold ?? 60,
 			maybeThreshold: festivalSettings?.maybeThreshold ?? 35
 		},
 		curatorsList: (curators as any[]).filter((c) => c.jury),

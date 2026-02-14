@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { StatCard } from '$lib/components/ui';
 	import { LayoutGrid, List, BanIcon } from 'lucide-svelte';
-	import VoteBreakdown from '$lib/components/selection/VoteBreakdown.svelte';
-	import FlagBadge from '$lib/components/ui/FlagBadge.svelte';
+	import { FilmCardGrid, FilmCardCompact, FilmDetailDialog } from '$lib/components/films';
 	import { invalidateAll } from '$app/navigation';
 
 	let { data } = $props();
 
 	let stats = $derived(data.stats);
 	let isAdmin = $derived(data.isAdmin || false);
+	let selectedFilm = $state<any | null>(null);
 
 	// Veto dialog state
 	let vetoDialogOpen = $state(false);
@@ -396,13 +396,9 @@
 					</p>
 				</div>
 			{:else if viewMode === 'card'}
-				<!-- Card Mode -->
-				<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+				<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 					{#each sortedHighlights as { submission, curators, avgRating, uniqueTags }}
-						<div
-							class="relative flex flex-col rounded-xl bg-white shadow-sm border border-gallery-100 overflow-hidden hover:shadow-xl transition-all duration-300 group"
-						>
-							<!-- Veto Button (Admin Only) -->
+						<div class="relative">
 							{#if isAdmin}
 								<button
 									onclick={(e) => openVetoDialog(submission._id, submission.englishTitle, e)}
@@ -412,192 +408,25 @@
 									<BanIcon size={16} class="text-red-600" />
 								</button>
 							{/if}
-
-							<a href={`/review/${submission._id}`} class="flex flex-col flex-1">
-								<!-- Poster/Screenshot -->
-								{#if submission.poster?.asset}
-									<div class="relative aspect-video bg-gallery-100 overflow-hidden">
-										<img
-											src={`${submission.poster.asset.url}?w=600&h=400&fit=crop`}
-											alt={submission.englishTitle}
-											class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-										/>
-										<div
-											class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors"
-										></div>
-									</div>
-								{:else if submission.screenshots?.[0]?.asset}
-									<div class="relative aspect-video bg-gallery-100 overflow-hidden">
-										<img
-											src={`${submission.screenshots[0].asset.url}?w=600&h=400&fit=crop`}
-											alt={submission.englishTitle}
-											class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-										/>
-										<div
-											class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors"
-										></div>
-									</div>
-								{:else}
-									<div
-										class="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
-									>
-										<span class="text-gallery-400 text-4xl">🎬</span>
-									</div>
-								{/if}
-
-								<!-- Content -->
-								<div class="p-5 flex-1 flex flex-col space-y-4">
-									<div class="flex justify-between items-start gap-4">
-										<div class="flex-1 min-w-0">
-											<h3
-												class="font-bold text-lg leading-tight text-gallery-900 group-hover:text-black truncate"
-											>
-												{submission.englishTitle}
-											</h3>
-											<p class="text-sm text-gallery-600 font-medium mt-1">
-												{submission.directorName}
-												{#if submission.length}
-													<span class="text-gallery-300 mx-1.5">•</span>
-													<span>{submission.length} min</span>
-												{/if}
-											</p>
-										</div>
-
-										<!-- Grade, Approval, Rating Integrated -->
-										<div class="flex flex-col items-end gap-1">
-											<div class="flex items-center gap-1.5 text-right">
-												{#if submission.score !== undefined}
-													<span
-														class="text-xl font-black text-gallery-900 leading-none tracking-tight"
-													>
-														{submission.score.toFixed(0)}%
-													</span>
-												{/if}
-												{#if avgRating}
-													<span
-														class="text-xs font-bold text-gallery-400 border-l border-gallery-200 pl-1.5 ml-0.5"
-													>
-														{avgRating.toFixed(1)}
-													</span>
-												{/if}
-											</div>
-											<VoteBreakdown reviews={submission.reviews || []} compact={true} />
-										</div>
-									</div>
-
-									<!-- Curation Info Disclosure (Icon based) -->
-									<div
-										class="mt-auto pt-3 border-t border-gallery-100 flex items-center justify-between"
-									>
-										<div class="relative group/disclosure">
-											<!-- Trigger Icon -->
-											<div
-												class="flex items-center gap-1.5 cursor-help bg-gallery-50 px-2 py-1 rounded-full border border-gallery-100 hover:bg-gallery-100 transition-colors"
-											>
-												<span class="text-xs" style="color: var(--color-highlight-500)">★</span>
-												<span
-													class="text-[10px] font-black text-gallery-600 uppercase tracking-widest"
-													>{curators.length}</span
-												>
-											</div>
-
-											<!-- Disclosure Popover -->
-											<div
-												class="absolute bottom-full left-0 mb-2 w-64 bg-white rounded-xl shadow-2xl border border-gallery-200 p-4 opacity-0 pointer-events-none group-hover/disclosure:opacity-100 group-hover/disclosure:pointer-events-auto transition-all z-50 transform translate-y-2 group-hover/disclosure:translate-y-0"
-											>
-												<div class="space-y-4">
-													<!-- Flags -->
-													{#if submission.flags && submission.flags.length > 0}
-														<div class="space-y-1.5">
-															<p
-																class="text-[9px] font-bold text-gallery-400 uppercase tracking-widest"
-															>
-																Flags
-															</p>
-															<div class="flex flex-wrap gap-1.5">
-																{#each submission.flags as flag}
-																	<FlagBadge {flag} />
-																{/each}
-															</div>
-														</div>
-													{/if}
-
-													<!-- Tags -->
-													{#if uniqueTags && uniqueTags.length > 0}
-														<div class="space-y-1.5">
-															<p
-																class="text-[9px] font-bold text-gallery-400 uppercase tracking-widest"
-															>
-																Tags
-															</p>
-															<div class="flex flex-wrap gap-1">
-																{#each uniqueTags as tag}
-																	<span
-																		class="px-2 py-0.5 text-[10px] font-bold uppercase bg-gallery-50 text-gallery-500 rounded-full border border-gallery-100/50"
-																	>
-																		{tag.label}
-																	</span>
-																{/each}
-															</div>
-														</div>
-													{/if}
-
-													<!-- Curators -->
-													<div class="space-y-1.5">
-														<p
-															class="text-[9px] font-bold text-gallery-400 uppercase tracking-widest"
-														>
-															Curators
-														</p>
-														<div class="flex flex-wrap gap-1">
-															{#each curators as curator}
-																<span
-																	class="text-[9px] font-bold text-gallery-700 px-2 py-0.5 rounded-full border"
-																	style="background-color: var(--color-highlight-100); border-color: var(--color-highlight-200); color: var(--color-highlight-900)"
-																>
-																	{curator.name}
-																</span>
-															{/each}
-														</div>
-													</div>
-
-													<!-- Submission Date -->
-													{#if submission._createdAt}
-														<div class="space-y-1.5 pt-1 border-t border-gallery-100">
-															<p
-																class="text-[9px] font-bold text-gallery-400 uppercase tracking-widest"
-															>
-																Submitted
-															</p>
-															<p class="text-[10px] text-gallery-600">
-																{new Date(submission._createdAt).toLocaleString('en-US', {
-																	dateStyle: 'medium',
-																	timeStyle: 'short'
-																})}
-															</p>
-														</div>
-													{/if}
-												</div>
-											</div>
-										</div>
-
-										<span
-											class="text-xs font-bold text-gallery-400 group-hover:text-black transition-colors"
-										>
-											Details →
-										</span>
-									</div>
-								</div>
-							</a>
+							<FilmCardGrid
+								film={{
+									...submission,
+									title: submission.englishTitle,
+									director: submission.directorName,
+									curatorCount: curators.length,
+									avgRating,
+									tags: (uniqueTags || []).map((t: any) => t.label),
+									isVisible: true
+								}}
+								onclick={() => (selectedFilm = submission)}
+							/>
 						</div>
 					{/each}
 				</div>
 			{:else}
-				<!-- Inline Mode (List) -->
 				<div class="space-y-2">
-					{#each sortedHighlights as { submission, curators, avgRating, uniqueTags }}
+					{#each sortedHighlights as { submission, curators }}
 						<div class="relative">
-							<!-- Veto Button (Admin Only) -->
 							{#if isAdmin}
 								<button
 									onclick={(e) => openVetoDialog(submission._id, submission.englishTitle, e)}
@@ -607,137 +436,15 @@
 									<BanIcon size={16} class="text-red-600" />
 								</button>
 							{/if}
-
-							<a
-								href={`/review/${submission._id}`}
-								class="flex items-center gap-4 bg-white p-3 rounded-lg border border-gallery-100 hover:border-gallery-300 hover:shadow-md transition-all group"
-							>
-								<!-- Thumbnail -->
-								<div class="h-12 w-20 rounded bg-gallery-100 flex-shrink-0 overflow-hidden">
-									{#if submission.poster?.asset}
-										<img
-											src={`${submission.poster.asset.url}?w=200&h=120&fit=crop`}
-											class="h-full w-full object-cover"
-											alt=""
-										/>
-									{:else if submission.screenshots?.[0]?.asset}
-										<img
-											src={`${submission.screenshots[0].asset.url}?w=200&h=120&fit=crop`}
-											class="h-full w-full object-cover"
-											alt=""
-										/>
-									{:else}
-										<div class="h-full w-full flex items-center justify-center text-xs">🎬</div>
-									{/if}
-								</div>
-
-								<!-- Info -->
-								<div class="flex-1 min-w-0">
-									<h4 class="font-bold text-gallery-900 group-hover:text-black truncate">
-										{submission.englishTitle}
-									</h4>
-									<p class="text-[11px] text-gallery-500">
-										{submission.directorName}
-									</p>
-								</div>
-
-								<!-- Duration -->
-								<div class="w-16 text-center">
-									<span class="text-xs font-medium text-gallery-500">{submission.length}m</span>
-								</div>
-
-								<!-- Curation Info Disclosure (Inline) -->
-								<div class="w-[80px] flex justify-end">
-									<div class="relative group/disclosure">
-										<!-- Trigger Icon -->
-										<div
-											class="flex items-center gap-1 cursor-help px-2 py-1 rounded-md hover:bg-gallery-50 transition-colors"
-										>
-											<span class="text-lg" style="color: var(--color-highlight-500)">★</span>
-											<span class="text-xs font-bold text-gallery-500">{curators.length}</span>
-										</div>
-
-										<!-- Disclosure Popover -->
-										<div
-											class="absolute bottom-full right-0 mb-2 w-64 bg-white rounded-xl shadow-2xl border border-gallery-200 p-4 opacity-0 pointer-events-none group-hover/disclosure:opacity-100 group-hover/disclosure:pointer-events-auto transition-all z-50 transform translate-y-2 group-hover/disclosure:translate-y-0 text-left"
-										>
-											<div class="space-y-4">
-												<!-- Flags -->
-												{#if submission.flags && submission.flags.length > 0}
-													<div class="space-y-1.5">
-														<p
-															class="text-[9px] font-bold text-gallery-400 uppercase tracking-widest"
-														>
-															Flags
-														</p>
-														<div class="flex flex-wrap gap-1.5">
-															{#each submission.flags as flag}
-																<FlagBadge {flag} />
-															{/each}
-														</div>
-													</div>
-												{/if}
-
-												<!-- Tags -->
-												{#if uniqueTags && uniqueTags.length > 0}
-													<div class="space-y-1.5">
-														<p
-															class="text-[9px] font-bold text-gallery-400 uppercase tracking-widest"
-														>
-															Tags
-														</p>
-														<div class="flex flex-wrap gap-1">
-															{#each uniqueTags as tag}
-																<span
-																	class="px-2 py-0.5 text-[10px] font-bold uppercase bg-gallery-50 text-gallery-500 rounded-full border border-gallery-100/50"
-																>
-																	{tag.label}
-																</span>
-															{/each}
-														</div>
-													</div>
-												{/if}
-
-												<!-- Curators -->
-												<div class="space-y-1.5">
-													<p
-														class="text-[9px] font-bold text-gallery-400 uppercase tracking-widest"
-													>
-														Curators
-													</p>
-													<div class="flex flex-wrap gap-1">
-														{#each curators as curator}
-															<span
-																class="text-[9px] font-bold text-gallery-700 px-2 py-0.5 rounded-full border"
-																style="background-color: var(--color-highlight-100); border-color: var(--color-highlight-200); color: var(--color-highlight-900)"
-															>
-																{curator.name}
-															</span>
-														{/each}
-													</div>
-												</div>
-
-												<!-- Submission Date -->
-												{#if submission._createdAt}
-													<div class="space-y-1.5 pt-1 border-t border-gallery-100">
-														<p
-															class="text-[9px] font-bold text-gallery-400 uppercase tracking-widest"
-														>
-															Submitted
-														</p>
-														<p class="text-[10px] text-gallery-600">
-															{new Date(submission._createdAt).toLocaleString('en-US', {
-																dateStyle: 'medium',
-																timeStyle: 'short'
-															})}
-														</p>
-													</div>
-												{/if}
-											</div>
-										</div>
-									</div>
-								</div>
-							</a>
+							<FilmCardCompact
+								film={{
+									...submission,
+									title: submission.englishTitle,
+									director: submission.directorName,
+									isVisible: true
+								}}
+								onclick={() => (selectedFilm = submission)}
+							/>
 						</div>
 					{/each}
 				</div>
@@ -745,6 +452,10 @@
 		</section>
 	</div>
 </div>
+
+{#if selectedFilm}
+	<FilmDetailDialog film={selectedFilm} onClose={() => (selectedFilm = null)} />
+{/if}
 
 <!-- Veto Dialog -->
 {#if vetoDialogOpen}

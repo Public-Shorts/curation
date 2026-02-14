@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import SelectionTag from '$lib/components/SelectionTag.svelte';
+	import { FilmDetailDialog } from '$lib/components/films';
 	import { getToastMessages } from '$lib/toast/toastMessages.svelte';
 
 	let { data } = $props();
@@ -11,6 +12,16 @@
 	let stats = $derived(data.stats);
 	let myReviews = $derived(data.myReviews);
 	let highlightedIds = $derived(data.curator?.highlights?.map((h: any) => h._id) || []);
+
+	// Film detail overlay
+	let selectedFilm = $state<any | null>(null);
+
+	async function showFilmDetails(submissionId: string) {
+		const res = await fetch(`/api/submission/${submissionId}`);
+		if (res.ok) {
+			selectedFilm = await res.json();
+		}
+	}
 
 	// Helper to check if highlighted
 	function isHighlighted(submissionId: string) {
@@ -82,12 +93,19 @@
 						{#each myReviews as review}
 							<tr class="hover:bg-gallery-50/50 transition-colors">
 								<td class="py-3 px-4">
-									<div class="font-medium">{review.submission.englishTitle}</div>
-									<div class="text-xs text-gallery-500">
-										{review.submission.originalTitle !== review.submission.englishTitle
-											? review.submission.originalTitle
-											: ''}
-									</div>
+									<button
+										class="text-left"
+										onclick={() => showFilmDetails(review.submission._id)}
+									>
+										<div class="font-medium hover:text-black transition-colors cursor-pointer">
+											{review.submission.englishTitle}
+										</div>
+										<div class="text-xs text-gallery-500">
+											{review.submission.originalTitle !== review.submission.englishTitle
+												? review.submission.originalTitle
+												: ''}
+										</div>
+									</button>
 								</td>
 								<td class="py-3 px-4">
 									<SelectionTag selection={review.selection} />
@@ -159,3 +177,7 @@
 		</section>
 	</div>
 </div>
+
+{#if selectedFilm}
+	<FilmDetailDialog film={selectedFilm} onClose={() => (selectedFilm = null)} />
+{/if}

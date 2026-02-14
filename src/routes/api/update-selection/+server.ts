@@ -2,50 +2,15 @@ import type { RequestHandler } from './$types';
 import { json } from '@sveltejs/kit';
 import { dev } from '$app/environment';
 import { sanityClient } from '$lib/server/sanity';
+import { calculateCuratorWeights } from '$lib/utils/scoring';
+import type { CuratorStats } from '$lib/utils/types';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const OLLAMA_URL = 'http://localhost:11434/api/chat';
 const MODEL = 'gemma3:4b';
 
-// --- Scoring logic (mirrors src/lib/utils/scoring.ts) ---
-
-function getAverageApprovalRate(
-	statsMap: Record<string, { totalReviews: number; approvedCount: number; approvalRate: number }>
-): number {
-	const curators = Object.values(statsMap);
-	if (curators.length === 0) return 0.5;
-	const totalApproved = curators.reduce((sum, s) => sum + s.approvedCount, 0);
-	const totalReviews = curators.reduce((sum, s) => sum + s.totalReviews, 0);
-	return totalReviews > 0 ? totalApproved / totalReviews : 0.5;
-}
-
-function calculateCuratorWeights(
-	statsMap: Record<string, { totalReviews: number; approvedCount: number; approvalRate: number }>,
-	volumeExponent: number,
-	tendencyPenalty: number
-): Record<string, { selected: number; maybe: number; rejected: number }> {
-	const weights: Record<string, { selected: number; maybe: number; rejected: number }> = {};
-	const avgRate = getAverageApprovalRate(statsMap);
-
-	for (const [id, stats] of Object.entries(statsMap)) {
-		const baseWeight = Math.log10(stats.totalReviews + 1) * volumeExponent;
-		const deviation = stats.approvalRate - avgRate;
-		const selectedMultiplier = Math.max(0.1, 1 - deviation * tendencyPenalty);
-		const rejectedMultiplier = Math.max(0.1, 1 + deviation * tendencyPenalty);
-
-		weights[id] = {
-			selected: baseWeight * selectedMultiplier,
-			maybe: baseWeight,
-			rejected: baseWeight * rejectedMultiplier
-		};
-	}
-	return weights;
-}
+// --- Score a single movie using curator weights ---
 
 function scoreMovie(
 	movie: any,
@@ -113,6 +78,10 @@ async function fetchAllData() {
 		"allReviews": *[_type == "review"]{
 			"curatorId": curator._ref,
 			selection
+		},
+		"settings": *[_type == "festivalSettings"][0]{
+			selectedThreshold, maybeThreshold, volumeExponent, tendencyPenalty,
+			vetoedSubmissions
 		}
 	}`;
 	return await sanityClient.fetch(query);
@@ -128,6 +97,8 @@ async function generateSummary(data: {
 	tagDistribution: Record<string, number>;
 	totalRuntime: number;
 	avgScore: number;
+	selectedThreshold: number;
+	maybeThreshold: number;
 }) {
 	const topTags = Object.entries(data.tagDistribution)
 		.sort((a, b) => b[1] - a[1])
@@ -149,8 +120,8 @@ async function generateSummary(data: {
 DATA:
 - Total submissions: ${data.totalSubmissions}
 - Curator highlights: ${data.highlights.length} films (${data.highlights.reduce((s: number, h: any) => s + (h.length || 0), 0)} min total)
-- Selected (score ≥65%): ${data.selected.length} films
-- Maybe (35-65%): ${data.maybe.length} films
+- Selected (score >=${data.selectedThreshold}%): ${data.selected.length} films
+- Maybe (${data.maybeThreshold}-${data.selectedThreshold}%): ${data.maybe.length} films
 - Average weighted score across all reviewed films: ${data.avgScore.toFixed(1)}%
 - Total runtime of highlights + selected: ${data.totalRuntime} minutes
 - Most frequent curator tags: ${topTags}
@@ -195,13 +166,24 @@ export const POST: RequestHandler = async () => {
 	}
 
 	try {
-		const { submissions, curators, allReviews } = await fetchAllData();
+		const { submissions, curators, allReviews, settings } = await fetchAllData();
+
+		// Festival selection parameters from settings (see FESTIVAL_SELECTION.md)
+		const selectedThreshold = settings?.selectedThreshold || 60;
+		const maybeThreshold = settings?.maybeThreshold || 35;
+		const volumeExponent = settings?.volumeExponent ?? 1;
+		const tendencyPenalty = settings?.tendencyPenalty ?? 2;
+
+		// Build vetoed IDs set
+		const vetoedIds = new Set<string>();
+		settings?.vetoedSubmissions?.forEach((v: any) => {
+			if ((v.vetoedFromCinema || v.vetoedFromTV) && v.submission?._ref) {
+				vetoedIds.add(v.submission._ref);
+			}
+		});
 
 		// 1. Build curator stats
-		const curatorStats: Record<
-			string,
-			{ totalReviews: number; approvedCount: number; approvalRate: number }
-		> = {};
+		const curatorStats: Record<string, CuratorStats> = {};
 		allReviews.forEach((r: any) => {
 			if (!r.curatorId) return;
 			if (!curatorStats[r.curatorId]) {
@@ -214,7 +196,7 @@ export const POST: RequestHandler = async () => {
 			stat.approvalRate = stat.totalReviews > 0 ? stat.approvedCount / stat.totalReviews : 0;
 		});
 
-		const curatorWeights = calculateCuratorWeights(curatorStats, 1, 4);
+		const curatorWeights = calculateCuratorWeights(curatorStats, volumeExponent, tendencyPenalty);
 
 		// 2. Build highlighted IDs set + curator map
 		const highlightedIds = new Set<string>();
@@ -230,12 +212,16 @@ export const POST: RequestHandler = async () => {
 		});
 
 		// 3. Score and categorize all submissions
+		// Festival Selection = (Highlighted OR Score >= Threshold) AND NOT Vetoed
 		const tagDistribution: Record<string, number> = {};
 		const highlights: any[] = [];
 		const selected: any[] = [];
 		const maybe: any[] = [];
 
 		submissions.forEach((sub: any) => {
+			// Skip vetoed films
+			if (vetoedIds.has(sub._id)) return;
+
 			const score = scoreMovie(sub, curatorWeights);
 			const reviews = sub.reviews || [];
 
@@ -297,9 +283,9 @@ export const POST: RequestHandler = async () => {
 				highlights.push(filmData);
 			}
 
-			if (score >= 65) {
+			if (score >= selectedThreshold) {
 				selected.push(filmData);
-			} else if (score >= 35) {
+			} else if (score >= maybeThreshold) {
 				maybe.push(filmData);
 			}
 		});
@@ -327,7 +313,9 @@ export const POST: RequestHandler = async () => {
 			maybe,
 			tagDistribution,
 			totalRuntime,
-			avgScore
+			avgScore,
+			selectedThreshold,
+			maybeThreshold
 		});
 
 		// 5. Save
