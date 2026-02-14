@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import { sanityClient } from '$lib/server/sanity';
+import { calculateCuratorWeights } from '$lib/utils/scoring';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.curatorId) throw redirect(303, '/login');
@@ -52,10 +53,35 @@ export const load: PageServerLoad = async ({ locals }) => {
 			_id,
 			name,
 			"highlightIds": highlights[]._ref
+		},
+		"allReviews": *[_type == "review"]{
+			"curatorId": curator._ref,
+			selection
+		},
+		"scoringSettings": *[_type == "festivalSettings"][0]{
+			volumeExponent, tendencyPenalty
 		}
 	}`;
 
 	const data = await sanityClient.fetch(query, { curatorId });
+
+	// Build curator stats and compute weights for scoring
+	const curatorStatsMap: Record<string, { totalReviews: number; approvedCount: number; approvalRate: number }> = {};
+	(data.allReviews || []).forEach((r: any) => {
+		if (!r.curatorId) return;
+		if (!curatorStatsMap[r.curatorId]) {
+			curatorStatsMap[r.curatorId] = { totalReviews: 0, approvedCount: 0, approvalRate: 0 };
+		}
+		curatorStatsMap[r.curatorId].totalReviews++;
+		if (r.selection === 'selected') curatorStatsMap[r.curatorId].approvedCount++;
+	});
+	Object.values(curatorStatsMap).forEach((stat) => {
+		stat.approvalRate = stat.totalReviews > 0 ? stat.approvedCount / stat.totalReviews : 0;
+	});
+
+	const volumeExponent = data.scoringSettings?.volumeExponent ?? 1;
+	const tendencyPenalty = data.scoringSettings?.tendencyPenalty ?? 2;
+	const curatorWeights = calculateCuratorWeights(curatorStatsMap, volumeExponent, tendencyPenalty);
 
 	// Build highlight map: submissionId -> array of curator names who highlighted it
 	const highlightMap: Record<string, string[]> = {};
@@ -79,6 +105,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		submissions: data.submissions,
 		highlightMap,
 		settings,
+		curatorWeights,
 		isAdmin: data.curatorStats.curator?.admin === true
 	};
 };

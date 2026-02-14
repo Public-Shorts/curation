@@ -10,14 +10,6 @@
 	import FilmDetailDialog from '$lib/components/films/FilmDetailDialog.svelte';
 	import { calculateSectionStats, addVisibilityToFilms } from '$lib/utils/selectionStats';
 
-	type Film = {
-		_id: string;
-		length?: number;
-		isVisible?: boolean;
-		tags?: string[];
-		[key: string]: any;
-	};
-
 	let { data } = $props<{ data: PageData }>();
 
 	const toasts = getToastMessages();
@@ -126,15 +118,12 @@
 
 	let hasActiveFilters = $derived(selectedClusters.size > 0 || selectedTags.size > 0);
 
-	// Calculate stats (maybes excluded — not part of festival selection)
+	// Calculate stats from deduplicated sections (maybes excluded — not part of festival selection)
 	let totalFilms = $derived(
-		new Set([...data.highlights, ...data.selected].map((f: Film) => f._id)).size
+		highlightsStats.totalCount + unanimousStats.totalCount + selectedStats.totalCount
 	);
 	let totalRuntime = $derived(
-		[...data.highlights, ...data.selected].reduce(
-			(sum: number, f: Film) => sum + (f.length || 0),
-			0
-		)
+		highlightsStats.totalMinutes + unanimousStats.totalMinutes + selectedStats.totalMinutes
 	);
 
 	async function refreshSelection() {
@@ -175,7 +164,7 @@
 		<section class="grid gap-4 md:grid-cols-4">
 			<StatCard label="Total Films" value={totalFilms} />
 			<StatCard label="Highlights" value={data.highlights.length} />
-			<StatCard label="Selected" value={data.selected.length} />
+			<StatCard label="Selected" value={unanimousStats.totalCount + selectedStats.totalCount} />
 			<StatCard label="Total Runtime">
 				<p class="text-lg font-semibold">{formatTime(totalRuntime)}</p>
 			</StatCard>

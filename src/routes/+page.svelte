@@ -11,7 +11,7 @@
 	import VoteBreakdown from '$lib/components/selection/VoteBreakdown.svelte';
 	import SelectionStatsDisplay from '$lib/components/selection/SelectionStats.svelte';
 	import ThresholdSettings from '$lib/components/selection/ThresholdSettings.svelte';
-	import { scoreMoviesSimple } from '$lib/utils/scoring';
+	import { scoreMovies } from '$lib/utils/scoring';
 	import type { SelectionStats } from '$lib/utils/types';
 
 	let { data } = $props();
@@ -29,8 +29,8 @@
 		maybeThreshold: data.settings.maybeThreshold
 	});
 
-	// Simple scoring without volume/bias weights
-	let scoredSubmissions = $derived(scoreMoviesSimple(data.submissions));
+	// Weighted scoring with volume/bias correction (canonical festival selection scoring)
+	let scoredSubmissions = $derived(scoreMovies(data.submissions, data.curatorWeights));
 
 	// Highlight map from data
 	let highlightMap = $derived(data.highlightMap as Record<string, string[]>);
