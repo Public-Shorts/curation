@@ -99,6 +99,9 @@ export const load: PageServerLoad = async ({parent}) => {
 		};
 	});
 
+	// Sort by film count ascending (fewest films first)
+	enrichedMetaCategories.sort((a: any, b: any) => a.filmCount - b.filmCount);
+
 	// Calculate overall stats from unique films only
 	const uniqueFilmsMap = new Map<string, any>();
 	for (const mc of enrichedMetaCategories) {
