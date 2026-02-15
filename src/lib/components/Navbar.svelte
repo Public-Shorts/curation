@@ -45,6 +45,7 @@
 				{/if}
 				{#if isAdmin || isJury}
 					<a class="uppercase hover:text-gallery-900" href="/meta-categories">Meta Categories</a>
+					<a class="uppercase hover:text-gallery-900" href="/visualiser">Visualiser</a>
 				{/if}
 			</div>
 
@@ -109,6 +110,13 @@
 						onclick={toggleMenu}
 					>
 						Meta Categories
+					</a>
+					<a
+						class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
+						href="/visualiser"
+						onclick={toggleMenu}
+					>
+						Visualiser
 					</a>
 				{/if}
 				{#if isAdmin}
