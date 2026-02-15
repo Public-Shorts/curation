@@ -113,14 +113,20 @@
 				return mc;
 			});
 
-			// Recalculate stats
-			data.stats.totalFilms = data.metaCategories.reduce((sum: number, mc: any) => {
-				const uniqueFilms = new Set(mc.films?.map((f: any) => f._id) || []);
-				return sum + uniqueFilms.size;
-			}, 0);
-			data.stats.totalUniqueFilms = new Set(
-				data.metaCategories.flatMap((mc: any) => mc.films?.map((f: any) => f._id) || [])
-			).size;
+			// Recalculate stats from unique films
+			const uniqueFilmsMap = new Map();
+			for (const mc of data.metaCategories) {
+				for (const f of mc.films || []) {
+					if (f._id && !uniqueFilmsMap.has(f._id)) {
+						uniqueFilmsMap.set(f._id, f);
+					}
+				}
+			}
+			data.stats.totalUniqueFilms = uniqueFilmsMap.size;
+			data.stats.totalMinutes = Array.from(uniqueFilmsMap.values()).reduce(
+				(sum: number, f: any) => sum + (f.length || 0),
+				0
+			);
 		} catch (error) {
 			console.error('Error removing film:', error);
 			alert(`Failed to remove film: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -135,12 +141,8 @@
 		<!-- Stats Section -->
 		<section class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 			<StatCard label="Meta Categories" value={stats.totalMetaCategories} />
-
-			<StatCard label="Total Films" value={stats.totalFilms}>
-				<p class="text-xs text-gallery-500 mt-1">({stats.totalUniqueFilms} unique)</p>
-			</StatCard>
-
-			<StatCard label="Total Time">
+			<StatCard label="Unique Films" value={stats.totalUniqueFilms} />
+			<StatCard label="Combined Length">
 				<p class="text-lg font-semibold">
 					{Math.floor(stats.totalMinutes / 60)}h {stats.totalMinutes % 60}m
 				</p>

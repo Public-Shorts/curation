@@ -62,16 +62,16 @@ export const load: PageServerLoad = async ({parent}) => {
       }
     },
     "festivalSelection": *[_id == "festivalSelection"][0]{
-      "films": films[]{ "filmId": film._ref, selectionScore }
+      "films": films[]{ "filmId": film._ref, selectionScore, festivalRating }
     }
   }`;
 
 	const {metaCategories, festivalSelection} = await sanityClient.fetch(query);
 
-	// Build selection score lookup
-	const selectionScoreMap = new Map<string, number>();
+	// Build festival rating lookup
+	const festivalRatingMap = new Map<string, number>();
 	(festivalSelection?.films || []).forEach((f: any) => {
-		if (f.filmId) selectionScoreMap.set(f.filmId, f.selectionScore);
+		if (f.filmId) festivalRatingMap.set(f.filmId, f.festivalRating ?? f.selectionScore);
 	});
 
 	// Flatten films (merge score/metric into film object) and sort by score
@@ -82,7 +82,7 @@ export const load: PageServerLoad = async ({parent}) => {
 				...entry.film,
 				score: entry.score,
 				metric: entry.metric,
-				selectionScore: selectionScoreMap.get(entry.film._id),
+				festivalRating: festivalRatingMap.get(entry.film._id),
 			}))
 			.sort((a: any, b: any) => (b.score || 0) - (a.score || 0));
 
@@ -99,24 +99,25 @@ export const load: PageServerLoad = async ({parent}) => {
 		};
 	});
 
-	// Calculate overall stats
+	// Calculate overall stats from unique films only
+	const uniqueFilmsMap = new Map<string, any>();
+	for (const mc of enrichedMetaCategories) {
+		for (const f of mc.films || []) {
+			if (f._id && !uniqueFilmsMap.has(f._id)) {
+				uniqueFilmsMap.set(f._id, f);
+			}
+		}
+	}
+	const uniqueFilmsTotalMinutes = Array.from(uniqueFilmsMap.values()).reduce(
+		(sum: number, f: any) => sum + (f.length || 0),
+		0
+	);
+
 	const stats = {
 		totalMetaCategories: enrichedMetaCategories.length,
-		totalFilms: enrichedMetaCategories.reduce((sum: number, mc: any) => {
-			const uniqueFilms = new Set(mc.films?.map((f: any) => f._id) || []);
-			return sum + uniqueFilms.size;
-		}, 0),
-		totalUniqueFilms: new Set(
-			enrichedMetaCategories.flatMap((mc: any) => mc.films?.map((f: any) => f._id) || [])
-		).size,
-		totalMinutes: enrichedMetaCategories.reduce(
-			(sum: number, mc: any) => sum + (mc.totalMinutes || 0),
-			0
-		),
+		totalUniqueFilms: uniqueFilmsMap.size,
+		totalMinutes: uniqueFilmsTotalMinutes,
 	};
-
-	stats.totalHours = Math.floor(stats.totalMinutes / 60);
-	stats.totalMins = stats.totalMinutes % 60;
 
 	return {
 		metaCategories: enrichedMetaCategories,

@@ -10,12 +10,8 @@
 
 	const toastMessages = getToastMessages();
 
-	// Capture initial values from props for form state
-	const initialTags = review.tags;
-	const initialSelection = review.selection;
-
-	let selectedTags = $state<Tag[]>(initialTags ?? []);
-	let currentSelection = $state(initialSelection);
+	let selectedTags = $state<Tag[]>(review.tags ?? []);
+	let currentSelection = $state(review.selection);
 
 	let reviewStatus = $derived.by(() => {
 		if (currentSelection === 'selected') return 'Selected';

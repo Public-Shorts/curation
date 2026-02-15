@@ -9,10 +9,10 @@
 	import type { Tag } from '$lib/utils/types.js';
 
 	let { data } = $props();
-	const submission = data.submission;
-	const review = data.myReview ?? {};
-	const allReviews = data.allReviews ?? [];
-	const highlightedBy = data.highlightedBy ?? [];
+	const submission = $derived(data.submission);
+	const review = $derived(data.myReview ?? {});
+	const allReviews = $derived(data.allReviews ?? []);
+	const highlightedBy = $derived(data.highlightedBy ?? []);
 
 	const allTags: Tag[] = $derived.by(() => {
 		const raw = (data.allTags ?? []) as Tag[];

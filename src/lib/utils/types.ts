@@ -2,7 +2,7 @@ export type Tag = { label: string; value: string };
 
 export interface Review {
     _id: string;
-    selection: 'selected' | 'maybe' | 'rejected';
+    selection: 'selected' | 'maybe' | 'notSelected';
     rating?: number;
     curatorId: string;
     curatorName?: string;

@@ -79,12 +79,12 @@
 				</p>
 			</div>
 			<div class="flex flex-col items-end gap-1">
-				{#if film.score !== undefined}
-					<span
-						class="text-xl font-black leading-none"
-						class:text-gallery-900={film.score < 100}
-						class:text-green-600={film.score === 100}
-					>
+				{#if film.festivalRating !== undefined}
+					<span class="text-xl font-black leading-none text-gallery-900">
+						{film.festivalRating.toFixed(0)}%
+					</span>
+				{:else if film.score !== undefined}
+					<span class="text-xl font-black leading-none text-gallery-900">
 						{film.score.toFixed(0)}%
 					</span>
 				{/if}
@@ -92,9 +92,6 @@
 					<span class="text-[10px] font-medium text-gallery-400 uppercase tracking-wide text-right">
 						{film.metric}
 					</span>
-				{/if}
-				{#if film.selectionScore !== undefined}
-					<span class="text-xs font-bold text-gallery-400">sel. {film.selectionScore}%</span>
 				{/if}
 			</div>
 		</div>

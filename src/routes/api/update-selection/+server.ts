@@ -318,40 +318,7 @@ export const POST: RequestHandler = async () => {
 			maybeThreshold
 		});
 
-		// 5. Build the festival selection: all selected films (highlights + score-based)
-		// Festival Selection = (Highlighted OR Score >= Threshold) AND NOT Vetoed
-		const allSelectedFilms = new Map<string, { score: number; method: 'highlight' | 'score' }>();
-		highlights.forEach((f) => {
-			allSelectedFilms.set(f._id, { score: 100, method: 'highlight' });
-		});
-		selected.forEach((f) => {
-			if (!allSelectedFilms.has(f._id)) {
-				allSelectedFilms.set(f._id, { score: f.score, method: 'score' });
-			}
-		});
-
-		// 6. Persist festivalSelection to Sanity
-		const generateKey = () => Math.random().toString(36).substring(2, 15);
-		await sanityClient.createOrReplace({
-			_id: 'festivalSelection',
-			_type: 'festivalSelection',
-			title: 'Festival Selection',
-			computedAt: new Date().toISOString(),
-			films: Array.from(allSelectedFilms.entries()).map(([id, { score, method }]) => ({
-				_type: 'object',
-				_key: generateKey(),
-				film: { _type: 'reference', _ref: id },
-				selectionScore: score,
-				selectionMethod: method,
-			})),
-			highlightCount: highlights.length,
-			scoreCount: selected.filter((f) => !highlightedIds.has(f._id)).length,
-			vetoedCount: vetoedIds.size,
-			totalCount: allSelectedFilms.size,
-			selectedThreshold,
-		});
-
-		// 7. Save local JSON
+		// 5. Save local JSON (festival selection in Sanity is managed by meta-categories generate-selection)
 		const outputData = {
 			lastUpdated: new Date().toISOString(),
 			summary,
@@ -365,7 +332,7 @@ export const POST: RequestHandler = async () => {
 
 		return json({
 			success: true,
-			message: `Selection updated: ${allSelectedFilms.size} films (${highlights.length} highlights, ${selected.length} by score, ${vetoedIds.size} vetoed)`
+			message: `Selection data updated: ${highlights.length} highlights, ${selected.length} selected, ${maybe.length} maybe`
 		});
 	} catch (error: any) {
 		console.error('Error updating selection:', error);

@@ -11,7 +11,7 @@
 	let reviews = $derived(film?.reviews || []);
 	let selectedCount = $derived(reviews.filter((r: any) => r.selection === 'selected').length);
 	let maybeCount = $derived(reviews.filter((r: any) => r.selection === 'maybe').length);
-	let rejectedCount = $derived(reviews.filter((r: any) => r.selection === 'rejected').length);
+	let rejectedCount = $derived(reviews.filter((r: any) => r.selection === 'notSelected').length);
 
 	let ratingsWithValue = $derived(reviews.filter((r: any) => r.rating != null));
 	let avgRating = $derived(

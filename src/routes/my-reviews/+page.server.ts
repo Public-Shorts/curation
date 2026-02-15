@@ -43,7 +43,7 @@ export const load: PageServerLoad = async ({ locals }) => {
     const additionalReviewsNeeded = Math.max(0, nextHighlightThreshold - totalReviews);
 
     // Sort reviews: by selection status (selected > maybe > rejected), then by rating (highest first)
-    const selectionOrder = { selected: 0, maybe: 1, rejected: 2 };
+    const selectionOrder = { selected: 0, maybe: 1, notSelected: 2 };
     const sortedReviews = data.myReviews.sort((a: any, b: any) => {
         const aOrder = selectionOrder[a.selection as keyof typeof selectionOrder] ?? 3;
         const bOrder = selectionOrder[b.selection as keyof typeof selectionOrder] ?? 3;
