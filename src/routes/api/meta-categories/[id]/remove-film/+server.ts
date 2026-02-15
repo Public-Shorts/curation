@@ -44,7 +44,7 @@ export const POST: RequestHandler = async ({params, request, locals}) => {
 		// Filter out the film to remove
 		const currentFilms = metaCategory.films || [];
 		const updatedFilms = currentFilms.filter(
-			(ref: any) => ref._ref !== filmId && ref !== filmId
+			(entry: any) => (entry.film?._ref || entry._ref) !== filmId
 		);
 
 		// Check if film was actually removed
@@ -52,13 +52,17 @@ export const POST: RequestHandler = async ({params, request, locals}) => {
 			throw error(404, 'Film not found in this meta-category');
 		}
 
-		// Update the meta-category with the new films array
+		// Update the meta-category with the new films array (normalize to object format)
 		await sanityClient
 			.patch(metaCategoryId)
 			.set({
-				films: updatedFilms.map((ref: any) =>
-					typeof ref === 'string' ? {_type: 'reference', _ref: ref} : ref
-				),
+				films: updatedFilms.map((entry: any) => ({
+					_type: 'object',
+					_key: entry._key || Math.random().toString(36).substring(2, 15),
+					film: {_type: 'reference', _ref: entry.film?._ref || entry._ref},
+					...(entry.score != null && {score: entry.score}),
+					...(entry.metric && {metric: entry.metric}),
+				})),
 			})
 			.commit();
 

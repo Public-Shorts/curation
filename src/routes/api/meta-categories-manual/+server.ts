@@ -8,7 +8,7 @@ function generateKey(): string {
 async function recomputeTags(metaCategoryId: string) {
 	const result = await sanityClient.fetch(
 		`*[_type == "metaCategory" && _id == $id][0]{
-			"allTags": films[]->{
+			"allTags": films[].film->{
 				"reviewTags": *[_type == "review" && film._ref == ^._id].tags
 			}
 		}`,
@@ -44,14 +44,20 @@ export async function POST({ request }) {
 				}
 
 				const currentFilms = metaCategory?.films || [];
-				const filmRefs = currentFilms.map((f: any) => f._ref);
+				const filmRefs = currentFilms.map((f: any) => f.film?._ref || f._ref);
 
 				// Add film if not already present
 				if (!filmRefs.includes(params.filmId)) {
 					const result = await sanityClient
 						.patch(params.metaCategoryId)
 						.setIfMissing({ films: [] })
-						.append('films', [{ _type: 'reference', _ref: params.filmId, _key: generateKey() }])
+						.append('films', [
+							{
+								_type: 'object',
+								_key: generateKey(),
+								film: { _type: 'reference', _ref: params.filmId },
+							},
+						])
 						.set({ lastUpdated: new Date().toISOString() })
 						.commit();
 					await recomputeTags(params.metaCategoryId);
@@ -75,8 +81,14 @@ export async function POST({ request }) {
 
 				// Filter out the film to remove
 				const updatedFilms = currentFilms
-					.filter((f: any) => f._ref !== params.filmId)
-					.map((f: any) => ({ _type: 'reference', _ref: f._ref, _key: f._key || generateKey() }));
+					.filter((f: any) => (f.film?._ref || f._ref) !== params.filmId)
+					.map((f: any) => ({
+						_type: 'object',
+						_key: f._key || generateKey(),
+						film: { _type: 'reference', _ref: f.film?._ref || f._ref },
+						...(f.score != null && { score: f.score }),
+						...(f.metric && { metric: f.metric }),
+					}));
 
 				const result = await sanityClient
 					.patch(params.metaCategoryId)

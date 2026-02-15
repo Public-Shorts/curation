@@ -47,7 +47,7 @@ export const load: PageServerLoad = async ({parent, locals}) => {
 			locked,
 			tags,
 			summary,
-			films[]->{_id}
+			"films": films[].film->{_id}
 		}
 	`);
 
