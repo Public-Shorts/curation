@@ -3,21 +3,7 @@ import {sanityClient} from '$lib/server/sanity';
 
 export const load: PageServerLoad = async ({parent}) => {
 	const {isAdmin} = await parent();
-	const query = `{
-    "metaCategories": *[_type == "metaCategory"] | order(name asc) {
-      _id,
-      name,
-      slug,
-      type,
-      locked,
-      description,
-      tags,
-      summary,
-      lastUpdated,
-      "films": films[]{
-        score,
-        metric,
-        "film": film->{
+	const filmProjection = `{
           _id,
           _createdAt,
           englishTitle,
@@ -58,15 +44,41 @@ export const load: PageServerLoad = async ({parent}) => {
             "curatorName": curator->name
           },
           "highlightCount": count(*[_type == "curator" && ^._id in highlights[]._ref])
-        }
+        }`;
+
+	const query = `{
+    "metaCategories": *[_type == "metaCategory"] | order(name asc) {
+      _id,
+      name,
+      slug,
+      type,
+      locked,
+      description,
+      tags,
+      summary,
+      lastUpdated,
+      "films": films[]{
+        score,
+        metric,
+        "film": film->${filmProjection}
       }
+    },
+    "semanticClusters": *[_type == "semanticCluster"] | order(name asc) {
+      _id,
+      name,
+      slug,
+      description,
+      keywords,
+      lastUpdated,
+      "highlightedFilms": highlightedFilms[]->${filmProjection},
+      "relevantFilms": relevantFilms[]->${filmProjection}
     },
     "festivalSelection": *[_id == "festivalSelection"][0]{
       "films": films[]{ "filmId": film._ref, selectionScore, festivalRating }
     }
   }`;
 
-	const {metaCategories, festivalSelection} = await sanityClient.fetch(query);
+	const {metaCategories, semanticClusters, festivalSelection} = await sanityClient.fetch(query);
 
 	// Build festival rating lookup
 	const festivalRatingMap = new Map<string, number>();
@@ -122,9 +134,63 @@ export const load: PageServerLoad = async ({parent}) => {
 		totalMinutes: uniqueFilmsTotalMinutes,
 	};
 
+	// Enrich semantic clusters with film counts and festival ratings
+	const enrichedClusters = (semanticClusters || []).map((cluster: any) => {
+		const highlightedFilms = (cluster.highlightedFilms || [])
+			.filter((f: any) => f)
+			.map((f: any) => ({
+				...f,
+				festivalRating: festivalRatingMap.get(f._id),
+			}));
+		const relevantFilms = (cluster.relevantFilms || [])
+			.filter((f: any) => f)
+			.map((f: any) => ({
+				...f,
+				festivalRating: festivalRatingMap.get(f._id),
+			}));
+
+		const allFilms = [...highlightedFilms, ...relevantFilms];
+		const filmCount = allFilms.length;
+		const totalMinutes = allFilms.reduce((sum: number, f: any) => sum + (f?.length || 0), 0);
+
+		return {
+			...cluster,
+			highlightedFilms,
+			relevantFilms,
+			filmCount,
+			highlightedCount: highlightedFilms.length,
+			relevantCount: relevantFilms.length,
+			totalMinutes,
+			totalHours: Math.floor(totalMinutes / 60),
+			totalMins: totalMinutes % 60,
+		};
+	});
+
+	// Cluster stats
+	const clusterUniqueFilmsMap = new Map<string, any>();
+	for (const cluster of enrichedClusters) {
+		for (const f of [...(cluster.highlightedFilms || []), ...(cluster.relevantFilms || [])]) {
+			if (f._id && !clusterUniqueFilmsMap.has(f._id)) {
+				clusterUniqueFilmsMap.set(f._id, f);
+			}
+		}
+	}
+	const clusterUniqueMinutes = Array.from(clusterUniqueFilmsMap.values()).reduce(
+		(sum: number, f: any) => sum + (f.length || 0),
+		0
+	);
+
+	const clusterStats = {
+		totalClusters: enrichedClusters.length,
+		totalUniqueFilms: clusterUniqueFilmsMap.size,
+		totalMinutes: clusterUniqueMinutes,
+	};
+
 	return {
 		metaCategories: enrichedMetaCategories,
+		semanticClusters: enrichedClusters,
 		stats,
+		clusterStats,
 		isAdmin,
 	};
 };
