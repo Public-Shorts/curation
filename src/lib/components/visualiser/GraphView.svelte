@@ -107,20 +107,22 @@
 				}
 			})
 			.onNodeClick((node: any) => {
-				if (node.type === 'film') {
-					onNodeClick(node);
-				}
+				onNodeClick(node);
 			})
 			.onBackgroundClick(() => {
 				highlightedNodeIds = new Set();
 			})
 			.warmupTicks(80)
-			.cooldownTicks(200)
-			.d3AlphaDecay(0.02)
-			.d3VelocityDecay(0.4);
+			.cooldownTicks(400)
+			.d3AlphaDecay(0.04)
+			.d3VelocityDecay(0.6);
 
 		graph.d3Force('charge').strength(-60);
 		graph.d3Force('link').distance(50);
+
+		// Custom gravity: pulls all nodes toward center, keeps orphans from drifting
+		const gravity = createGravityForce(0.06);
+		graph.d3Force('gravity', gravity);
 
 		if (graphData.nodes.length > 0) {
 			graph.graphData({ nodes: graphData.nodes, links: graphData.links });
@@ -135,6 +137,18 @@
 		observer.observe(containerEl!);
 
 		return () => observer.disconnect();
+	}
+
+	function createGravityForce(strength: number) {
+		let nodes: any[] = [];
+		function force(alpha: number) {
+			for (const node of nodes) {
+				node.vx -= node.x * strength * alpha;
+				node.vy -= node.y * strength * alpha;
+			}
+		}
+		force.initialize = (n: any[]) => { nodes = n; };
+		return force;
 	}
 
 	function linkColorByType(type: string, opacity: number): string {
@@ -228,10 +242,29 @@
 		ctx.closePath();
 	}
 
-	// React to graph data changes — reheat simulation so nodes rearrange
+	// React to graph data changes — preserve positions for smooth transitions
 	$effect(() => {
 		if (graph && graphData) {
-			graph.graphData({ nodes: graphData.nodes, links: graphData.links });
+			// Build a map of existing node positions to preserve them
+			const currentData = graph.graphData();
+			const posMap = new Map<string, { x: number; y: number; vx: number; vy: number }>();
+			for (const node of currentData.nodes) {
+				if (node.x != null && node.y != null) {
+					posMap.set(node.id, { x: node.x, y: node.y, vx: node.vx || 0, vy: node.vy || 0 });
+				}
+			}
+
+			// Transfer positions to new nodes
+			const newNodes = graphData.nodes.map((n: any) => {
+				const pos = posMap.get(n.id);
+				if (pos) {
+					return { ...n, x: pos.x, y: pos.y, vx: pos.vx, vy: pos.vy };
+				}
+				return { ...n };
+			});
+
+			graph.graphData({ nodes: newNodes, links: graphData.links });
+			// Gentle reheat — only enough force to settle new nodes
 			graph.d3ReheatSimulation();
 		}
 	});

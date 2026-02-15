@@ -71,6 +71,7 @@
 	}
 
 	const sizeOptions: { value: SizeMode; label: string }[] = [
+		{ value: 'connections', label: 'Connections' },
 		{ value: 'fixed', label: 'Fixed' },
 		{ value: 'score', label: 'Score' },
 	];
@@ -250,7 +251,7 @@
 				</div>
 			</section>
 
-			<!-- Force Strength -->
+			<!-- Spacing -->
 			<section>
 				<h3 class="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gallery-500">
 					Spacing
@@ -259,7 +260,7 @@
 					<input
 						type="range"
 						min="0.2"
-						max="8"
+						max="20"
 						step="0.1"
 						value={displayOptions.forceStrength}
 						oninput={(e) => setDisplay('forceStrength', parseFloat(e.currentTarget.value))}

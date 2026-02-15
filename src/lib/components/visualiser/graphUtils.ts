@@ -1,6 +1,6 @@
 export type NodeType = 'film' | 'meta-category' | 'cluster' | 'tag';
 export type LinkType = 'film-meta' | 'film-cluster' | 'film-tag';
-export type SizeMode = 'fixed' | 'score';
+export type SizeMode = 'connections' | 'fixed' | 'score';
 export type LabelMode = 'always' | 'hover' | 'never';
 export type FilterMode = 'union' | 'intersection';
 
@@ -93,9 +93,12 @@ function getScoreColor(score: number): string {
 	return `rgb(${r},${g},${b})`;
 }
 
-function getFilmSize(film: FilmNodeData, sizeMode: SizeMode): number {
+function getFilmSize(film: FilmNodeData, sizeMode: SizeMode, connectionCount?: number): number {
 	if (sizeMode === 'score') {
 		return Math.max(1, film.score / 15);
+	}
+	if (sizeMode === 'connections' && connectionCount != null) {
+		return Math.max(1, connectionCount * 0.8);
 	}
 	return 2;
 }
@@ -106,8 +109,8 @@ function hasAnyEnabled(toggleMap: Record<string, boolean>): boolean {
 
 /**
  * Compute which film IDs are "active" based on enabled toggles and filter mode.
- * - Union: film matches ANY enabled item across all groups
- * - Intersection: film must match at least one enabled item in EACH group that has enabled items
+ * - Union: film matches ANY enabled item
+ * - Intersection: each enabled item narrows the result (film must match ALL)
  * If no toggles are enabled at all, all films are active.
  */
 export function computeActiveFilmIds(
@@ -125,46 +128,41 @@ export function computeActiveFilmIds(
 		return new Set(films.map((f) => f._id));
 	}
 
-	// Collect per-group sets
-	const groupSets: Set<string>[] = [];
+	// Collect per-item film sets
+	const itemSets: Set<string>[] = [];
 
-	if (hasMc) {
-		const mcSet = new Set<string>();
-		for (const mc of metaCategories) {
-			if (!toggles.metaCategories[mc._id]) continue;
-			for (const entry of mc.filmIds) mcSet.add(entry.filmId);
-		}
-		groupSets.push(mcSet);
+	for (const mc of metaCategories) {
+		if (!toggles.metaCategories[mc._id]) continue;
+		itemSets.push(new Set(mc.filmIds.map((e) => e.filmId)));
 	}
 
-	if (hasCl) {
-		const clSet = new Set<string>();
-		for (const cluster of clusters) {
-			if (!toggles.clusters[cluster._id]) continue;
-			for (const id of [...cluster.highlightedFilmIds, ...cluster.relevantFilmIds]) {
-				clSet.add(id);
-			}
-		}
-		groupSets.push(clSet);
+	for (const cluster of clusters) {
+		if (!toggles.clusters[cluster._id]) continue;
+		itemSets.push(new Set([...cluster.highlightedFilmIds, ...cluster.relevantFilmIds]));
 	}
 
 	if (hasTag) {
-		const tagSet = new Set<string>();
+		const tagFilmMap = new Map<string, Set<string>>();
 		for (const film of films) {
 			for (const tag of film.tags) {
 				const normalized = tag.toLowerCase().trim();
-				if (toggles.tags[normalized]) {
-					tagSet.add(film._id);
-					break;
-				}
+				if (!toggles.tags[normalized]) continue;
+				if (!tagFilmMap.has(normalized)) tagFilmMap.set(normalized, new Set());
+				tagFilmMap.get(normalized)!.add(film._id);
 			}
 		}
-		groupSets.push(tagSet);
+		for (const filmSet of tagFilmMap.values()) {
+			itemSets.push(filmSet);
+		}
+	}
+
+	if (itemSets.length === 0) {
+		return new Set(films.map((f) => f._id));
 	}
 
 	if (filterMode === 'intersection') {
-		// Film must appear in ALL group sets
-		const [first, ...rest] = groupSets;
+		// Film must appear in EVERY enabled item's set
+		const [first, ...rest] = itemSets;
 		const result = new Set<string>();
 		for (const id of first) {
 			if (rest.every((s) => s.has(id))) result.add(id);
@@ -172,9 +170,9 @@ export function computeActiveFilmIds(
 		return result;
 	}
 
-	// Union: film appears in ANY group set
+	// Union: film appears in ANY item's set
 	const result = new Set<string>();
-	for (const s of groupSets) {
+	for (const s of itemSets) {
 		for (const id of s) result.add(id);
 	}
 	return result;
@@ -305,6 +303,25 @@ export function buildGraphData(
 					target: `tag-${tag}`,
 					type: 'film-tag',
 				});
+			}
+		}
+	}
+
+	// Apply connection-based sizing if needed
+	if (displayOptions.sizeMode === 'connections') {
+		const connectionCounts = new Map<string, number>();
+		for (const link of links) {
+			const src = typeof link.source === 'string' ? link.source : (link.source as any).id;
+			const tgt = typeof link.target === 'string' ? link.target : (link.target as any).id;
+			connectionCounts.set(src, (connectionCounts.get(src) || 0) + 1);
+			connectionCounts.set(tgt, (connectionCounts.get(tgt) || 0) + 1);
+		}
+		for (const node of nodes) {
+			const count = connectionCounts.get(node.id) || 0;
+			if (node.type === 'film') {
+				node.val = getFilmSize(node.data, 'connections', count);
+			} else {
+				node.val = Math.max(2, count * 0.5);
 			}
 		}
 	}

@@ -58,9 +58,9 @@
 	});
 
 	let displayOptions = $state<DisplayOptions>({
-		sizeMode: 'fixed',
+		sizeMode: 'connections',
 		labelMode: 'hover',
-		forceStrength: 1.0,
+		forceStrength: 10,
 		filterMode: 'union',
 	});
 
@@ -133,6 +133,37 @@
 			onNodeClick={(node) => {
 				if (node.type === 'film') {
 					selectedFilm = node.data;
+				} else if (node.type === 'meta-category') {
+					const id = node.id.replace('mc-', '');
+					const allOn = metaCategoryItems.every((i) => toggles.metaCategories[i.id]);
+					if (allOn) {
+						// Solo: enable only this one
+						const solo: Record<string, boolean> = {};
+						for (const i of metaCategoryItems) solo[i.id] = i.id === id;
+						toggles = { ...toggles, metaCategories: solo };
+					} else {
+						toggles = { ...toggles, metaCategories: { ...toggles.metaCategories, [id]: !toggles.metaCategories[id] } };
+					}
+				} else if (node.type === 'cluster') {
+					const id = node.id.replace('cl-', '');
+					const allOn = clusterItems.every((i) => toggles.clusters[i.id]);
+					if (allOn) {
+						const solo: Record<string, boolean> = {};
+						for (const i of clusterItems) solo[i.id] = i.id === id;
+						toggles = { ...toggles, clusters: solo };
+					} else {
+						toggles = { ...toggles, clusters: { ...toggles.clusters, [id]: !toggles.clusters[id] } };
+					}
+				} else if (node.type === 'tag') {
+					const name = node.id.replace('tag-', '');
+					const allOn = tagToggleItems.every((i) => toggles.tags[i.id]);
+					if (allOn) {
+						const solo: Record<string, boolean> = {};
+						for (const i of tagToggleItems) solo[i.id] = i.id === name;
+						toggles = { ...toggles, tags: solo };
+					} else {
+						toggles = { ...toggles, tags: { ...toggles.tags, [name]: !toggles.tags[name] } };
+					}
 				}
 			}}
 		/>
