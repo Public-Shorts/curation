@@ -175,41 +175,59 @@
 				</p>
 			</section>
 
+			<!-- Node Types -->
+			<section>
+				<h3 class="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gallery-500">
+					Node Types
+				</h3>
+				<div class="flex flex-col gap-0.5">
+					{@render nodeTypeToggle('Meta Categories', '#ff7411', 'square', displayOptions.showMetaCategories, () => setDisplay('showMetaCategories', !displayOptions.showMetaCategories))}
+					{@render nodeTypeToggle('Clusters', '#a855f7', 'diamond', displayOptions.showClusters, () => setDisplay('showClusters', !displayOptions.showClusters))}
+					{@render nodeTypeToggle('Tags', '#78716c', 'circle', displayOptions.showTags, () => setDisplay('showTags', !displayOptions.showTags))}
+				</div>
+			</section>
+
 			<!-- Meta Categories -->
-			{@render toggleSection(
-				'Meta Categories',
-				'#ff7411',
-				'square',
-				mcExpanded,
-				() => (mcExpanded = !mcExpanded),
-				toggles.metaCategories,
-				metaCategoryItems,
-				'metaCategories'
-			)}
+			{#if displayOptions.showMetaCategories}
+				{@render toggleSection(
+					'Meta Categories',
+					'#ff7411',
+					'square',
+					mcExpanded,
+					() => (mcExpanded = !mcExpanded),
+					toggles.metaCategories,
+					metaCategoryItems,
+					'metaCategories'
+				)}
+			{/if}
 
 			<!-- Clusters -->
-			{@render toggleSection(
-				'Clusters',
-				'#a855f7',
-				'diamond',
-				clExpanded,
-				() => (clExpanded = !clExpanded),
-				toggles.clusters,
-				clusterItems,
-				'clusters'
-			)}
+			{#if displayOptions.showClusters}
+				{@render toggleSection(
+					'Clusters',
+					'#a855f7',
+					'diamond',
+					clExpanded,
+					() => (clExpanded = !clExpanded),
+					toggles.clusters,
+					clusterItems,
+					'clusters'
+				)}
+			{/if}
 
 			<!-- Tags -->
-			{@render toggleSection(
-				'Tags',
-				'#78716c',
-				'circle',
-				tagExpanded,
-				() => (tagExpanded = !tagExpanded),
-				toggles.tags,
-				tagItems,
-				'tags'
-			)}
+			{#if displayOptions.showTags}
+				{@render toggleSection(
+					'Tags',
+					'#78716c',
+					'circle',
+					tagExpanded,
+					() => (tagExpanded = !tagExpanded),
+					toggles.tags,
+					tagItems,
+					'tags'
+				)}
+			{/if}
 
 			<!-- Node Size -->
 			<section>
@@ -303,6 +321,33 @@
 		aria-label="Close menu"
 	></button>
 {/if}
+
+{#snippet nodeTypeToggle(
+	label: string,
+	color: string,
+	shape: string,
+	enabled: boolean,
+	onToggle: () => void
+)}
+	<label class="flex cursor-pointer items-center justify-between rounded px-2 py-1 hover:bg-gallery-800 text-[11px]">
+		<span class="flex items-center gap-2 text-gallery-300">
+			<span
+				class="inline-block h-2.5 w-2.5 shrink-0"
+				class:rounded-sm={shape === 'square'}
+				class:rounded-full={shape === 'circle'}
+				class:rotate-45={shape === 'diamond'}
+				style="background: {color}; opacity: {enabled ? 1 : 0.3}"
+			></span>
+			{label}
+		</span>
+		<input
+			type="checkbox"
+			checked={enabled}
+			onchange={onToggle}
+			class="shrink-0 accent-gallery-500"
+		/>
+	</label>
+{/snippet}
 
 {#snippet toggleSection(
 	title: string,

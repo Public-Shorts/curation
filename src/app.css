@@ -53,6 +53,30 @@
 	--color-highlight-900: #581c87;
 }
 
+/* Scrollbar */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--color-gallery-700) transparent;
+}
+
+*::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+	background: var(--color-gallery-700);
+	border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+	background: var(--color-gallery-600);
+}
+
 /* Unified Highlight Styling */
 .highlight-badge {
 	display: inline-flex;

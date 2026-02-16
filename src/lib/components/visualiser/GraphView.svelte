@@ -53,7 +53,11 @@
 				if (!currentData) return true;
 				const srcNode = currentData.nodes.find((n: any) => n.id === srcId);
 				const tgtNode = currentData.nodes.find((n: any) => n.id === tgtId);
-				return srcNode?.visible !== false && tgtNode?.visible !== false;
+				if (srcNode?.visible === false || tgtNode?.visible === false) return false;
+				// Hide links to group nodes that are toggled off
+				if (srcNode?.type !== 'film' && srcNode?.active === false) return false;
+				if (tgtNode?.type !== 'film' && tgtNode?.active === false) return false;
+				return true;
 			})
 			.linkColor((link: any) => {
 				const srcId = typeof link.source === 'object' ? link.source.id : link.source;
@@ -319,6 +323,7 @@
 
 			// Trigger redraw without simulation restart
 			graph.nodeVisibility(graph.nodeVisibility());
+			graph.linkVisibility(graph.linkVisibility());
 		}
 	});
 

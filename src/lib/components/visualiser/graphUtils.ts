@@ -15,6 +15,9 @@ export interface DisplayOptions {
 	labelMode: LabelMode;
 	forceStrength: number;
 	filterMode: FilterMode;
+	showMetaCategories: boolean;
+	showClusters: boolean;
+	showTags: boolean;
 }
 
 export interface GraphNode {
@@ -207,11 +210,12 @@ export function buildGraphData(
 		});
 	}
 
-	// Meta-category nodes + links — always included, visibility from toggles
+	// Meta-category nodes + links
+	if (displayOptions.showMetaCategories)
 	for (const mc of metaCategories) {
 		const validFilmIds = mc.filmIds.filter((e) => filmIdSet.has(e.filmId));
 		if (validFilmIds.length === 0) continue;
-		const visible = !!toggles.metaCategories[mc._id];
+		const enabled = !!toggles.metaCategories[mc._id];
 
 		nodes.push({
 			id: `mc-${mc._id}`,
@@ -219,8 +223,8 @@ export function buildGraphData(
 			label: mc.name,
 			val: 6,
 			color: NODE_TYPE_COLORS['meta-category'],
-			active: true,
-			visible,
+			active: enabled,
+			visible: true,
 			data: {
 				_id: mc._id,
 				name: mc.name,
@@ -239,7 +243,8 @@ export function buildGraphData(
 		}
 	}
 
-	// Cluster nodes + links — always included, visibility from toggles
+	// Cluster nodes + links
+	if (displayOptions.showClusters)
 	for (const cluster of clusters) {
 		const allFilmIds = [
 			...cluster.highlightedFilmIds,
@@ -247,7 +252,7 @@ export function buildGraphData(
 		].filter((id) => filmIdSet.has(id));
 		const uniqueFilmIds = [...new Set(allFilmIds)];
 		if (uniqueFilmIds.length === 0) continue;
-		const visible = !!toggles.clusters[cluster._id];
+		const enabled = !!toggles.clusters[cluster._id];
 
 		nodes.push({
 			id: `cl-${cluster._id}`,
@@ -255,8 +260,8 @@ export function buildGraphData(
 			label: cluster.name,
 			val: 5,
 			color: NODE_TYPE_COLORS.cluster,
-			active: true,
-			visible,
+			active: enabled,
+			visible: true,
 			data: {
 				_id: cluster._id,
 				name: cluster.name,
@@ -275,8 +280,8 @@ export function buildGraphData(
 		}
 	}
 
-	// Tag nodes + links — always included for tags with 2+ films, visibility from toggles
-	{
+	// Tag nodes + links
+	if (displayOptions.showTags) {
 		const tagFilms = new Map<string, string[]>();
 		for (const film of films) {
 			for (const tag of film.tags) {
@@ -289,7 +294,7 @@ export function buildGraphData(
 
 		for (const [tag, filmIds] of tagFilms) {
 			if (filmIds.length < 2) continue;
-			const visible = !!toggles.tags[tag];
+			const enabled = !!toggles.tags[tag];
 
 			nodes.push({
 				id: `tag-${tag}`,
@@ -297,8 +302,8 @@ export function buildGraphData(
 				label: tag,
 				val: Math.max(0.5, Math.min(3, filmIds.length / 10)),
 				color: NODE_TYPE_COLORS.tag,
-				active: true,
-				visible,
+				active: enabled,
+				visible: true,
 				data: { name: tag, count: filmIds.length } as TagNodeData,
 			});
 

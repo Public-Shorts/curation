@@ -63,6 +63,9 @@
 		labelMode: 'hover',
 		forceStrength: 10,
 		filterMode: 'union',
+		showMetaCategories: true,
+		showClusters: true,
+		showTags: false,
 	});
 
 	let searchQuery = $state('');
