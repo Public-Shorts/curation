@@ -122,11 +122,11 @@ export function computeActiveFilmIds(
 	metaCategories: { _id: string; filmIds: { filmId: string }[] }[],
 	clusters: { _id: string; highlightedFilmIds: string[]; relevantFilmIds: string[] }[],
 	toggles: GraphToggles,
-	filterMode: FilterMode
+	displayOptions: DisplayOptions
 ): Set<string> {
-	const hasMc = hasAnyEnabled(toggles.metaCategories);
-	const hasCl = hasAnyEnabled(toggles.clusters);
-	const hasTag = hasAnyEnabled(toggles.tags);
+	const hasMc = displayOptions.showMetaCategories && hasAnyEnabled(toggles.metaCategories);
+	const hasCl = displayOptions.showClusters && hasAnyEnabled(toggles.clusters);
+	const hasTag = displayOptions.showTags && hasAnyEnabled(toggles.tags);
 
 	if (!hasMc && !hasCl && !hasTag) {
 		return new Set(films.map((f) => f._id));
@@ -135,12 +135,12 @@ export function computeActiveFilmIds(
 	// Collect per-item film sets
 	const itemSets: Set<string>[] = [];
 
-	for (const mc of metaCategories) {
+	if (hasMc) for (const mc of metaCategories) {
 		if (!toggles.metaCategories[mc._id]) continue;
 		itemSets.push(new Set(mc.filmIds.map((e) => e.filmId)));
 	}
 
-	for (const cluster of clusters) {
+	if (hasCl) for (const cluster of clusters) {
 		if (!toggles.clusters[cluster._id]) continue;
 		itemSets.push(new Set([...cluster.highlightedFilmIds, ...cluster.relevantFilmIds]));
 	}
@@ -164,7 +164,7 @@ export function computeActiveFilmIds(
 		return new Set(films.map((f) => f._id));
 	}
 
-	if (filterMode === 'intersection') {
+	if (displayOptions.filterMode === 'intersection') {
 		// Film must appear in EVERY enabled item's set
 		const [first, ...rest] = itemSets;
 		const result = new Set<string>();
@@ -193,7 +193,7 @@ export function buildGraphData(
 	const links: GraphLink[] = [];
 	const filmIdSet = new Set(films.map((f) => f._id));
 
-	const activeFilmIds = computeActiveFilmIds(films, metaCategories, clusters, toggles, displayOptions.filterMode);
+	const activeFilmIds = computeActiveFilmIds(films, metaCategories, clusters, toggles, displayOptions);
 
 	// Film nodes — always present and visible, marked active/inactive
 	for (const film of films) {
