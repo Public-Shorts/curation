@@ -24,6 +24,7 @@ export interface GraphNode {
 	val: number;
 	color: string;
 	active: boolean;
+	visible: boolean;
 	data: any;
 }
 
@@ -191,7 +192,7 @@ export function buildGraphData(
 
 	const activeFilmIds = computeActiveFilmIds(films, metaCategories, clusters, toggles, displayOptions.filterMode);
 
-	// Film nodes — always present, marked active/inactive
+	// Film nodes — always present and visible, marked active/inactive
 	for (const film of films) {
 		const active = activeFilmIds.has(film._id);
 		nodes.push({
@@ -201,15 +202,16 @@ export function buildGraphData(
 			val: getFilmSize(film, displayOptions.sizeMode),
 			color: getScoreColor(film.score),
 			active,
+			visible: true,
 			data: film,
 		});
 	}
 
-	// Meta-category nodes + links — only shown when enabled
+	// Meta-category nodes + links — always included, visibility from toggles
 	for (const mc of metaCategories) {
-		if (!toggles.metaCategories[mc._id]) continue;
 		const validFilmIds = mc.filmIds.filter((e) => filmIdSet.has(e.filmId));
 		if (validFilmIds.length === 0) continue;
+		const visible = !!toggles.metaCategories[mc._id];
 
 		nodes.push({
 			id: `mc-${mc._id}`,
@@ -218,6 +220,7 @@ export function buildGraphData(
 			val: 6,
 			color: NODE_TYPE_COLORS['meta-category'],
 			active: true,
+			visible,
 			data: {
 				_id: mc._id,
 				name: mc.name,
@@ -236,15 +239,15 @@ export function buildGraphData(
 		}
 	}
 
-	// Cluster nodes + links — only shown when enabled
+	// Cluster nodes + links — always included, visibility from toggles
 	for (const cluster of clusters) {
-		if (!toggles.clusters[cluster._id]) continue;
 		const allFilmIds = [
 			...cluster.highlightedFilmIds,
 			...cluster.relevantFilmIds,
 		].filter((id) => filmIdSet.has(id));
 		const uniqueFilmIds = [...new Set(allFilmIds)];
 		if (uniqueFilmIds.length === 0) continue;
+		const visible = !!toggles.clusters[cluster._id];
 
 		nodes.push({
 			id: `cl-${cluster._id}`,
@@ -253,6 +256,7 @@ export function buildGraphData(
 			val: 5,
 			color: NODE_TYPE_COLORS.cluster,
 			active: true,
+			visible,
 			data: {
 				_id: cluster._id,
 				name: cluster.name,
@@ -271,8 +275,8 @@ export function buildGraphData(
 		}
 	}
 
-	// Tag nodes + links — only shown when individually enabled
-	if (hasAnyEnabled(toggles.tags)) {
+	// Tag nodes + links — always included for tags with 2+ films, visibility from toggles
+	{
 		const tagFilms = new Map<string, string[]>();
 		for (const film of films) {
 			for (const tag of film.tags) {
@@ -285,7 +289,7 @@ export function buildGraphData(
 
 		for (const [tag, filmIds] of tagFilms) {
 			if (filmIds.length < 2) continue;
-			if (!toggles.tags[tag]) continue;
+			const visible = !!toggles.tags[tag];
 
 			nodes.push({
 				id: `tag-${tag}`,
@@ -294,6 +298,7 @@ export function buildGraphData(
 				val: Math.max(0.5, Math.min(3, filmIds.length / 10)),
 				color: NODE_TYPE_COLORS.tag,
 				active: true,
+				visible,
 				data: { name: tag, count: filmIds.length } as TagNodeData,
 			});
 

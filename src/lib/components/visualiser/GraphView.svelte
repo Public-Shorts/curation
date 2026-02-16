@@ -21,6 +21,9 @@
 	let graph: any = $state(null);
 	let highlightedNodeIds = $state<Set<string>>(new Set());
 
+	// Track the last set of node IDs to detect structural vs visibility-only changes
+	let lastNodeIdSet = new Set<string>();
+
 	onMount(async () => {
 		const module = await import('force-graph');
 		const ForceGraph = module.default;
@@ -42,6 +45,16 @@
 			.nodeVal('val')
 			.nodeLabel('')
 			.backgroundColor('#1c1917')
+			.nodeVisibility((node: any) => node.visible !== false)
+			.linkVisibility((link: any) => {
+				const srcId = typeof link.source === 'object' ? link.source.id : link.source;
+				const tgtId = typeof link.target === 'object' ? link.target.id : link.target;
+				const currentData = graph?.graphData();
+				if (!currentData) return true;
+				const srcNode = currentData.nodes.find((n: any) => n.id === srcId);
+				const tgtNode = currentData.nodes.find((n: any) => n.id === tgtId);
+				return srcNode?.visible !== false && tgtNode?.visible !== false;
+			})
 			.linkColor((link: any) => {
 				const srcId = typeof link.source === 'object' ? link.source.id : link.source;
 				const tgtId = typeof link.target === 'object' ? link.target.id : link.target;
@@ -112,7 +125,7 @@
 			.onBackgroundClick(() => {
 				highlightedNodeIds = new Set();
 			})
-			.warmupTicks(80)
+			.warmupTicks(0)
 			.cooldownTicks(400)
 			.d3AlphaDecay(0.04)
 			.d3VelocityDecay(0.6);
@@ -125,6 +138,7 @@
 		graph.d3Force('gravity', gravity);
 
 		if (graphData.nodes.length > 0) {
+			lastNodeIdSet = new Set(graphData.nodes.map((n) => n.id));
 			graph.graphData({ nodes: graphData.nodes, links: graphData.links });
 			setTimeout(() => graph.zoomToFit(400, 60), 500);
 		}
@@ -242,30 +256,69 @@
 		ctx.closePath();
 	}
 
-	// React to graph data changes — preserve positions for smooth transitions
+	// React to graph data changes — use visibility for toggle changes, full update for structural changes
 	$effect(() => {
-		if (graph && graphData) {
-			// Build a map of existing node positions to preserve them
+		if (!graph || !graphData) return;
+
+		const newNodeIdSet = new Set(graphData.nodes.map((n) => n.id));
+		const isStructuralChange = newNodeIdSet.size !== lastNodeIdSet.size ||
+			[...newNodeIdSet].some((id) => !lastNodeIdSet.has(id));
+
+		if (isStructuralChange) {
+			// Structural change (initial load, sizeMode change, etc.) — full graphData update
 			const currentData = graph.graphData();
-			const posMap = new Map<string, { x: number; y: number; vx: number; vy: number }>();
+			const posMap = new Map<string, { x: number; y: number }>();
 			for (const node of currentData.nodes) {
 				if (node.x != null && node.y != null) {
-					posMap.set(node.id, { x: node.x, y: node.y, vx: node.vx || 0, vy: node.vy || 0 });
+					posMap.set(node.id, { x: node.x, y: node.y });
 				}
 			}
 
-			// Transfer positions to new nodes
 			const newNodes = graphData.nodes.map((n: any) => {
 				const pos = posMap.get(n.id);
 				if (pos) {
-					return { ...n, x: pos.x, y: pos.y, vx: pos.vx, vy: pos.vy };
+					// Preserve position, zero velocity to prevent lurching
+					return { ...n, x: pos.x, y: pos.y, vx: 0, vy: 0 };
+				}
+				// New node: place near a connected neighbor
+				const connectedLink = graphData.links.find((l) => {
+					const s = typeof l.source === 'string' ? l.source : (l.source as any).id;
+					const t = typeof l.target === 'string' ? l.target : (l.target as any).id;
+					return s === n.id || t === n.id;
+				});
+				if (connectedLink) {
+					const s = typeof connectedLink.source === 'string' ? connectedLink.source : (connectedLink.source as any).id;
+					const t = typeof connectedLink.target === 'string' ? connectedLink.target : (connectedLink.target as any).id;
+					const neighborId = s === n.id ? t : s;
+					const neighborPos = posMap.get(neighborId);
+					if (neighborPos) {
+						const angle = Math.random() * 2 * Math.PI;
+						return { ...n, x: neighborPos.x + Math.cos(angle) * 30, y: neighborPos.y + Math.sin(angle) * 30, vx: 0, vy: 0 };
+					}
 				}
 				return { ...n };
 			});
 
+			lastNodeIdSet = newNodeIdSet;
 			graph.graphData({ nodes: newNodes, links: graphData.links });
-			// Gentle reheat — only enough force to settle new nodes
-			graph.d3ReheatSimulation();
+			// graphData() already calls alpha(1) internally — don't call d3ReheatSimulation
+		} else {
+			// Visibility/active-only change — mutate nodes in-place, no simulation restart
+			const currentData = graph.graphData();
+			const newNodeMap = new Map(graphData.nodes.map((n) => [n.id, n]));
+
+			for (const node of currentData.nodes) {
+				const updated = newNodeMap.get(node.id);
+				if (updated) {
+					node.visible = updated.visible;
+					node.active = updated.active;
+					node.val = updated.val;
+					node.color = updated.color;
+				}
+			}
+
+			// Trigger redraw without simulation restart
+			graph.nodeVisibility(graph.nodeVisibility());
 		}
 	});
 

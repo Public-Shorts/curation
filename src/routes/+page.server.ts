@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		{ curatorId }
 	);
 	if (curator?.jury) {
-		throw redirect(303, '/selection');
+		throw redirect(303, '/visualiser');
 	}
 
 	const query = `{
