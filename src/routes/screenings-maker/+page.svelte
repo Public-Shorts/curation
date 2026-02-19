@@ -89,6 +89,17 @@
 		};
 	}
 
+	// Build a set of all film IDs assigned to any screening
+	let assignedFilmIds = $derived.by(() => {
+		const ids = new Set<string>();
+		for (const screening of data.screenings) {
+			for (const ref of screening.films || []) {
+				if (ref._ref) ids.add(ref._ref);
+			}
+		}
+		return ids;
+	});
+
 	let allSubmissions = $derived(
 		data.submissions.map((s: any) => ({
 			...s,
@@ -101,7 +112,7 @@
 	let availableTags = $derived.by(() => {
 		const tagMap = new Map<string, number>();
 		allSubmissions.forEach((film: any) => {
-			if (!film.assignedScreening) {
+			if (!assignedFilmIds.has(film._id)) {
 				(film.tags || []).forEach((tag: string) => {
 					tagMap.set(tag, (tagMap.get(tag) || 0) + 1);
 				});
@@ -132,7 +143,7 @@
 		data.selectionData.highlights
 			.filter((f: any) => {
 				const submission = data.submissions.find((s: any) => s._id === f._id);
-				return submission && !submission.assignedScreening;
+				return submission && !assignedFilmIds.has(f._id);
 			})
 			.map(prepareFilm)
 	);
@@ -141,7 +152,7 @@
 		data.selectionData.unanimous
 			.filter((f: any) => {
 				const submission = data.submissions.find((s: any) => s._id === f._id);
-				return submission && !submission.assignedScreening;
+				return submission && !assignedFilmIds.has(f._id);
 			})
 			.filter((f: any) => !highlights.some((h: any) => h._id === f._id))
 			.map(prepareFilm)
@@ -151,7 +162,7 @@
 		data.selectionData.selected
 			.filter((f: any) => {
 				const submission = data.submissions.find((s: any) => s._id === f._id);
-				return submission && !submission.assignedScreening;
+				return submission && !assignedFilmIds.has(f._id);
 			})
 			.filter(
 				(f: any) =>
@@ -165,7 +176,7 @@
 		data.selectionData.maybe
 			.filter((f: any) => {
 				const submission = data.submissions.find((s: any) => s._id === f._id);
-				return submission && !submission.assignedScreening;
+				return submission && !assignedFilmIds.has(f._id);
 			})
 			.filter(
 				(f: any) =>
@@ -188,16 +199,17 @@
 	let selectedStats = $derived(calculateSectionStats(selectedWithVisibility));
 	let maybesStats = $derived(calculateSectionStats(maybesWithVisibility));
 
-	function getScreeningFilms(screeningId: string) {
+	function getScreeningFilms(screening: any) {
+		const filmRefs = (screening.films || []).map((f: any) => f._ref);
 		return data.submissions
-			.filter((s: any) => s.assignedScreening?._ref === screeningId)
+			.filter((s: any) => filmRefs.includes(s._id))
 			.map((s: any) => ({
 				...s,
 				title: s.englishTitle,
 				director: s.directorName,
 				tags: s.curatorTags || [],
 				isVisible: true,
-				score: s.score // Ensure score is passed if available
+				score: s.score
 			}));
 	}
 
@@ -251,14 +263,15 @@
 		}
 	}
 
-	async function unassignFilm(filmId: string) {
+	async function unassignFilm(filmId: string, screeningId: string) {
 		try {
 			const res = await fetch('/api/screenings-maker', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					action: 'unassign-video',
-					videoId: filmId
+					videoId: filmId,
+					screeningId
 				})
 			});
 			const result = await res.json();
@@ -470,7 +483,7 @@
 		<!-- Right: Screenings (40% = 2 cols) -->
 		<div class="col-span-2 space-y-4 overflow-y-auto max-h-screen pb-20">
 			{#each data.screenings.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) as screening (screening._id)}
-				{@const films = getScreeningFilms(screening._id)}
+				{@const films = getScreeningFilms(screening)}
 				<div class="bg-white rounded-lg border border-gallery-200 shadow-sm">
 					<div
 						class="px-4 py-3 flex items-center justify-between hover:bg-gallery-50 transition-colors border-b border-gallery-100"
@@ -572,7 +585,7 @@
 										<FilmCardCompact
 											{film}
 											onclick={() => openFilmDetail(film)}
-											onRemove={() => unassignFilm(film._id)}
+											onRemove={() => unassignFilm(film._id, screening._id)}
 										/>
 									{/each}
 								</div>

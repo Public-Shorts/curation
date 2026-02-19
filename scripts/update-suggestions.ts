@@ -71,19 +71,19 @@ Only use tags from the list. Return valid JSON only.`;
 async function main() {
 	console.log("Fetching data from Sanity...");
 
-	// Fetch screenings with their assigned videos
+	// Fetch screenings with their films
 	const screenings = await client.fetch(`
 		*[_type == "screening"] {
 			_id,
-			title
+			title,
+			"filmIds": films[]._ref
 		}
 	`);
 
-	// Fetch all submissions with their assigned screening
+	// Fetch all submissions
 	const submissions = await client.fetch(`
 		*[_type == "submission"] {
-			_id,
-			assignedScreening
+			_id
 		}
 	`);
 
@@ -117,11 +117,9 @@ async function main() {
 
 	// For each screening, find tags from already-assigned videos
 	const screeningsWithTags = screenings.map((screening: any) => {
-		const assignedSubmissions = submissions.filter(
-			(s: any) => s.assignedScreening?._ref === screening._id
-		);
+		const filmIds = screening.filmIds || [];
 		const assignedTags = [...new Set(
-			assignedSubmissions.flatMap((s: any) => submissionTags[s._id] || [])
+			filmIds.flatMap((id: string) => submissionTags[id] || [])
 		)];
 		return {
 			...screening,

@@ -37,30 +37,21 @@ export async function POST({ request, url }) {
             }
 
             case 'delete-screening': {
-                // First unassign all videos referencing this screening
-                const videos = await sanityClient.fetch(`*[_type == "submission" && assignedScreening._ref == $id]._id`, { id: params.id });
-                if (videos.length > 0) {
-                    const transaction = sanityClient.transaction();
-                    videos.forEach((vidId: string) => {
-                        transaction.patch(vidId, (p) => p.unset(['assignedScreening']));
-                    });
-                    await transaction.commit();
-                }
-                // Then delete the screening
                 await sanityClient.delete(params.id);
                 return json({ success: true });
             }
 
             case 'assign-video': {
-                const result = await sanityClient.patch(params.videoId)
-                    .set({ assignedScreening: { _type: 'reference', _ref: params.screeningId } })
+                const result = await sanityClient.patch(params.screeningId)
+                    .setIfMissing({ films: [] })
+                    .append('films', [{ _type: 'reference', _ref: params.videoId, _key: crypto.randomUUID() }])
                     .commit();
                 return json({ success: true, result });
             }
 
             case 'unassign-video': {
-                const result = await sanityClient.patch(params.videoId)
-                    .unset(['assignedScreening'])
+                const result = await sanityClient.patch(params.screeningId)
+                    .unset([`films[_ref=="${params.videoId}"]`])
                     .commit();
                 return json({ success: true, result });
             }

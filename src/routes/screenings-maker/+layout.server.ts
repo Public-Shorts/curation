@@ -17,7 +17,6 @@ export const load: LayoutServerLoad = async () => {
 			poster { asset->{_id, url} },
 			screenshots[] { asset->{_id, url} },
 			length,
-			assignedScreening,
 			linkToWatch,
 			linkToDownload,
 			linkPassword,
@@ -41,7 +40,8 @@ export const load: LayoutServerLoad = async () => {
 			location,
 			description,
 			keywords,
-			juryMembers[]->{_id, name, email}
+			juryMembers[]->{_id, name, email},
+			"films": films[]{ _ref }
 		}
 	`);
 
