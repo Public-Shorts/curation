@@ -40,6 +40,7 @@
 					<a class="uppercase hover:text-gallery-900" href="/selection">Selection</a>
 				{/if}
 				{#if isAdmin}
+					<a class="uppercase hover:text-gallery-900" href="/adult-content">Adult</a>
 					<a class="uppercase hover:text-gallery-900" href="/screenings-maker">Screenings</a>
 					<a class="uppercase hover:text-gallery-900" href="/admin">Admin</a>
 				{/if}
@@ -120,6 +121,13 @@
 					</a>
 				{/if}
 				{#if isAdmin}
+					<a
+						class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
+						href="/adult-content"
+						onclick={toggleMenu}
+					>
+						Adult Content
+					</a>
 					<a
 						class="uppercase text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
 						href="/screenings-maker"

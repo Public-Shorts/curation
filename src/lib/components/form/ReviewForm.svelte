@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import { getToastMessages } from '$lib/toast/toastMessages.svelte';
 	import TagSelector from './TagSelector.svelte';
 	import type { Tag } from '$lib/utils/types';
@@ -7,11 +8,13 @@
 
 	let { review, allTags, submission } = $props();
 	let submitting = $state(false);
+	let togglingAdult = $state(false);
 
 	const toastMessages = getToastMessages();
 
 	let selectedTags = $state<Tag[]>(review.tags ?? []);
 	let currentSelection = $state(review.selection);
+	let adultChecked = $state(!!submission?.adult);
 
 	let reviewStatus = $derived.by(() => {
 		if (currentSelection === 'selected') return 'Selected';
@@ -19,9 +22,68 @@
 		if (currentSelection === 'notSelected') return 'Not Selected';
 		return 'No Selection Made';
 	});
+
+	let adultFormEl: HTMLFormElement;
 </script>
 
 <section class="mt-10 sm:mt-12">
+	<!-- Adult Content Toggle (separate from review) -->
+	<form
+		method="POST"
+		action="?/toggleAdult"
+		bind:this={adultFormEl}
+		class="bg-white rounded-2xl shadow-sm ring-1 ring-gallery-200/60 overflow-hidden mb-6"
+		use:enhance={() => {
+			togglingAdult = true;
+			return async ({ result }) => {
+				if (result.type === 'success') {
+					const data = result.data as { success?: boolean; message?: string };
+					if (data?.success) {
+						toastMessages.add({ message: data.message ?? 'Updated.', type: 'success' });
+						await invalidateAll();
+					} else {
+						toastMessages.add({
+							message: data?.message ?? 'Could not update.',
+							type: 'error'
+						});
+						adultChecked = !adultChecked;
+					}
+				} else {
+					adultChecked = !adultChecked;
+				}
+				togglingAdult = false;
+			};
+		}}
+	>
+		<div class="bg-linear-to-r from-red-50 to-red-50/50 p-4 sm:p-5">
+			<label class="flex items-center gap-4 cursor-pointer" class:opacity-60={togglingAdult}>
+				<div class="relative">
+					<input
+						type="checkbox"
+						name="adult"
+						class="peer sr-only"
+						bind:checked={adultChecked}
+						onchange={() => adultFormEl.requestSubmit()}
+						disabled={togglingAdult}
+					/>
+					<div
+						class="w-11 h-6 bg-red-200 rounded-full peer-checked:bg-red-500 transition-colors"
+					></div>
+					<div
+						class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-5"
+					></div>
+				</div>
+				<div class="flex-1">
+					<span class="font-semibold text-red-900">Adult Content</span>
+					<p class="text-sm text-red-700/80">Schedule during night hours only</p>
+				</div>
+				{#if togglingAdult}
+					<Loader2 class="animate-spin w-4 h-4 text-red-400" />
+				{/if}
+			</label>
+		</div>
+	</form>
+
 	<!-- Section Header -->
 	<div class="flex items-center gap-3 mb-6">
 		<div class="w-10 h-10 rounded-xl bg-gallery-900 flex items-center justify-center">
@@ -35,6 +97,7 @@
 
 	<form
 		method="POST"
+		action="?/saveReview"
 		class="bg-white rounded-2xl shadow-sm ring-1 ring-gallery-200/60 overflow-hidden"
 		use:enhance={() => {
 			submitting = true;
@@ -43,6 +106,7 @@
 					const data = result.data as { success?: boolean; message?: string };
 					if (data?.success) {
 						toastMessages.add({ message: data.message ?? 'Review saved.', type: 'success' });
+						await invalidateAll();
 					} else {
 						toastMessages.add({
 							message: data?.message ?? 'Could not save review.',
@@ -54,30 +118,6 @@
 			};
 		}}
 	>
-		<!-- Adult Content Warning -->
-		<div class="bg-linear-to-r from-red-50 to-red-50/50 border-b border-red-100 p-4 sm:p-5">
-			<label class="flex items-center gap-4 cursor-pointer">
-				<div class="relative">
-					<input
-						type="checkbox"
-						name="adult"
-						class="peer sr-only"
-						checked={!!submission?.adult}
-					/>
-					<div
-						class="w-11 h-6 bg-red-200 rounded-full peer-checked:bg-red-500 transition-colors"
-					></div>
-					<div
-						class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-5"
-					></div>
-				</div>
-				<div class="flex-1">
-					<span class="font-semibold text-red-900">Adult Content</span>
-					<p class="text-sm text-red-700/80">Schedule during night hours only</p>
-				</div>
-			</label>
-		</div>
-
 		<div class="p-5 sm:p-6 md:p-8 space-y-8">
 			<!-- Main Form Grid -->
 			<div class="grid gap-8 lg:grid-cols-2">
@@ -99,7 +139,6 @@
 								class:text-red-600={reviewStatus === 'Not Selected'}
 								class:bg-red-50={reviewStatus === 'Not Selected'}
 								bind:value={currentSelection}
-								required
 							>
 								<option value="notSelected">Not Selected</option>
 								<option value="maybe">Maybe</option>
@@ -146,7 +185,6 @@
 								max="5"
 								class="w-24 rounded-xl border-gallery-200 bg-gallery-50 shadow-sm focus:border-gallery-400 focus:ring-gallery-400 text-lg font-semibold py-3 text-center tabular-nums transition-colors hover:bg-gallery-100"
 								value={review.rating}
-								required
 							/>
 							<span class="text-sm text-gallery-500">/ 5</span>
 						</div>

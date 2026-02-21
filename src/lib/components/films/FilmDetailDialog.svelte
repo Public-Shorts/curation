@@ -226,7 +226,7 @@
 								href={film.linkToWatch}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="px-4 py-2 bg-accent-500 text-white! rounded-lg text-sm font-semibold hover:bg-accent-600 transition-colors"
+								class="px-4 py-2 bg-accent-500 text-white rounded-lg text-sm font-semibold hover:bg-accent-600 transition-colors"
 							>
 								Watch Film
 							</a>
@@ -236,7 +236,7 @@
 								href={film.linkToDownload}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="px-4 py-2 bg-gallery-700 text-white! rounded-lg text-sm font-semibold hover:bg-gallery-800 transition-colors"
+								class="px-4 py-2 bg-gallery-700 text-white rounded-lg text-sm font-semibold hover:bg-gallery-800 transition-colors"
 							>
 								Download
 							</a>

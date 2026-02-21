@@ -3,6 +3,25 @@
 
 @tailwind utilities;
 
+/* Base styles in a layer so Tailwind utilities can override them */
+@layer base {
+	a {
+		color: var(--color-gallery-900);
+		text-underline-offset: 4px;
+	}
+
+	body {
+		background-color: var(--color-gallery-50);
+		color: var(--color-gallery-800);
+		margin: 0;
+	}
+
+	::selection {
+		background-color: var(--color-accent-200);
+		color: var(--color-accent-500);
+	}
+}
+
 @theme {
 	--font-PPMori: 'PP Mori', sans-serif;
 	--font-sans: 'PP Mori', sans-serif;

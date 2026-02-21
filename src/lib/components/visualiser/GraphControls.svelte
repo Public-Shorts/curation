@@ -135,7 +135,7 @@
 						class="flex flex-1 items-center justify-center gap-2 rounded px-2.5 py-1.5 text-[11px] font-medium transition-colors
 							{displayOptions.filterMode === 'union'
 							? 'bg-gallery-600 text-white'
-							: 'bg-gallery-800 text-gallery-400 hover:bg-gallery-700 hover:text-gallery-300'}"
+							: 'bg-gallery-800 text-gallery-300 hover:bg-gallery-700 hover:text-gallery-200'}"
 						onclick={() => setDisplay('filterMode', 'union')}
 						title="A film matches if it belongs to ANY active group"
 					>
@@ -150,7 +150,7 @@
 						class="flex flex-1 items-center justify-center gap-2 rounded px-2.5 py-1.5 text-[11px] font-medium transition-colors
 							{displayOptions.filterMode === 'intersection'
 							? 'bg-gallery-600 text-white'
-							: 'bg-gallery-800 text-gallery-400 hover:bg-gallery-700 hover:text-gallery-300'}"
+							: 'bg-gallery-800 text-gallery-300 hover:bg-gallery-700 hover:text-gallery-200'}"
 						onclick={() => setDisplay('filterMode', 'intersection')}
 						title="A film matches only if it belongs to ALL active groups"
 					>
@@ -240,7 +240,7 @@
 							class="rounded px-2.5 py-1 text-[11px] font-medium transition-colors
 								{displayOptions.sizeMode === opt.value
 								? 'bg-gallery-600 text-white'
-								: 'bg-gallery-800 text-gallery-400 hover:bg-gallery-700 hover:text-gallery-300'}"
+								: 'bg-gallery-800 text-gallery-300 hover:bg-gallery-700 hover:text-gallery-200'}"
 							onclick={() => setDisplay('sizeMode', opt.value)}
 						>
 							{opt.label}
@@ -260,7 +260,7 @@
 							class="rounded px-2.5 py-1 text-[11px] font-medium transition-colors
 								{displayOptions.labelMode === opt.value
 								? 'bg-gallery-600 text-white'
-								: 'bg-gallery-800 text-gallery-400 hover:bg-gallery-700 hover:text-gallery-300'}"
+								: 'bg-gallery-800 text-gallery-300 hover:bg-gallery-700 hover:text-gallery-200'}"
 							onclick={() => setDisplay('labelMode', opt.value)}
 						>
 							{opt.label}

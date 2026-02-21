@@ -41,7 +41,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
                 thanks,
                 specialRequirements,
                 "posterUrl": poster.asset->url,
-             
+
             },
             "myReview": *[_type == "review" && film._ref == $id && curator._ref == $curatorId][0]{
                 _id,
@@ -56,10 +56,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
                 _id,
                 selection,
                 rating,
-                tags[] { label, value }, // explicitly fetch tags array
-                suggestedGenre,           // fetch genre
-                contentNotes,             // fetch content notes
-                additionalComments,       // fetch comments
+                tags[] { label, value },
+                suggestedGenre,
+                contentNotes,
+                additionalComments,
                 curator->{
                     _id,
                     name
@@ -85,7 +85,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, params, locals }) => {
+	saveReview: async ({ request, params, locals }) => {
 		if (!locals.curatorId) throw redirect(303, '/login');
 
 		try {
@@ -95,7 +95,6 @@ export const actions: Actions = {
 			const ratingRaw = form.get('rating');
 			const rating = ratingRaw && ratingRaw.toString().trim() !== '' ? Number(ratingRaw) : null;
 
-			// tags should instead be an array of objects with label and value
 			const tagsRaw = form.getAll('tags');
 			const tags = tagsRaw.map((tag) => {
 				const tagStr = tag.toString();
@@ -110,19 +109,11 @@ export const actions: Actions = {
 			const additionalComments = form.get('additionalComments')?.toString() || '';
 			const suggestedGenre = form.get('suggestedGenre')?.toString() || '';
 
-			// contentNotes as array of strings
 			const contentNotes = form.getAll('contentNotes').map((v) => v.toString());
 			const contentNotesValue = contentNotes.length > 0 ? contentNotes : ['none'];
 
 			const filmId = params.id;
 			const curatorId = locals.curatorId;
-
-			const adultTriggerNotes = [
-				'drugAlcoholUse',
-				'horrorDisturbingImages',
-				'sexualContent',
-				'strongLanguage'
-			];
 
 			// Upsert review: check if one exists
 			const existing = await sanityClient.fetch(
@@ -156,23 +147,6 @@ export const actions: Actions = {
 				});
 			}
 
-			// After updating the review, check ALL reviews for this film to determine adult status
-			const allReviews = await sanityClient.fetch(
-				`*[_type == "review" && film._ref == $filmId]{ contentNotes }`,
-				{ filmId }
-			);
-
-			const manualAdult = form.get('adult') === 'on';
-			const anyReviewHasAdultFlag = allReviews.some((r: any) =>
-				r.contentNotes?.some((note: string) => adultTriggerNotes.includes(note))
-			);
-
-			const isAdult = manualAdult || anyReviewHasAdultFlag;
-
-			// Update submission adult status
-			await sanityClient.patch(filmId).set({ adult: isAdult }).commit();
-
-			// success payload for use:enhance
 			return {
 				success: true,
 				message: 'Review saved.'
@@ -180,11 +154,29 @@ export const actions: Actions = {
 		} catch (error) {
 			console.error('Error saving review', error);
 
-			// failure payload for use:enhance
 			return {
 				success: false,
 				message: 'Could not save review. Please try again.'
 			};
+		}
+	},
+
+	toggleAdult: async ({ request, params, locals }) => {
+		if (!locals.curatorId) throw redirect(303, '/login');
+
+		try {
+			const form = await request.formData();
+			const isAdult = form.get('adult') === 'on';
+
+			await sanityClient.patch(params.id).set({ adult: isAdult }).commit();
+
+			return {
+				success: true,
+				message: isAdult ? 'Marked as adult content.' : 'Adult content flag removed.'
+			};
+		} catch (error) {
+			console.error('Error toggling adult flag', error);
+			return { success: false, message: 'Could not update adult flag.' };
 		}
 	}
 };

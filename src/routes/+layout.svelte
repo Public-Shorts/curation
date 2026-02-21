@@ -27,18 +27,4 @@
 </div>
 <Toaster />
 
-<style>
-	:global(body) {
-		background-color: var(--color-gallery-50);
-		color: var(--color-gallery-800);
-		margin: 0;
-	}
-	:global(a) {
-		color: var(--color-gallery-900);
-		text-underline-offset: 4px;
-	}
-	:global(::selection) {
-		background-color: var(--color-accent-200);
-		color: var(--color-accent-500);
-	}
-</style>
+<!-- Global styles moved to @layer base in app.css so Tailwind utilities can override them -->
