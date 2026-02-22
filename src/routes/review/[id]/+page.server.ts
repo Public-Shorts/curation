@@ -63,7 +63,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
                 curator->{
                     _id,
                     name
-                }
+                },
+                "isJury": curator->jury == true
             },
             "allTags": array::unique(
                 *[_type == "review" && defined(tags)].tags[]{

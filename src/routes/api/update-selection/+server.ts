@@ -16,7 +16,8 @@ function scoreMovie(
 	movie: any,
 	curatorWeights: Record<string, { selected: number; maybe: number; rejected: number }>
 ) {
-	const reviews = movie.reviews || [];
+	const allReviews = movie.reviews || [];
+	const reviews = allReviews.filter((r: any) => !r.isJury);
 	let weightedSum = 0;
 	let totalWeight = 0;
 
@@ -67,7 +68,8 @@ async function fetchAllData() {
 				tags,
 				contentNotes,
 				"curatorId": curator._ref,
-				"curatorName": curator->name
+				"curatorName": curator->name,
+				"isJury": curator->jury == true
 			}
 		},
 		"curators": *[_type == "curator" && defined(highlights) && count(highlights) > 0] {
@@ -75,7 +77,7 @@ async function fetchAllData() {
 			name,
 			highlights[]->{ _id }
 		},
-		"allReviews": *[_type == "review"]{
+		"allReviews": *[_type == "review" && curator->jury != true]{
 			"curatorId": curator._ref,
 			selection
 		},
@@ -224,8 +226,9 @@ export const POST: RequestHandler = async () => {
 
 			const score = scoreMovie(sub, curatorWeights);
 			const reviews = sub.reviews || [];
+			const nonJuryReviews = reviews.filter((r: any) => !r.isJury);
 
-			// Collect tags
+			// Collect tags (from all reviews including jury)
 			const tags = reviews.flatMap((r: any) => r.tags || []);
 			const uniqueTagLabels = [
 				...new Set(tags.map((t: any) => t.label?.toLowerCase()).filter((label): label is string => Boolean(label)))
@@ -258,8 +261,8 @@ export const POST: RequestHandler = async () => {
 					color: 'text-orange-700 bg-orange-50 border-orange-200'
 				});
 
-			// Compute average rating
-			const ratings = reviews.map((r: any) => r.rating).filter((r: any) => r != null);
+			// Compute average rating (exclude jury reviews)
+			const ratings = nonJuryReviews.map((r: any) => r.rating).filter((r: any) => r != null);
 			const avgRating =
 				ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : null;
 
@@ -272,7 +275,7 @@ export const POST: RequestHandler = async () => {
 				screenshots: sub.screenshots,
 				score: Math.round(score * 10) / 10,
 				avgRating: avgRating ? Math.round(avgRating * 10) / 10 : null,
-				reviewCount: reviews.length,
+				reviewCount: nonJuryReviews.length,
 				tags: uniqueTagLabels,
 				flags,
 				curatorCount: highlightCuratorMap.get(sub._id)?.length || 0,

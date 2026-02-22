@@ -47,11 +47,12 @@ export const load: PageServerLoad = async ({ locals }) => {
           contentNotes,
           additionalComments,
           "curatorId": curator._ref,
-          "curatorName": curator->name
+          "curatorName": curator->name,
+          "isJury": curator->jury == true
         }
       }
     },
-    "curatorStatsRaw": *[_type == "review"]{
+    "curatorStatsRaw": *[_type == "review" && curator->jury != true]{
       "curatorId": curator._ref,
       selection
     },
@@ -115,8 +116,9 @@ export const load: PageServerLoad = async ({ locals }) => {
         const uniqueTags = Array.from(new Set(allTags.map((t: any) => t.label)))
           .map(label => allTags.find((t: any) => t.label === label));
 
-        // Calculate average rating (unweighted as it's just for display)
-        const ratings = (submission.reviews || [])
+        // Calculate average rating (unweighted, exclude jury reviews)
+        const nonJuryReviews = (submission.reviews || []).filter((r: any) => !r.isJury);
+        const ratings = nonJuryReviews
           .map((r: any) => r.rating)
           .filter((r: any) => r !== null && r !== undefined);
         const avgRating = ratings.length > 0

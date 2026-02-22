@@ -474,7 +474,7 @@
 						{/if}
 						{#if visibleColumns.has('votes')}
 							<td class="td-votes">
-								<VoteBreakdown reviews={s.reviews || []} compact />
+								<VoteBreakdown reviews={(s.reviews || []).filter((r: any) => !r.isJury)} compact />
 							</td>
 						{/if}
 						{#if visibleColumns.has('score')}

@@ -46,7 +46,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 				rating,
 				contentNotes,
 				"curatorId": curator._ref,
-				"curatorName": curator->name
+				"curatorName": curator->name,
+				"isJury": curator->jury == true
 			}
 		},
 		"highlights": *[_type == "curator" && defined(highlights) && count(highlights) > 0]{
@@ -54,7 +55,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			name,
 			"highlightIds": highlights[]._ref
 		},
-		"allReviews": *[_type == "review"]{
+		"allReviews": *[_type == "review" && curator->jury != true]{
 			"curatorId": curator._ref,
 			selection
 		},

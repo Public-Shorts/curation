@@ -6,25 +6,29 @@
 
 	let { allReviews = [] } = $props();
 
-	// --- Derived Statistics ---
+	// --- Split curator vs jury reviews ---
+	const curatorReviews = $derived(allReviews.filter((r: any) => !r.isJury));
+	const juryReviews = $derived(allReviews.filter((r: any) => r.isJury));
+
+	// --- Derived Statistics (from curator reviews only) ---
 
 	// Status counts
-	const approvals = $derived(allReviews.filter((r: any) => r.selection === 'selected'));
-	const maybes = $derived(allReviews.filter((r: any) => r.selection === 'maybe'));
-	const rejections = $derived(allReviews.filter((r: any) => r.selection === 'notSelected'));
+	const approvals = $derived(curatorReviews.filter((r: any) => r.selection === 'selected'));
+	const maybes = $derived(curatorReviews.filter((r: any) => r.selection === 'maybe'));
+	const rejections = $derived(curatorReviews.filter((r: any) => r.selection === 'notSelected'));
 
 	// Average Rating
 	const averageRating = $derived.by(() => {
-		const ratedReviews = allReviews.filter((r: any) => typeof r.rating === 'number');
+		const ratedReviews = curatorReviews.filter((r: any) => typeof r.rating === 'number');
 		if (ratedReviews.length === 0) return null;
 		const sum = ratedReviews.reduce((acc: number, curr: any) => acc + curr.rating, 0);
 		return (sum / ratedReviews.length).toFixed(1);
 	});
 
-	// Unique Tags (deduplicated)
+	// Unique Tags (deduplicated, from curator reviews only)
 	const uniqueTags = $derived.by(() => {
 		const tags = new Set<string>();
-		for (const r of allReviews) {
+		for (const r of curatorReviews) {
 			if (Array.isArray(r.tags)) {
 				r.tags.forEach((t: any) => tags.add(t.label || t));
 			}
@@ -32,10 +36,10 @@
 		return Array.from(tags).sort();
 	});
 
-	// Suggested Genres (with counts)
+	// Suggested Genres (with counts, from curator reviews only)
 	const genreCounts = $derived.by(() => {
 		const counts: Record<string, number> = {};
-		for (const r of allReviews) {
+		for (const r of curatorReviews) {
 			if (r.suggestedGenre) {
 				counts[r.suggestedGenre] = (counts[r.suggestedGenre] || 0) + 1;
 			}
@@ -43,7 +47,7 @@
 		return Object.entries(counts).sort((a, b) => b[1] - a[1]);
 	});
 
-	// Content Notes (deduplicated)
+	// Content Notes (deduplicated, from all reviews including jury for safety)
 	const allContentNotes = $derived.by(() => {
 		const notes = new Set<string>();
 		for (const r of allReviews) {
@@ -59,12 +63,18 @@
 		return Array.from(notes).sort();
 	});
 
-	// Reviews with comments
+	// Reviews with comments (curator only)
 	const reviewsWithComments = $derived(
-		allReviews.filter((r: any) => r.additionalComments && r.additionalComments.trim().length > 0)
+		curatorReviews.filter((r: any) => r.additionalComments && r.additionalComments.trim().length > 0)
+	);
+
+	// Jury reviews with comments
+	const juryReviewsWithComments = $derived(
+		juryReviews.filter((r: any) => r.additionalComments && r.additionalComments.trim().length > 0)
 	);
 
 	let commentsOpen = $state(false);
+	let juryCommentsOpen = $state(false);
 </script>
 
 <section class="rounded-2xl bg-white shadow-sm ring-1 ring-gallery-200/60 overflow-hidden">
@@ -86,7 +96,7 @@
 	</div>
 
 	<div class="p-5 sm:p-6 space-y-6">
-		{#if allReviews.length === 0}
+		{#if curatorReviews.length === 0 && juryReviews.length === 0}
 			<div class="text-center py-8">
 				<div class="w-12 h-12 rounded-full bg-gallery-100 flex items-center justify-center mx-auto mb-3">
 					<FileText class="w-6 h-6 text-gallery-400" />
@@ -94,11 +104,15 @@
 				<p class="text-sm text-gallery-500">No reviews yet</p>
 				<p class="text-xs text-gallery-400 mt-1">Be the first to review this film</p>
 			</div>
+		{:else if curatorReviews.length === 0}
+			<div class="text-center py-4">
+				<p class="text-sm text-gallery-500">No curator reviews yet</p>
+			</div>
 		{:else}
 			<!-- Stats Row -->
 			<div class="flex flex-wrap items-center gap-3 sm:gap-4">
 				<div class="flex items-center gap-2 bg-gallery-50 px-3 py-2 rounded-lg">
-					<span class="text-lg font-bold text-gallery-900">{allReviews.length}</span>
+					<span class="text-lg font-bold text-gallery-900">{curatorReviews.length}</span>
 					<span class="text-xs text-gallery-500 uppercase tracking-wide">Total</span>
 				</div>
 				<div class="h-6 w-px bg-gallery-200"></div>
@@ -120,7 +134,7 @@
 
 			<!-- Reviewer Cards -->
 			<div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-				{#each allReviews as r}
+				{#each curatorReviews as r}
 					<div
 						class="flex items-center justify-between rounded-xl border border-gallery-100 bg-gallery-50/50 px-4 py-3 text-sm transition-colors hover:bg-gallery-50 hover:border-gallery-200"
 					>
@@ -246,3 +260,73 @@
 		{/if}
 	</div>
 </section>
+
+<!-- Jury Reviews Section (separate, not included in scoring) -->
+{#if juryReviews.length > 0}
+	<section class="mt-4 rounded-2xl bg-white shadow-sm ring-1 ring-indigo-200/60 overflow-hidden">
+		<div class="bg-linear-to-r from-indigo-50 to-white px-5 py-4 sm:px-6 border-b border-indigo-100">
+			<div class="flex items-center justify-between">
+				<h2 class="text-sm font-semibold uppercase tracking-wider text-indigo-600">
+					Jury Reviews
+				</h2>
+				<span class="text-xs text-indigo-400 font-medium">
+					Not included in score
+				</span>
+			</div>
+		</div>
+
+		<div class="p-5 sm:p-6 space-y-4">
+			<!-- Jury Reviewer Cards -->
+			<div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+				{#each juryReviews as r}
+					<div
+						class="flex items-center justify-between rounded-xl border border-indigo-100 bg-indigo-50/50 px-4 py-3 text-sm transition-colors hover:bg-indigo-50 hover:border-indigo-200"
+					>
+						<span class="font-medium text-indigo-800 truncate mr-3">
+							{r.curator?.name ?? 'Jury Member'}
+						</span>
+						<div class="flex items-center gap-2.5 shrink-0">
+							<SelectionTag selection={r.selection} />
+							{#if r.rating != null}
+								<span class="text-indigo-300">·</span>
+								<span class="font-semibold text-indigo-700 tabular-nums">{r.rating}</span>
+							{/if}
+						</div>
+					</div>
+				{/each}
+			</div>
+
+			<!-- Jury Comments -->
+			{#if juryReviewsWithComments.length > 0}
+				<div class="border-t border-indigo-100 pt-4">
+					<button
+						onclick={() => (juryCommentsOpen = !juryCommentsOpen)}
+						class="flex items-center gap-2 text-sm font-semibold text-indigo-600 uppercase tracking-wider hover:text-indigo-800 transition-colors w-full text-left group"
+					>
+						<span>{juryCommentsOpen ? 'Hide' : 'Show'} Jury Comments</span>
+						<span class="text-indigo-400 font-normal normal-case">({juryReviewsWithComments.length})</span>
+						<ChevronDown class="w-4 h-4 transition-transform duration-200 {juryCommentsOpen ? 'rotate-180' : ''} ml-auto" />
+					</button>
+
+					{#if juryCommentsOpen}
+						<div transition:slide={{ duration: 200 }} class="mt-4 space-y-3">
+							{#each juryReviewsWithComments as r}
+								<div class="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
+									<div class="flex justify-between items-center mb-2">
+										<span class="font-semibold text-sm text-indigo-800">
+											{r.curator?.name ?? 'Jury Member'}
+										</span>
+										<SelectionTag selection={r.selection} />
+									</div>
+									<p class="whitespace-pre-wrap text-sm leading-relaxed text-indigo-600">
+										{r.additionalComments}
+									</p>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
+			{/if}
+		</div>
+	</section>
+{/if}

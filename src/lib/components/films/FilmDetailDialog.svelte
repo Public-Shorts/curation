@@ -8,7 +8,9 @@
 
 	let { film, onClose }: Props = $props();
 
-	let reviews = $derived(film?.reviews || []);
+	let allReviews = $derived(film?.reviews || []);
+	let reviews = $derived(allReviews.filter((r: any) => !r.isJury));
+	let juryReviews = $derived(allReviews.filter((r: any) => r.isJury));
 	let selectedCount = $derived(reviews.filter((r: any) => r.selection === 'selected').length);
 	let maybeCount = $derived(reviews.filter((r: any) => r.selection === 'maybe').length);
 	let rejectedCount = $derived(reviews.filter((r: any) => r.selection === 'notSelected').length);
@@ -22,7 +24,7 @@
 	);
 
 	let allTags = $derived(
-		[...new Set(reviews.flatMap((r: any) => (r.tags || []).map((t: any) => t.label || t)))].slice(
+		[...new Set(allReviews.flatMap((r: any) => (r.tags || []).map((t: any) => t.label || t)))].slice(
 			0,
 			8
 		)
@@ -30,6 +32,14 @@
 
 	let reviewsWithNotes = $derived(
 		reviews.filter(
+			(r: any) =>
+				r.additionalComments ||
+				(r.contentNotes?.length > 0 && !r.contentNotes.every((n: string) => n === 'none'))
+		)
+	);
+
+	let juryReviewsWithNotes = $derived(
+		juryReviews.filter(
 			(r: any) =>
 				r.additionalComments ||
 				(r.contentNotes?.length > 0 && !r.contentNotes.every((n: string) => n === 'none'))
@@ -171,6 +181,35 @@
 										</p>
 									{/if}
 									<p class="text-xs text-gallery-400 mt-2">— {review.curatorName}</p>
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/if}
+
+				<!-- Jury Notes -->
+				{#if juryReviewsWithNotes.length > 0}
+					<div class="mb-5 pt-4 border-t border-indigo-100">
+						<div class="flex items-center justify-between mb-3">
+							<h3 class="text-[10px] font-bold uppercase tracking-wider text-indigo-500">
+								Jury Notes
+							</h3>
+							<span class="text-[10px] text-indigo-400">Not included in score</span>
+						</div>
+						<div class="space-y-3 max-h-48 overflow-y-auto">
+							{#each juryReviewsWithNotes as review}
+								<div class="p-3 bg-indigo-50 rounded-lg">
+									{#if review.additionalComments}
+										<p class="text-sm text-indigo-700">{review.additionalComments}</p>
+									{/if}
+									{#if review.contentNotes?.length > 0 && !review.contentNotes.every((n: string) => n === 'none')}
+										<p class="text-xs text-indigo-500 mt-1 italic">
+											Content warnings: {review.contentNotes
+												.filter((n: string) => n !== 'none')
+												.join(', ')}
+										</p>
+									{/if}
+									<p class="text-xs text-indigo-400 mt-2">— {review.curatorName}</p>
 								</div>
 							{/each}
 						</div>

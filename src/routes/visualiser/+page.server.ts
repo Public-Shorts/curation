@@ -32,7 +32,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 				contentNotes,
 				additionalComments,
 				"curatorId": curator._ref,
-				"curatorName": curator->name
+				"curatorName": curator->name,
+				"isJury": curator->jury == true
 			}
 		},
 		"metaCategories": *[_type == "metaCategory"] | order(name asc) {
@@ -71,7 +72,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const films = (result.films || [])
 		.filter((film: any) => selectedFilmIds.has(film._id))
 		.map((film: any) => {
-			const reviews = film.reviews || [];
+			const allReviews = film.reviews || [];
+			const reviews = allReviews.filter((r: any) => !r.isJury);
 
 			let sum = 0;
 			let count = 0;
@@ -84,7 +86,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 					sum += 0.5;
 				}
 				count++;
+			}
 
+			// Collect tags from all reviews (including jury) for display
+			for (const r of allReviews) {
 				for (const t of r.tags || []) {
 					const label = typeof t === 'string' ? t : t.label || t.value;
 					if (label) tagSet.add(label);

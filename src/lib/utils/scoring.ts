@@ -64,7 +64,8 @@ export function scoreMovies(
 	curatorWeights: Record<string, CuratorVoteWeights>
 ): Movie[] {
 	return movies.map((movie) => {
-		const reviews = movie.reviews || [];
+		const allReviews = movie.reviews || [];
+		const reviews = allReviews.filter((r: Review) => !r.isJury);
 		let weightedSum = 0;
 		let totalWeight = 0;
 
@@ -96,7 +97,7 @@ export function scoreMovies(
 			...movie,
 			score,
 			reviewsCount: reviews.length,
-			flags: generateFlags(movie, reviews)
+			flags: generateFlags(movie, allReviews)
 		};
 	});
 }
@@ -107,7 +108,8 @@ export function scoreMovies(
  */
 export function scoreMoviesSimple(movies: any[]): Movie[] {
 	return movies.map((movie) => {
-		const reviews = movie.reviews || [];
+		const allReviews = movie.reviews || [];
+		const reviews = allReviews.filter((r: Review) => !r.isJury);
 		let sum = 0;
 		let count = 0;
 
@@ -127,7 +129,7 @@ export function scoreMoviesSimple(movies: any[]): Movie[] {
 			...movie,
 			score,
 			reviewsCount: reviews.length,
-			flags: generateFlags(movie, reviews)
+			flags: generateFlags(movie, allReviews)
 		};
 	});
 }

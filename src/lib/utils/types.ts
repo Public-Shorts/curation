@@ -7,6 +7,7 @@ export interface Review {
     curatorId: string;
     curatorName?: string;
     contentNotes?: string[];
+    isJury?: boolean;
 }
 
 export interface Flag {
