@@ -1,5 +1,5 @@
-export type NodeType = 'film' | 'meta-category' | 'cluster' | 'tag';
-export type LinkType = 'film-meta' | 'film-cluster' | 'film-tag';
+export type NodeType = 'film' | 'meta-category' | 'cluster' | 'tag' | 'screening';
+export type LinkType = 'film-meta' | 'film-cluster' | 'film-tag' | 'film-screening';
 export type SizeMode = 'connections' | 'fixed' | 'score';
 export type LabelMode = 'always' | 'hover' | 'never';
 export type FilterMode = 'union' | 'intersection';
@@ -8,6 +8,7 @@ export interface GraphToggles {
 	metaCategories: Record<string, boolean>;
 	clusters: Record<string, boolean>;
 	tags: Record<string, boolean>;
+	screenings: Record<string, boolean>;
 }
 
 export interface DisplayOptions {
@@ -18,6 +19,7 @@ export interface DisplayOptions {
 	showMetaCategories: boolean;
 	showClusters: boolean;
 	showTags: boolean;
+	showScreenings: boolean;
 }
 
 export interface GraphNode {
@@ -74,11 +76,18 @@ export interface TagNodeData {
 	count: number;
 }
 
+export interface ScreeningNodeData {
+	_id: string;
+	name: string;
+	filmCount: number;
+}
+
 const NODE_TYPE_COLORS: Record<NodeType, string> = {
 	film: '#94a3b8',
 	'meta-category': '#ff7411',
 	cluster: '#a855f7',
 	tag: '#78716c',
+	screening: '#eab308',
 };
 
 function getScoreColor(score: number): string {
@@ -121,14 +130,16 @@ export function computeActiveFilmIds(
 	films: FilmNodeData[],
 	metaCategories: { _id: string; filmIds: { filmId: string }[] }[],
 	clusters: { _id: string; highlightedFilmIds: string[]; relevantFilmIds: string[] }[],
+	screenings: { _id: string; filmIds: string[] }[],
 	toggles: GraphToggles,
 	displayOptions: DisplayOptions
 ): Set<string> {
 	const hasMc = displayOptions.showMetaCategories && hasAnyEnabled(toggles.metaCategories);
 	const hasCl = displayOptions.showClusters && hasAnyEnabled(toggles.clusters);
 	const hasTag = displayOptions.showTags && hasAnyEnabled(toggles.tags);
+	const hasSc = displayOptions.showScreenings && hasAnyEnabled(toggles.screenings);
 
-	if (!hasMc && !hasCl && !hasTag) {
+	if (!hasMc && !hasCl && !hasTag && !hasSc) {
 		return new Set(films.map((f) => f._id));
 	}
 
@@ -160,6 +171,11 @@ export function computeActiveFilmIds(
 		}
 	}
 
+	if (hasSc) for (const screening of screenings) {
+		if (!toggles.screenings[screening._id]) continue;
+		itemSets.push(new Set(screening.filmIds));
+	}
+
 	if (itemSets.length === 0) {
 		return new Set(films.map((f) => f._id));
 	}
@@ -186,6 +202,7 @@ export function buildGraphData(
 	films: FilmNodeData[],
 	metaCategories: { _id: string; name: string; description: string; type: string; filmIds: { filmId: string; score: number }[] }[],
 	clusters: { _id: string; name: string; description: string; keywords: string[]; highlightedFilmIds: string[]; relevantFilmIds: string[] }[],
+	screenings: { _id: string; name: string; filmIds: string[] }[],
 	toggles: GraphToggles,
 	displayOptions: DisplayOptions
 ): GraphData {
@@ -193,7 +210,7 @@ export function buildGraphData(
 	const links: GraphLink[] = [];
 	const filmIdSet = new Set(films.map((f) => f._id));
 
-	const activeFilmIds = computeActiveFilmIds(films, metaCategories, clusters, toggles, displayOptions);
+	const activeFilmIds = computeActiveFilmIds(films, metaCategories, clusters, screenings, toggles, displayOptions);
 
 	// Film nodes — always present and visible, marked active/inactive
 	for (const film of films) {
@@ -314,6 +331,37 @@ export function buildGraphData(
 					type: 'film-tag',
 				});
 			}
+		}
+	}
+
+	// Screening nodes + links
+	if (displayOptions.showScreenings)
+	for (const screening of screenings) {
+		const validFilmIds = screening.filmIds.filter((id) => filmIdSet.has(id));
+		if (validFilmIds.length === 0) continue;
+		const enabled = !!toggles.screenings[screening._id];
+
+		nodes.push({
+			id: `sc-${screening._id}`,
+			type: 'screening',
+			label: screening.name,
+			val: 5,
+			color: NODE_TYPE_COLORS.screening,
+			active: enabled,
+			visible: true,
+			data: {
+				_id: screening._id,
+				name: screening.name,
+				filmCount: validFilmIds.length,
+			} as ScreeningNodeData,
+		});
+
+		for (const filmId of validFilmIds) {
+			links.push({
+				source: filmId,
+				target: `sc-${screening._id}`,
+				type: 'film-screening',
+			});
 		}
 	}
 

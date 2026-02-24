@@ -19,6 +19,7 @@
 		metaCategoryItems: ToggleItem[];
 		clusterItems: ToggleItem[];
 		tagItems: ToggleItem[];
+		screeningItems: ToggleItem[];
 	}
 
 	let {
@@ -32,6 +33,7 @@
 		metaCategoryItems,
 		clusterItems,
 		tagItems,
+		screeningItems,
 	}: Props = $props();
 
 	let collapsed = $state(false);
@@ -40,17 +42,18 @@
 	let mcExpanded = $state(false);
 	let clExpanded = $state(false);
 	let tagExpanded = $state(false);
+	let scExpanded = $state(false);
 
 	function setDisplay<K extends keyof DisplayOptions>(key: K, value: DisplayOptions[K]) {
 		onDisplayChange({ ...displayOptions, [key]: value });
 	}
 
-	function toggleItem(section: 'metaCategories' | 'clusters' | 'tags', id: string) {
+	function toggleItem(section: 'metaCategories' | 'clusters' | 'tags' | 'screenings', id: string) {
 		const updated = { ...toggles[section], [id]: !toggles[section][id] };
 		onToggleChange({ ...toggles, [section]: updated });
 	}
 
-	function toggleAll(section: 'metaCategories' | 'clusters' | 'tags', items: ToggleItem[], enable: boolean) {
+	function toggleAll(section: 'metaCategories' | 'clusters' | 'tags' | 'screenings', items: ToggleItem[], enable: boolean) {
 		const updated: Record<string, boolean> = {};
 		for (const item of items) {
 			updated[item.id] = enable;
@@ -183,6 +186,7 @@
 				<div class="flex flex-col gap-0.5">
 					{@render nodeTypeToggle('Meta Categories', '#ff7411', 'square', displayOptions.showMetaCategories, () => setDisplay('showMetaCategories', !displayOptions.showMetaCategories))}
 					{@render nodeTypeToggle('Clusters', '#a855f7', 'diamond', displayOptions.showClusters, () => setDisplay('showClusters', !displayOptions.showClusters))}
+					{@render nodeTypeToggle('Screenings', '#eab308', 'triangle', displayOptions.showScreenings, () => setDisplay('showScreenings', !displayOptions.showScreenings))}
 					{@render nodeTypeToggle('Tags', '#78716c', 'circle', displayOptions.showTags, () => setDisplay('showTags', !displayOptions.showTags))}
 				</div>
 			</section>
@@ -212,6 +216,20 @@
 					toggles.clusters,
 					clusterItems,
 					'clusters'
+				)}
+			{/if}
+
+			<!-- Screenings -->
+			{#if displayOptions.showScreenings}
+				{@render toggleSection(
+					'Screenings',
+					'#eab308',
+					'triangle',
+					scExpanded,
+					() => (scExpanded = !scExpanded),
+					toggles.screenings,
+					screeningItems,
+					'screenings'
 				)}
 			{/if}
 
@@ -331,13 +349,19 @@
 )}
 	<label class="flex cursor-pointer items-center justify-between rounded px-2 py-1 hover:bg-gallery-800 text-[11px]">
 		<span class="flex items-center gap-2 text-gallery-300">
-			<span
-				class="inline-block h-2.5 w-2.5 shrink-0"
-				class:rounded-sm={shape === 'square'}
-				class:rounded-full={shape === 'circle'}
-				class:rotate-45={shape === 'diamond'}
-				style="background: {color}; opacity: {enabled ? 1 : 0.3}"
-			></span>
+			{#if shape === 'triangle'}
+				<svg class="h-2.5 w-2.5 shrink-0" viewBox="0 0 10 10" style="opacity: {enabled ? 1 : 0.3}">
+					<polygon points="5,0 10,8.66 0,8.66" fill={color} />
+				</svg>
+			{:else}
+				<span
+					class="inline-block h-2.5 w-2.5 shrink-0"
+					class:rounded-sm={shape === 'square'}
+					class:rounded-full={shape === 'circle'}
+					class:rotate-45={shape === 'diamond'}
+					style="background: {color}; opacity: {enabled ? 1 : 0.3}"
+				></span>
+			{/if}
 			{label}
 		</span>
 		<input
@@ -357,7 +381,7 @@
 	onToggleExpand: () => void,
 	sectionToggles: Record<string, boolean>,
 	items: ToggleItem[],
-	sectionKey: 'metaCategories' | 'clusters' | 'tags'
+	sectionKey: 'metaCategories' | 'clusters' | 'tags' | 'screenings'
 )}
 	<section class="border-t border-gallery-800 pt-3">
 		<!-- Section header -->
@@ -366,13 +390,19 @@
 				class="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-gallery-500 hover:text-gallery-300"
 				onclick={onToggleExpand}
 			>
-				<span
-					class="inline-block h-2.5 w-2.5 shrink-0"
-					class:rounded-sm={shape === 'square'}
-					class:rounded-full={shape === 'circle'}
-					class:rotate-45={shape === 'diamond'}
-					style="background: {color}"
-				></span>
+				{#if shape === 'triangle'}
+					<svg class="h-2.5 w-2.5 shrink-0" viewBox="0 0 10 10">
+						<polygon points="5,0 10,8.66 0,8.66" fill={color} />
+					</svg>
+				{:else}
+					<span
+						class="inline-block h-2.5 w-2.5 shrink-0"
+						class:rounded-sm={shape === 'square'}
+						class:rounded-full={shape === 'circle'}
+						class:rotate-45={shape === 'diamond'}
+						style="background: {color}"
+					></span>
+				{/if}
 				{title}
 				<span class="text-gallery-600">
 					({enabledCount(sectionToggles)}/{items.length})

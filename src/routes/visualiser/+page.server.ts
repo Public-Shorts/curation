@@ -54,6 +54,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 			"highlightedFilmIds": highlightedFilms[]._ref,
 			"relevantFilmIds": relevantFilms[]._ref
 		},
+		"screenings": *[_type == "screening"] | order(title asc) {
+			_id,
+			title,
+			"filmIds": films[]._ref
+		},
 		"jurySelections": *[_type == "jurySelection"] | order(savedAt desc) {
 			_id,
 			name,
@@ -135,5 +140,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 		relevantFilmIds: (c.relevantFilmIds || []).filter((id: string) => selectedFilmIds.has(id)),
 	}));
 
-	return { films, metaCategories, clusters, jurySelections: result.jurySelections || [] };
+	const screenings = (result.screenings || []).map((s: any) => ({
+		_id: s._id,
+		name: s.title || 'Untitled Screening',
+		filmIds: (s.filmIds || []).filter((id: string) => selectedFilmIds.has(id)),
+	}));
+
+	return { films, metaCategories, clusters, screenings, jurySelections: result.jurySelections || [] };
 };

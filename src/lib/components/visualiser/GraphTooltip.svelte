@@ -100,6 +100,15 @@
 			{@const tag = node.data as any}
 			<p class="text-sm font-semibold text-gallery-100">{tag.name}</p>
 			<p class="mt-1 text-[11px] text-gallery-400">Used in {tag.count} films</p>
+		{:else if node.type === 'screening'}
+			{@const sc = node.data as any}
+			<div class="flex items-center gap-2">
+				<svg class="h-2.5 w-2.5 shrink-0" viewBox="0 0 10 10">
+					<polygon points="5,0 10,8.66 0,8.66" fill="#eab308" />
+				</svg>
+				<p class="text-sm font-semibold text-gallery-100">{sc.name}</p>
+			</div>
+			<p class="mt-1.5 text-[11px] text-gallery-500">{sc.filmCount} films</p>
 		{/if}
 	</div>
 {/if}

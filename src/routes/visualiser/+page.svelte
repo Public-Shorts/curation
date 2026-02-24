@@ -43,6 +43,16 @@
 		tagItems.map((t) => ({ id: t.name, label: t.name, count: t.count }))
 	);
 
+	let screeningItems = $derived(
+		data.screenings
+			.filter((s: any) => s.filmIds.length > 0)
+			.map((s: any) => ({
+				id: s._id,
+				label: s.name,
+				count: s.filmIds.length,
+			}))
+	);
+
 	// Initialize toggles — all meta-categories and clusters ON by default
 	let toggles = $state<GraphToggles>({
 		metaCategories: Object.fromEntries(
@@ -56,6 +66,11 @@
 				.map((c: any) => [c._id, true])
 		),
 		tags: {},
+		screenings: Object.fromEntries(
+			data.screenings
+				.filter((s: any) => s.filmIds.length > 0)
+				.map((s: any) => [s._id, true])
+		),
 	});
 
 	let displayOptions = $state<DisplayOptions>({
@@ -66,6 +81,7 @@
 		showMetaCategories: true,
 		showClusters: true,
 		showTags: false,
+		showScreenings: true,
 	});
 
 	let searchQuery = $state('');
@@ -102,6 +118,7 @@
 					enabledMetaCategories: getEnabledIds(toggles.metaCategories),
 					enabledClusters: getEnabledIds(toggles.clusters),
 					enabledTags: getEnabledIds(toggles.tags),
+					enabledScreenings: getEnabledIds(toggles.screenings),
 					activeFilmIds: [...graphData.activeFilmIds],
 				}),
 			});
@@ -150,10 +167,16 @@
 				newTagToggles[item.id] = (selection.enabledTags || []).includes(item.id);
 			}
 
+			const newScToggles: Record<string, boolean> = {};
+			for (const item of screeningItems) {
+				newScToggles[item.id] = (selection.enabledScreenings || []).includes(item.id);
+			}
+
 			toggles = {
 				metaCategories: newMcToggles,
 				clusters: newClToggles,
 				tags: newTagToggles,
+				screenings: newScToggles,
 			};
 
 			displayOptions = {
@@ -188,6 +211,7 @@
 			data.films,
 			data.metaCategories,
 			data.clusters,
+			data.screenings,
 			toggles,
 			displayOptions
 		);
@@ -231,6 +255,7 @@
 		{metaCategoryItems}
 		{clusterItems}
 		tagItems={tagToggleItems}
+		{screeningItems}
 	/>
 
 	<div class="relative min-w-0 flex-1">
@@ -275,6 +300,16 @@
 						toggles = { ...toggles, tags: solo };
 					} else {
 						toggles = { ...toggles, tags: { ...toggles.tags, [name]: !toggles.tags[name] } };
+					}
+				} else if (node.type === 'screening') {
+					const id = node.id.replace('sc-', '');
+					const allOn = screeningItems.every((i) => toggles.screenings[i.id]);
+					if (allOn) {
+						const solo: Record<string, boolean> = {};
+						for (const i of screeningItems) solo[i.id] = i.id === id;
+						toggles = { ...toggles, screenings: solo };
+					} else {
+						toggles = { ...toggles, screenings: { ...toggles.screenings, [id]: !toggles.screenings[id] } };
 					}
 				}
 			}}
