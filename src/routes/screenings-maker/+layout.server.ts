@@ -11,7 +11,7 @@ export const load: LayoutServerLoad = async () => {
 			_id,
 			englishTitle,
 			directorName,
-			synopsis,
+			"synopsis": pt::text(synopsis),
 			country,
 			filmLanguage,
 			poster { asset->{_id, url} },

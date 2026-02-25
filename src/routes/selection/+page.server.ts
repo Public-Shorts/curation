@@ -72,7 +72,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				englishTitle,
 				directorName,
 				length,
-				synopsis,
+				"synopsis": pt::text(synopsis),
 				filmLanguage,
 				categories,
 				country,

@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({parent, locals}) => {
 			_id,
 			englishTitle,
 			directorName,
-			synopsis,
+			"synopsis": pt::text(synopsis),
 			country,
 			filmLanguage,
 			poster { asset->{_id, url} },
@@ -80,7 +80,7 @@ export const load: PageServerLoad = async ({parent, locals}) => {
 					directorName,
 					length,
 					categories,
-					synopsis,
+					"synopsis": pt::text(synopsis),
 					"poster": poster{asset->{url}},
 					"screenshots": screenshots[]{asset->{url}}
 				}

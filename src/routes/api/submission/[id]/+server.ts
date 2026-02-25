@@ -15,7 +15,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			originalTitle,
 			directorName,
 			length,
-			synopsis,
+			"synopsis": pt::text(synopsis),
 			filmLanguage,
 			country,
 			"poster": poster{ asset->{ _id, url } },

@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({parent}) => {
           length,
           categories,
           yearOfCompletion,
-          synopsis,
+          "synopsis": pt::text(synopsis),
           explicit,
           explicitDetails,
           aiUsed,

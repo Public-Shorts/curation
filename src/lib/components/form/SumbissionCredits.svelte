@@ -12,19 +12,9 @@
 		Download,
 		Key
 	} from 'lucide-svelte';
+	import RichText from '$lib/components/RichText.svelte';
 
 	let { submission } = $props();
-	const socialMedia: string | null = $derived.by(() => {
-		if (submission.socialMedia == null) return null;
-		if (submission.socialMedia?.startsWith('http')) {
-			return submission.socialMedia ? submission.socialMedia : null;
-		} else if (submission.socialMedia?.startsWith('@')) {
-			return 'https://instagram.com/' + submission.socialMedia.slice(1);
-		} else if (submission.socialMedia) {
-			return 'https://instagram.com/' + submission.socialMedia;
-		}
-		return null;
-	});
 </script>
 
 <div class="grid gap-4 sm:gap-6 lg:grid-cols-2">
@@ -49,7 +39,7 @@
 				</div>
 			</div>
 
-			{#if submission.castAndCrew}
+			{#if submission.castAndCrew?.length}
 				<div class="flex items-start gap-3">
 					<div
 						class="w-8 h-8 rounded-lg bg-gallery-100 flex items-center justify-center shrink-0 mt-0.5"
@@ -61,13 +51,13 @@
 							Cast & Crew
 						</dt>
 						<dd class="text-sm text-gallery-700 mt-0.5 leading-relaxed">
-							{submission.castAndCrew}
+							<RichText blocks={submission.castAndCrew} />
 						</dd>
 					</div>
 				</div>
 			{/if}
 
-			{#if submission.thanks}
+			{#if submission.thanks?.length}
 				<div class="flex items-start gap-3">
 					<div
 						class="w-8 h-8 rounded-lg bg-gallery-100 flex items-center justify-center shrink-0 mt-0.5"
@@ -76,34 +66,36 @@
 					</div>
 					<div>
 						<dt class="text-xs font-medium text-gallery-500 uppercase tracking-wide">Thanks</dt>
-						<dd class="text-sm text-gallery-700 mt-0.5 leading-relaxed">{submission.thanks}</dd>
+						<dd class="text-sm text-gallery-700 mt-0.5 leading-relaxed">
+							<RichText blocks={submission.thanks} />
+						</dd>
 					</div>
 				</div>
 			{/if}
 
-			{#if submission.socialMedia || submission.website}
+			{#if submission.socialMedia?.length || submission.website?.length}
 				<div class="pt-3 border-t border-gallery-100">
 					<div class="flex flex-wrap gap-2">
-						{#if submission.socialMedia}
+						{#each submission.socialMedia ?? [] as link}
 							<a
-								href={socialMedia}
+								href={link.url}
 								target="_blank"
 								class="inline-flex items-center gap-2 rounded-xl bg-gallery-50 px-4 py-2.5 text-sm font-medium text-gallery-700 ring-1 ring-inset ring-gallery-200 hover:bg-gallery-100 hover:ring-gallery-300 hover:text-gallery-900 transition-all"
 							>
 								<Instagram class="w-4 h-4" />
-								Social Media
+								{link.label || link.platform}
 							</a>
-						{/if}
-						{#if submission.website}
+						{/each}
+						{#each submission.website ?? [] as link}
 							<a
-								href={submission.website}
+								href={link.url}
 								target="_blank"
 								class="inline-flex items-center gap-2 rounded-xl bg-gallery-50 px-4 py-2.5 text-sm font-medium text-gallery-700 ring-1 ring-inset ring-gallery-200 hover:bg-gallery-100 hover:ring-gallery-300 hover:text-gallery-900 transition-all"
 							>
 								<Globe class="w-4 h-4" />
-								Website
+								{link.label || link.url}
 							</a>
-						{/if}
+						{/each}
 					</div>
 				</div>
 			{/if}
@@ -137,7 +129,7 @@
 				</div>
 			{/if}
 
-			{#if submission.previousScreeningLocations}
+			{#if submission.previousScreeningLocations?.length}
 				<div class="flex items-start gap-3">
 					<div
 						class="w-8 h-8 rounded-lg bg-gallery-100 flex items-center justify-center shrink-0 mt-0.5"
@@ -147,7 +139,7 @@
 					<div>
 						<dt class="text-xs font-medium text-gallery-500 uppercase tracking-wide">Locations</dt>
 						<dd class="text-sm text-gallery-700 mt-0.5 leading-relaxed">
-							{submission.previousScreeningLocations}
+							<RichText blocks={submission.previousScreeningLocations} />
 						</dd>
 					</div>
 				</div>

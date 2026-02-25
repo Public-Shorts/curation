@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			categories,
 			country,
 			filmLanguage,
-			synopsis,
+			"synopsis": pt::text(synopsis),
 			linkToWatch,
 			linkToDownload,
 			linkPassword,

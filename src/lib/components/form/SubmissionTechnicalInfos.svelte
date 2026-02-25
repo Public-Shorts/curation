@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { AlignLeft, Image, ZoomIn, AlertTriangle, Info } from 'lucide-svelte';
 	import { urlFor } from '$lib/utils/sanityImage';
+	import RichText from '$lib/components/RichText.svelte';
 	let { submission } = $props();
 </script>
 
 <div class="space-y-8">
 	<!-- Synopsis -->
-	{#if submission.synopsis}
+	{#if submission.synopsis?.length}
 		<section class="rounded-2xl bg-white p-5 sm:p-6 shadow-sm ring-1 ring-gallery-200/60">
 			<h2
 				class="text-xs font-semibold uppercase tracking-wider text-gallery-500 mb-4 flex items-center gap-2"
@@ -14,7 +15,7 @@
 				<AlignLeft class="w-4 h-4" />
 				Synopsis
 			</h2>
-			<p class="text-base leading-relaxed text-gallery-700 max-w-prose">{submission.synopsis}</p>
+			<RichText blocks={submission.synopsis} class="text-base leading-relaxed text-gallery-700 max-w-prose" />
 		</section>
 	{/if}
 
@@ -141,8 +142,8 @@
 						</dd>
 					</div>
 				{/if}
-				{#if submission.additionalInfo}
-					<p class="text-sm text-gallery-700 leading-relaxed">{submission.additionalInfo}</p>
+				{#if submission.additionalInfo?.length}
+					<RichText blocks={submission.additionalInfo} class="text-sm text-gallery-700 leading-relaxed" />
 				{/if}
 				{#if submission.specialRequirements}
 					<div class="bg-amber-50 rounded-xl p-4 border border-amber-100">
@@ -152,7 +153,7 @@
 						<p class="text-sm text-amber-800">{submission.specialRequirements}</p>
 					</div>
 				{/if}
-				{#if !submission.additionalInfo && !submission.specialRequirements && !submission._createdAt}
+				{#if !submission.additionalInfo?.length && !submission.specialRequirements && !submission._createdAt}
 					<p class="text-sm text-gallery-400 italic">None provided</p>
 				{/if}
 			</div>
