@@ -82,6 +82,7 @@
 		showClusters: true,
 		showTags: false,
 		showScreenings: true,
+		hideScreenedFilms: false,
 	});
 
 	let searchQuery = $state('');
@@ -217,6 +218,15 @@
 		);
 	});
 
+	// Set of film IDs that appear in any screening
+	let screenedFilmIds = $derived.by(() => {
+		const ids = new Set<string>();
+		for (const s of data.screenings) {
+			for (const id of s.filmIds) ids.add(id);
+		}
+		return ids;
+	});
+
 	// Active films: those in the activeFilmIds set
 	let activeFilms = $derived.by(() => {
 		return data.films
@@ -349,6 +359,16 @@
 						{data.films.length - activeFilms.length} inactive
 					</p>
 				{/if}
+
+				<label class="flex cursor-pointer items-center justify-between rounded px-2 py-1.5 hover:bg-gallery-800 text-[11px]">
+					<span class="text-gallery-300">Hide screened films</span>
+					<input
+						type="checkbox"
+						checked={displayOptions.hideScreenedFilms}
+						onchange={() => (displayOptions = { ...displayOptions, hideScreenedFilms: !displayOptions.hideScreenedFilms })}
+						class="shrink-0 accent-gallery-500"
+					/>
+				</label>
 
 				{#if canSaveSelections}
 					<section class="border-t border-gallery-800 pt-3">

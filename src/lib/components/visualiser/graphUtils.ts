@@ -20,6 +20,7 @@ export interface DisplayOptions {
 	showClusters: boolean;
 	showTags: boolean;
 	showScreenings: boolean;
+	hideScreenedFilms: boolean;
 }
 
 export interface GraphNode {
@@ -134,13 +135,23 @@ export function computeActiveFilmIds(
 	toggles: GraphToggles,
 	displayOptions: DisplayOptions
 ): Set<string> {
+	// Filter out films that are in any screening when hideScreenedFilms is enabled
+	let effectiveFilmIds: Set<string> | null = null;
+	if (displayOptions.hideScreenedFilms) {
+		const screenedIds = new Set<string>();
+		for (const s of screenings) {
+			for (const id of s.filmIds) screenedIds.add(id);
+		}
+		effectiveFilmIds = new Set(films.filter((f) => !screenedIds.has(f._id)).map((f) => f._id));
+	}
+
 	const hasMc = displayOptions.showMetaCategories && hasAnyEnabled(toggles.metaCategories);
 	const hasCl = displayOptions.showClusters && hasAnyEnabled(toggles.clusters);
 	const hasTag = displayOptions.showTags && hasAnyEnabled(toggles.tags);
 	const hasSc = displayOptions.showScreenings && hasAnyEnabled(toggles.screenings);
 
 	if (!hasMc && !hasCl && !hasTag && !hasSc) {
-		return new Set(films.map((f) => f._id));
+		return effectiveFilmIds ?? new Set(films.map((f) => f._id));
 	}
 
 	// Collect per-item film sets
@@ -159,6 +170,7 @@ export function computeActiveFilmIds(
 	if (hasTag) {
 		const tagFilmMap = new Map<string, Set<string>>();
 		for (const film of films) {
+			if (effectiveFilmIds && !effectiveFilmIds.has(film._id)) continue;
 			for (const tag of film.tags) {
 				const normalized = tag.toLowerCase().trim();
 				if (!toggles.tags[normalized]) continue;
@@ -177,23 +189,30 @@ export function computeActiveFilmIds(
 	}
 
 	if (itemSets.length === 0) {
-		return new Set(films.map((f) => f._id));
+		return effectiveFilmIds ?? new Set(films.map((f) => f._id));
 	}
 
+	let result: Set<string>;
 	if (displayOptions.filterMode === 'intersection') {
 		// Film must appear in EVERY enabled item's set
 		const [first, ...rest] = itemSets;
-		const result = new Set<string>();
+		result = new Set<string>();
 		for (const id of first) {
 			if (rest.every((s) => s.has(id))) result.add(id);
 		}
-		return result;
+	} else {
+		// Union: film appears in ANY item's set
+		result = new Set<string>();
+		for (const s of itemSets) {
+			for (const id of s) result.add(id);
+		}
 	}
 
-	// Union: film appears in ANY item's set
-	const result = new Set<string>();
-	for (const s of itemSets) {
-		for (const id of s) result.add(id);
+	// Constrain to effective films when hiding screened films
+	if (effectiveFilmIds) {
+		for (const id of result) {
+			if (!effectiveFilmIds.has(id)) result.delete(id);
+		}
 	}
 	return result;
 }
@@ -208,12 +227,23 @@ export function buildGraphData(
 ): GraphData {
 	const nodes: GraphNode[] = [];
 	const links: GraphLink[] = [];
-	const filmIdSet = new Set(films.map((f) => f._id));
+
+	// Filter out films that are in any screening when hideScreenedFilms is enabled
+	let effectiveFilms = films;
+	if (displayOptions.hideScreenedFilms) {
+		const screenedIds = new Set<string>();
+		for (const s of screenings) {
+			for (const id of s.filmIds) screenedIds.add(id);
+		}
+		effectiveFilms = films.filter((f) => !screenedIds.has(f._id));
+	}
+
+	const filmIdSet = new Set(effectiveFilms.map((f) => f._id));
 
 	const activeFilmIds = computeActiveFilmIds(films, metaCategories, clusters, screenings, toggles, displayOptions);
 
 	// Film nodes — always present and visible, marked active/inactive
-	for (const film of films) {
+	for (const film of effectiveFilms) {
 		const active = activeFilmIds.has(film._id);
 		nodes.push({
 			id: film._id,
@@ -300,7 +330,7 @@ export function buildGraphData(
 	// Tag nodes + links
 	if (displayOptions.showTags) {
 		const tagFilms = new Map<string, string[]>();
-		for (const film of films) {
+		for (const film of effectiveFilms) {
 			for (const tag of film.tags) {
 				const normalized = tag.toLowerCase().trim();
 				if (!normalized) continue;
